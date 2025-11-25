@@ -46,6 +46,6 @@ COPY --from=go-build-main /go/bin/issho /issho/issho
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD ["/issho/healthcheck"]
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["./issho"]

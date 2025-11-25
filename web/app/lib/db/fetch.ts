@@ -33,9 +33,9 @@ export function customFetch(
 }
 
 function getUrl(path: string) {
-  // If in development, prefix the log with http://localhost:8080
+  // If in development, prefix the log with http://localhost:3000
   if (import.meta.env.DEV) {
-    return `http://localhost:8080${path}`;
+    return `http://localhost:3000${path}`;
   }
   return path;
 }
