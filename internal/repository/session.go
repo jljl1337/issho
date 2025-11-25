@@ -35,8 +35,8 @@ type CreateSessionParams struct {
 	UpdatedAt string         `db:"updated_at"`
 }
 
-func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, createSession, arg)
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
+	return NamedExecOneRowContext(ctx, q.db, createSession, arg)
 }
 
 const getSessionByToken = `
@@ -74,8 +74,8 @@ type UpdateSessionByTokenParams struct {
 	Token     string `db:"token"`
 }
 
-func (q *Queries) UpdateSessionByToken(ctx context.Context, arg UpdateSessionByTokenParams) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, updateSessionByToken, arg)
+func (q *Queries) UpdateSessionByToken(ctx context.Context, arg UpdateSessionByTokenParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updateSessionByToken, arg)
 }
 
 const updateSessionByUserID = `

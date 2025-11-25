@@ -51,7 +51,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 
 	currentTime := generator.NowISO8601()
 
-	if _, err = queries.CreateUser(ctx, repository.CreateUserParams{
+	if err = queries.CreateUser(ctx, repository.CreateUserParams{
 		ID:           generator.NewULID(),
 		Username:     username,
 		PasswordHash: passwordHash,
@@ -75,7 +75,7 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 	currentTime := generator.NowISO8601()
 	expiresAt := format.TimeToISO8601(time.Now().Add(time.Duration(env.PreSessionLifetimeMin) * time.Minute))
 
-	if _, err := queries.CreateSession(ctx, repository.CreateSessionParams{
+	if err := queries.CreateSession(ctx, repository.CreateSessionParams{
 		ID:        sessionID,
 		UserID:    sql.NullString{Valid: false},
 		Token:     sessionToken,
@@ -163,17 +163,13 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 		}
 
-		rows, err := queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
+		err = queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
 			PasswordHash: newHash,
 			UpdatedAt:    currentTime,
 			ID:           user.ID,
 		})
 		if err != nil {
 			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to update user password hash: %v", err)
-		} else if rows < 1 {
-			return "", "", NewServiceError(ErrCodeInternal, "no user updated with the new password hash")
-		} else if rows > 1 {
-			return "", "", NewServiceError(ErrCodeInternal, "multiple users updated with the same ID")
 		}
 	}
 
@@ -183,21 +179,17 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	expiresAt := format.TimeToISO8601(time.Now().Add(time.Duration(env.SessionLifetimeMin) * time.Hour))
 
 	// Deactivate the pre-session
-	rows, err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
+	err = queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
 		Token:     preSessionToken,
 		ExpiresAt: nowISO8601,
 		UpdatedAt: nowISO8601,
 	})
 	if err != nil {
 		return "", "", NewServiceErrorf(ErrCodeInternal, "failed to update pre-session: %v", err)
-	} else if rows < 1 {
-		return "", "", NewServiceError(ErrCodeInternal, "no pre-session updated")
-	} else if rows > 1 {
-		return "", "", NewServiceError(ErrCodeInternal, "multiple pre-sessions updated with the same token")
 	}
 
 	// Create a new session associated with the user
-	rows, err = queries.CreateSession(ctx, repository.CreateSessionParams{
+	err = queries.CreateSession(ctx, repository.CreateSessionParams{
 		ID:        sessionID,
 		UserID:    sql.NullString{String: user.ID, Valid: true},
 		Token:     sessionToken,
@@ -208,10 +200,6 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	})
 	if err != nil {
 		return "", "", NewServiceErrorf(ErrCodeInternal, "failed to create session: %v", err)
-	} else if rows < 1 {
-		return "", "", NewServiceError(ErrCodeInternal, "no session created")
-	} else if rows > 1 {
-		return "", "", NewServiceError(ErrCodeInternal, "multiple sessions created with the same ID")
 	}
 
 	return sessionToken, CSRFToken, nil
@@ -221,17 +209,13 @@ func (s *EndpointService) SignOut(ctx context.Context, sessionToken string) erro
 	queries := repository.New(s.db)
 
 	now := generator.NowISO8601()
-	rows, err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
+	err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
 		Token:     sessionToken,
 		ExpiresAt: now,
 		UpdatedAt: now,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to sign out session: %v", err)
-	}
-
-	if rows < 1 {
-		return NewServiceError(ErrCodeInternal, "no session updated")
 	}
 
 	return nil

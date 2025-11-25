@@ -68,17 +68,13 @@ func (s *MiddlewareService) GetSessionUserIDAndRefreshSession(ctx context.Contex
 	remainingLifetimeMin := expiresAt.Sub(now).Minutes()
 	if remainingLifetimeMin < float64(env.SessionRefreshThresholdMin) {
 		newExpiresAt := format.TimeToISO8601(now.Add(time.Duration(env.SessionLifetimeMin) * time.Minute))
-		rows, err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
+		err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
 			Token:     sessionToken,
 			ExpiresAt: newExpiresAt,
 			UpdatedAt: nowISO8601,
 		})
 		if err != nil {
 			return "", NewServiceErrorf(ErrCodeInternal, "failed to refresh session: %v", err)
-		}
-
-		if rows < 1 {
-			return "", NewServiceError(ErrCodeInternal, "no session updated")
 		}
 	}
 

@@ -75,20 +75,13 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 		}
 	}
 
-	rows, err := queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
+	err = queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
 		ID:        userID,
 		Username:  newUsername,
 		UpdatedAt: generator.NowISO8601(),
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update username: %v", err)
-	}
-
-	if rows < 1 {
-		return NewServiceError(ErrCodeInternal, "no user updated")
-	}
-	if rows > 1 {
-		return NewServiceError(ErrCodeInternal, "multiple users updated")
 	}
 
 	return nil
@@ -135,7 +128,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 		return NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 	}
 
-	rows, err := queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
+	err = queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
 		PasswordHash: passwordHash,
 		UpdatedAt:    generator.NowISO8601(),
 		ID:           userID,
@@ -144,26 +137,15 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 		return NewServiceErrorf(ErrCodeInternal, "failed to update password: %v", err)
 	}
 
-	if rows < 1 {
-		return NewServiceError(ErrCodeInternal, "no user updated")
-	}
-	if rows > 1 {
-		return NewServiceError(ErrCodeInternal, "multiple users updated")
-	}
-
 	return nil
 }
 
 func (s *EndpointService) DeleteUserByID(ctx context.Context, userID string) error {
 	queries := repository.New(s.db)
 
-	rows, err := queries.DeleteUser(ctx, userID)
+	err := queries.DeleteUser(ctx, userID)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to delete user: %v", err)
-	}
-
-	if rows < 1 {
-		return NewServiceError(ErrCodeInternal, "no user deleted")
 	}
 
 	return nil

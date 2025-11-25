@@ -28,8 +28,8 @@ type CreateUserParams struct {
 	UpdatedAt    string `db:"updated_at"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, createUser, arg)
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	return NamedExecOneRowContext(ctx, q.db, createUser, arg)
 }
 
 const getUserByID = `
@@ -86,8 +86,8 @@ type UpdateUserPasswordParams struct {
 	ID           string `db:"id"`
 }
 
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, updateUserPassword, arg)
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updateUserPassword, arg)
 }
 
 const updateUserUsername = `
@@ -106,8 +106,8 @@ type UpdateUserUsernameParams struct {
 	ID        string `db:"id"`
 }
 
-func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsernameParams) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, updateUserUsername, arg)
+func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsernameParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updateUserUsername, arg)
 }
 
 const deleteUser = `
@@ -121,6 +121,6 @@ type DeleteUserParams struct {
 	ID string `db:"id"`
 }
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) (int64, error) {
-	return NamedExecRowsAffectedContext(ctx, q.db, deleteUser, DeleteUserParams{ID: id})
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+	return NamedExecOneRowContext(ctx, q.db, deleteUser, DeleteUserParams{ID: id})
 }
