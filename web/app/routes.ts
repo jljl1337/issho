@@ -17,9 +17,11 @@ export default [
   layout("layouts/sidebar.tsx", [
     route("about", "routes/about.tsx"),
 
-    route("account", "routes/account/index.tsx"),
-    route("account/change-username", "routes/account/change-username.tsx"),
-    route("account/change-password", "routes/account/change-password.tsx"),
+    ...prefix("account", [
+      index("routes/account/index.tsx"),
+      route("change-username", "routes/account/change-username.tsx"),
+      route("change-password", "routes/account/change-password.tsx"),
+    ]),
 
     ...prefix("home", [index("routes/home/index.tsx")]),
   ]),
