@@ -9,13 +9,10 @@ import (
 	"github.com/jljl1337/issho/internal/http/middleware"
 )
 
-type usernameExistResponse struct {
-	Exists bool `json:"exists"`
-}
-
 type getCurrentUserResponse struct {
 	ID        string `json:"id"`
 	Username  string `json:"username"`
+	Role      string `json:"role"`
 	CreatedAt string `json:"createdAt"`
 }
 
@@ -45,6 +42,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 	response := getCurrentUserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}
 	w.Header().Set("Content-Type", "application/json")

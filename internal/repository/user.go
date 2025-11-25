@@ -9,27 +9,40 @@ INSERT INTO user (
     id,
     username,
     password_hash,
+	role,
     created_at,
     updated_at
 ) VALUES (
 	:id,
 	:username,
 	:password_hash,
+	:role,
 	:created_at,
 	:updated_at
 )
 `
 
-type CreateUserParams struct {
-	ID           string `db:"id"`
-	Username     string `db:"username"`
-	PasswordHash string `db:"password_hash"`
-	CreatedAt    string `db:"created_at"`
-	UpdatedAt    string `db:"updated_at"`
+func (q *Queries) CreateUser(ctx context.Context, arg User) error {
+	return NamedExecOneRowContext(ctx, q.db, createUser, arg)
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	return NamedExecOneRowContext(ctx, q.db, createUser, arg)
+const getUserCountByRole = `
+SELECT
+	COUNT(*) AS count
+FROM
+	user
+WHERE
+	role = :role
+`
+
+type GetUserCountByRoleParams struct {
+	Role string `db:"role"`
+}
+
+func (q *Queries) GetUserCountByRole(ctx context.Context, role string) (int, error) {
+	var count int
+	err := NamedGetContext(ctx, q.db, &count, getUserCountByRole, GetUserCountByRoleParams{Role: role})
+	return count, err
 }
 
 const getUserByID = `

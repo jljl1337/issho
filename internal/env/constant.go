@@ -3,7 +3,9 @@ package env
 import "net/http"
 
 var (
-	Version = "dev"
+	Version   = "dev"
+	OwnerRole = "owner"
+	UserRole  = "user"
 
 	DbPath                     string
 	DbBusyTimeout              string

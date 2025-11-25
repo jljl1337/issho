@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"time"
 
 	"github.com/jljl1337/issho/internal/crypto"
@@ -51,10 +52,21 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 
 	currentTime := generator.NowISO8601()
 
-	if err = queries.CreateUser(ctx, repository.CreateUserParams{
+	ownerCount, err := queries.GetUserCountByRole(ctx, env.OwnerRole)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get owner user count: %v", err)
+	}
+
+	role := env.UserRole
+	if ownerCount == 0 {
+		role = env.OwnerRole
+	}
+
+	if err = queries.CreateUser(ctx, repository.User{
 		ID:           generator.NewULID(),
 		Username:     username,
 		PasswordHash: passwordHash,
+		Role:         role,
 		CreatedAt:    currentTime,
 		UpdatedAt:    currentTime,
 	}); err != nil {
@@ -107,6 +119,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	}
 
 	if len(sessions) < 1 {
+		slog.Debug("Session not found")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
 	}
 
@@ -114,11 +127,13 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	// Check if the session is already associated with a user
 	if session.UserID.Valid {
+		slog.Debug("Session is is not a pre-session")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
 	}
 
 	// CSRF token does not match
 	if preSessionCSRFToken != "" && session.CsrfToken != preSessionCSRFToken {
+		slog.Debug("CSRF token does not match")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
 	}
 
@@ -140,12 +155,14 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	}
 
 	if len(users) < 1 {
+		slog.Debug("User not found")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
 	}
 
 	user := users[0]
 
 	if !crypto.CheckPasswordHash(password, user.PasswordHash) {
+		slog.Debug("Invalid password")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
 	}
 

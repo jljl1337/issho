@@ -99,6 +99,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           <div>
             <p className="mb-2">User ID: {loaderData.user.id}</p>
             <p className="mb-2">Username: {loaderData.user.username}</p>
+            <p className="mb-2">Role: {loaderData.user.role}</p>
             <p className="mb-2">
               Created At: {new Date(loaderData.user.createdAt).toLocaleString()}
             </p>
