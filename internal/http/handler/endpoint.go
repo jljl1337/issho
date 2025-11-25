@@ -17,12 +17,8 @@ func NewEndpointHandler(service *service.EndpointService) *EndpointHandler {
 }
 
 func (h *EndpointHandler) RegisterRoutes(mux *http.ServeMux) {
-	h.registerAuthRoutes(mux)
-	h.registerUserRoutes(mux)
-	h.registerBookRoutes(mux)
-	h.registerCategoryRoutes(mux)
-	h.registerPaymentMethodRoutes(mux)
-	h.registerExpenseRoutes(mux)
 	h.registerHealthCheckRoutes(mux)
 	h.registerVersionRoutes(mux)
+	h.registerAuthRoutes(mux)
+	h.registerUserRoutes(mux)
 }
