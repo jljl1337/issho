@@ -9,5 +9,5 @@ export async function clientLoader() {
   if (me.error != null && isUnauthorizedError(me.error)) {
     return redirect("/auth/sign-in");
   }
-  return redirect("/books");
+  return redirect("/home");
 }

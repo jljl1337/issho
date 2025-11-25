@@ -7,7 +7,7 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
+  index("routes/root.tsx"),
 
   ...prefix("auth", [
     route("sign-in", "routes/auth/sign-in.tsx"),
@@ -15,10 +15,13 @@ export default [
   ]),
 
   layout("layouts/sidebar.tsx", [
+    route("about", "routes/about.tsx"),
+
     route("account", "routes/account/index.tsx"),
     route("account/change-username", "routes/account/change-username.tsx"),
     route("account/change-password", "routes/account/change-password.tsx"),
-    route("about", "routes/about.tsx"),
+
+    ...prefix("home", [index("routes/home/index.tsx")]),
   ]),
 
   route("error", "routes/error.tsx"),

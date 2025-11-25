@@ -23,7 +23,7 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { signUp } from "~/lib/db/auth";
-import { checkUsernameExists, getMe } from "~/lib/db/users";
+import { getMe } from "~/lib/db/users";
 import { passwordWithConfirmSchema, usernameSchema } from "~/lib/schemas/auth";
 
 const formSchema = z.intersection(usernameSchema, passwordWithConfirmSchema);
@@ -32,7 +32,7 @@ export async function clientLoader() {
   const me = await getMe();
 
   if (me.data != null) {
-    return redirect("/books");
+    return redirect("/home");
   }
 }
 
@@ -54,23 +54,6 @@ export default function Page() {
   const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { data: exists, error: checkUsernameError } =
-      await checkUsernameExists(values.username);
-
-    if (checkUsernameError) {
-      setError("root", {
-        message: checkUsernameError,
-      });
-      return;
-    }
-
-    if (exists) {
-      setError("username", {
-        message: "Username is already taken",
-      });
-      return;
-    }
-
     const { error } = await signUp(values.username, values.password);
     if (error) {
       setError("root", {

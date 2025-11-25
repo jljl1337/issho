@@ -35,7 +35,7 @@ export async function clientLoader() {
   const me = await getMe();
 
   if (me.data != null) {
-    return redirect("/books");
+    return redirect("/home");
   }
 
   // Return the CSRF token of the existing pre-session if it is valid
@@ -86,7 +86,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
       });
       return;
     }
-    navigate("/books");
+    navigate("/home");
   }
 
   return (
