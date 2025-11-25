@@ -2,84 +2,50 @@ package db
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
-	s "github.com/jljl1337/issho/internal/sql"
+	"github.com/jljl1337/issho/internal/generator"
+	"github.com/jljl1337/issho/internal/repository"
+	"github.com/jljl1337/issho/internal/sql"
 )
-
-type Migration struct {
-	ID        string
-	Statement string
-}
-
-const createMigrationTable = `
-	CREATE TABLE IF NOT EXISTS migration (
-		id TEXT PRIMARY KEY,
-		statement TEXT NOT NULL
-	);
-`
-
-const getAppliedMigrations = `
-	SELECT
-		id,
-		statement
-	FROM
-		migration
-	ORDER BY
-		id ASC;
-`
-
-const insertMigration = `
-	INSERT INTO
-		migration (
-			id,
-			statement
-		) VALUES (
-			?,
-			?
-		);
-`
 
 func Migrate(db *sqlx.DB) error {
 	ctx := context.Background()
 
-	// Create the migrations table if it doesn't exist
-	_, err := db.ExecContext(ctx, createMigrationTable)
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	queries := repository.New(tx)
+
+	// Create the migrations table if it doesn't exist
+	err = queries.CreateMigrationTable(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create migration table: %w", err)
 	}
 
 	// Get the list of applied migrations
-	rows, err := db.QueryContext(ctx, getAppliedMigrations)
+	appliedMigrations, err := queries.GetAppliedMigrations(ctx)
 	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	appliedMigrations := make([]Migration, 0)
-	for rows.Next() {
-		var id string
-		var statement string
-		if err := rows.Scan(&id, &statement); err != nil {
-			return err
-		}
-		appliedMigrations = append(appliedMigrations, Migration{ID: id, Statement: statement})
-	}
-	if err := rows.Err(); err != nil {
-		return err
+		return fmt.Errorf("failed to get applied migrations: %w", err)
 	}
 
 	// Get all migrations from the embedded filesystem
-	entryList, err := s.MigrationDir.ReadDir("migration")
+	entryList, err := sql.MigrationDir.ReadDir("migration")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read migration directory: %w", err)
 	}
 
-	allMigrations := make([]Migration, 0)
+	embeddedMigrationMap := make(map[string]repository.Migration)
+	embeddedMigrationList := make([]repository.Migration, 0)
+
+	now := generator.NowISO8601()
 
 	for _, entry := range entryList {
 		// Skip directories
@@ -89,64 +55,105 @@ func Migrate(db *sqlx.DB) error {
 		}
 
 		// Get the migration statement
-		id := entry.Name()
+		filename := entry.Name()
 
-		statementBytes, err := s.MigrationDir.ReadFile("migration/" + id)
-		if err != nil {
-			return err
-		}
-		statement := string(statementBytes)
-
-		allMigrations = append(allMigrations, Migration{ID: id, Statement: statement})
-	}
-
-	if len(appliedMigrations) > len(allMigrations) {
-		return errors.New("applied migrations are more than the available migrations")
-	}
-
-	// Apply the new migrations within a transaction
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	for i, migration := range allMigrations {
-		// Check the corresponding applied migration if it exists
-		if i < len(appliedMigrations) {
-			appliedMigration := appliedMigrations[i]
-
-			if migration.ID != appliedMigration.ID {
-				tx.Rollback()
-				return errors.New("migration not found in the applied migrations: " + migration.ID)
-			}
-			if migration.Statement != appliedMigration.Statement {
-				tx.Rollback()
-				return errors.New("migration statement does not match the applied migration: " + migration.ID)
-			}
-
-			// Migration already applied, skip it
-			slog.Debug("Skipping already applied migration: " + migration.ID)
+		// Remove .up.sql or .down.sql suffix to get the migration ID
+		if len(filename) < 7 || (filename[len(filename)-7:] != ".up.sql" && filename[len(filename)-9:] != ".down.sql") {
+			slog.Warn("Skipping file with invalid migration filename: " + filename)
 			continue
 		}
 
-		// Apply the migration
-		_, err = tx.ExecContext(ctx, migration.Statement)
+		// Read the migration file
+		statementBytes, err := sql.MigrationDir.ReadFile("migration/" + filename)
 		if err != nil {
-			tx.Rollback()
-			return err
+			return fmt.Errorf("failed to read migration file %s: %w", filename, err)
+		}
+		statement := string(statementBytes)
+
+		// Determine if it's an up or down migration
+		var migrationID string
+		isUp := false
+
+		if filename[len(filename)-7:] == ".up.sql" {
+			migrationID = filename[:len(filename)-7]
+			isUp = true
+		} else if filename[len(filename)-9:] == ".down.sql" {
+			migrationID = filename[:len(filename)-9]
 		}
 
-		_, err = tx.ExecContext(ctx, insertMigration, migration.ID, migration.Statement)
-		if err != nil {
-			tx.Rollback()
-			return err
+		// Update or create the migration entry
+		migration, exists := embeddedMigrationMap[migrationID]
+		if !exists {
+			migration = repository.Migration{
+				ID:         migrationID,
+				ExecutedAt: now,
+			}
 		}
 
-		slog.Info("Applied migration: " + migration.ID)
+		if isUp {
+			migration.UpStatement = statement
+		} else {
+			migration.DownStatement = statement
+		}
+
+		embeddedMigrationMap[migrationID] = migration
+		if exists {
+			embeddedMigrationList = append(embeddedMigrationList, migration)
+		}
 	}
 
+	if len(appliedMigrations) > len(embeddedMigrationList) {
+		slog.Debug("Going to rollback applied migrations")
+	} else if len(appliedMigrations) < len(embeddedMigrationList) {
+		slog.Debug("Going to apply new migrations")
+	} else {
+		slog.Debug("Going to verify existing migrations")
+	}
+
+	minLen := min(len(appliedMigrations), len(embeddedMigrationList))
+
+	// Verify overlap migrations
+	for i := range minLen {
+		if appliedMigrations[i].ID != embeddedMigrationList[i].ID ||
+			appliedMigrations[i].UpStatement != embeddedMigrationList[i].UpStatement ||
+			appliedMigrations[i].DownStatement != embeddedMigrationList[i].DownStatement {
+			return fmt.Errorf("migration mismatch at index %d: applied migration %v does not match embedded migration %v", i, appliedMigrations[i], embeddedMigrationList[i])
+		}
+	}
+
+	if len(appliedMigrations) < len(embeddedMigrationList) {
+		// Apply new migrations
+		for i := minLen; i < len(embeddedMigrationList); i++ {
+			slog.Info("Applying migration: " + embeddedMigrationList[i].ID)
+			_, err := tx.ExecContext(ctx, embeddedMigrationList[i].UpStatement)
+			if err != nil {
+				return fmt.Errorf("failed to apply migration %s: %w", embeddedMigrationList[i].ID, err)
+			}
+
+			err = queries.InsertMigration(ctx, embeddedMigrationList[i])
+			if err != nil {
+				return fmt.Errorf("failed to record applied migration %s: %w", embeddedMigrationList[i].ID, err)
+			}
+		}
+	} else if len(appliedMigrations) > len(embeddedMigrationList) {
+		// Rollback applied migrations
+		for i := len(appliedMigrations) - 1; i >= minLen; i-- {
+			slog.Info("Rolling back migration: " + appliedMigrations[i].ID)
+			_, err := tx.ExecContext(ctx, appliedMigrations[i].DownStatement)
+			if err != nil {
+				return fmt.Errorf("failed to rollback migration %s: %w", appliedMigrations[i].ID, err)
+			}
+
+			err = queries.DeleteMigration(ctx, appliedMigrations[i].ID)
+			if err != nil {
+				return fmt.Errorf("failed to remove migration record %s: %w", appliedMigrations[i].ID, err)
+			}
+		}
+	}
+
+	// Commit the transaction
 	if err := tx.Commit(); err != nil {
-		return err
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil

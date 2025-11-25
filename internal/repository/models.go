@@ -4,6 +4,13 @@ import (
 	"database/sql"
 )
 
+type Migration struct {
+	ID            string `json:"id" db:"id"`
+	UpStatement   string `json:"upStatement" db:"up_statement"`
+	DownStatement string `json:"downStatement" db:"down_statement"`
+	ExecutedAt    string `json:"executedAt" db:"executed_at"`
+}
+
 type User struct {
 	ID           string `json:"id" db:"id"`
 	Username     string `json:"username" db:"username"`

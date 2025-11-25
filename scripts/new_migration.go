@@ -19,23 +19,32 @@ func main() {
 	// Create timestamp (unix timestamp in milliseconds, first 13 digits)
 	timestamp := time.Now().UnixMilli()
 
-	// Create migration file path
-	migrationFile := filepath.Join("internal", "sql", "migration", fmt.Sprintf("%d_%s.sql", timestamp, migrationName))
+	// Create migration file paths
+	migrationUpFile := filepath.Join("internal", "sql", "migration", fmt.Sprintf("%d_%s.up.sql", timestamp, migrationName))
+	migrationDownFile := filepath.Join("internal", "sql", "migration", fmt.Sprintf("%d_%s.down.sql", timestamp, migrationName))
 
 	// Ensure the directory exists
-	dir := filepath.Dir(migrationFile)
+	dir := filepath.Dir(migrationUpFile)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating directory: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Create the migration file
-	file, err := os.Create(migrationFile)
+	// Create the migration up file
+	fileUp, err := os.Create(migrationUpFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating migration file: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error creating migration up file: %v\n", err)
 		os.Exit(1)
 	}
-	file.Close()
+	fileUp.Close()
 
-	fmt.Printf("Created migration file: %s\n", migrationFile)
+	// Create the migration down file
+	fileDown, err := os.Create(migrationDownFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating migration down file: %v\n", err)
+		os.Exit(1)
+	}
+	fileDown.Close()
+
+	fmt.Printf("Created migration files:\n  %s\n  %s\n", migrationUpFile, migrationDownFile)
 }

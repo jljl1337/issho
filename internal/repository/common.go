@@ -2,9 +2,23 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
+
+func NamedExecOneRowContext(ctx context.Context, q sqlx.ExtContext, query string, arg any) error {
+	rows, err := NamedExecRowsAffectedContext(ctx, q, query, arg)
+	if err != nil {
+		return err
+	}
+
+	if rows != 1 {
+		return fmt.Errorf("expected to affect 1 row, affected %d rows", rows)
+	}
+
+	return nil
+}
 
 func NamedExecRowsAffectedContext(ctx context.Context, q sqlx.ExtContext, query string, arg any) (int64, error) {
 	query, args, err := q.BindNamed(query, arg)
