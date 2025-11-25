@@ -7,10 +7,10 @@ var (
 	OwnerRole = "owner"
 	UserRole  = "user"
 
-	DbPath                     string
-	DbBusyTimeout              string
-	BackupDbPath               string
-	BackupCronSchedule         string
+	SQLiteDbPath               string
+	SQLiteDbBusyTimeout        string
+	SQLiteBackupDbPath         string
+	SQLiteBackupCronSchedule   string
 	SessionCleanupCronSchedule string
 	LogLevel                   int
 	LogHealthCheck             bool
@@ -36,10 +36,10 @@ var (
 func MustSetConstants() {
 	mustLoadOptionalEnvFile()
 
-	DbPath = MustGetString("SQLITE_DB_PATH", "data/live/db/live.db")
-	DbBusyTimeout = MustGetString("SQLITE_BUSY_TIMEOUT", "30000")
-	BackupDbPath = MustGetString("SQLITE_BACKUP_DB_PATH", "data/backup/db/backup.db")
-	BackupCronSchedule = MustGetString("SQLITE_BACKUP_CRON_SCHEDULE", "0 0 * * *")
+	SQLiteDbPath = MustGetString("SQLITE_DB_PATH", "data/live/db/live.db")
+	SQLiteDbBusyTimeout = MustGetString("SQLITE_BUSY_TIMEOUT", "30000")
+	SQLiteBackupDbPath = MustGetString("SQLITE_BACKUP_DB_PATH", "data/backup/db/backup.db")
+	SQLiteBackupCronSchedule = MustGetString("SQLITE_BACKUP_CRON_SCHEDULE", "0 0 * * *")
 	SessionCleanupCronSchedule = MustGetString("SESSION_CLEANUP_CRON_SCHEDULE", "0 0 * * 0")
 	LogLevel = MustGetInt("LOG_LEVEL", 0)
 	LogHealthCheck = MustGetBool("LOG_HEALTH_CHECK", false)

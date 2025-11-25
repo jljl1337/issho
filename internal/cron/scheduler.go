@@ -22,10 +22,10 @@ func NewScheduler(dbInstance *sqlx.DB) (gocron.Scheduler, error) {
 	}
 
 	// Database backup job
-	if env.BackupCronSchedule != "" && env.BackupDbPath != "" {
+	if env.SQLiteBackupCronSchedule != "" && env.SQLiteBackupDbPath != "" {
 		_, err = scheduler.NewJob(
 			gocron.CronJob(
-				env.BackupCronSchedule,
+				env.SQLiteBackupCronSchedule,
 				false,
 			),
 			gocron.NewTask(
@@ -34,7 +34,7 @@ func NewScheduler(dbInstance *sqlx.DB) (gocron.Scheduler, error) {
 
 					start := time.Now()
 
-					if err := db.BackupToFile(dbInstance, env.BackupDbPath); err != nil {
+					if err := db.BackupToFile(dbInstance, env.SQLiteBackupDbPath); err != nil {
 						slog.Error("Failed to backup database: " + err.Error())
 						return
 					}
