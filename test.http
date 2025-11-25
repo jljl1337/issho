@@ -1,0 +1,240 @@
+@username = 12341234
+@password = 12341234
+@sessionToken = gjq8bBsttITS75fZEQpMuMvIdJC70zuB
+@csrfToken = OjCAUssdhDnWuIydaewe3jh8zZgMuGbo
+@bookID = 01K9TVQKQ0GTNFJ74ACB485BWK
+@categoryID = 01K66SJ3P8S2DMZ4XWVDH98MP9
+@paymentMethodID = 01K66SJFKG2PHKHRQP101FKYE4
+@expenseID = 01K66SJYBE1GP5X82DGRRHHZZX
+
+############################## Health
+
+GET http://localhost:8080/api/health
+
+################################ Auth
+
+POST http://localhost:8080/api/auth/sign-up
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+POST http://localhost:8080/api/auth/pre-session
+
+###
+
+POST http://localhost:8080/api/auth/sign-in
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+POST http://localhost:8080/api/auth/sign-out
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+POST http://localhost:8080/api/auth/sign-out-all
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+GET http://localhost:8080/api/auth/csrf-token
+Cookie: issho_session_token={{sessionToken}}
+
+############################ User
+
+GET http://localhost:8080/api/users/exists?username={{username}}
+
+###
+
+GET http://localhost:8080/api/users/me
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+DELETE http://localhost:8080/api/users/me
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+############################ Book
+
+POST http://localhost:8080/api/books
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "My First Book",
+  "description": "This is my first book"
+}
+
+###
+
+GET http://localhost:8080/api/books
+# GET http://localhost:8080/api/books?page=2&page-size=20
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+GET http://localhost:8080/api/books/{{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+PUT http://localhost:8080/api/books/{{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "A New Book Name",
+  "description": "Updated description for my book"
+}
+
+###
+
+DELETE http://localhost:8080/api/books/{{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+############################ Category
+
+POST http://localhost:8080/api/categories
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "bookID": "{{bookID}}",
+  "name": "Food",
+  "description": "Expenses for food and groceries"
+}
+
+###
+
+GET http://localhost:8080/api/categories?book-id={{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+GET http://localhost:8080/api/categories/{{categoryID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+PUT http://localhost:8080/api/categories/{{categoryID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "Food 2",
+  "description": "Updated description for food expenses"
+}
+
+###
+
+DELETE http://localhost:8080/api/categories/{{categoryID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+############################ Payment Method
+
+POST http://localhost:8080/api/payment-methods
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "bookID": "{{bookID}}",
+  "name": "Credit Card",
+  "description": "My primary credit card"
+}
+
+###
+
+GET http://localhost:8080/api/payment-methods?book-id={{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+GET http://localhost:8080/api/payment-methods/{{paymentMethodID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+PUT http://localhost:8080/api/payment-methods/{{paymentMethodID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "A Credit Card",
+  "description": "My updated primary credit card"
+}
+
+###
+
+DELETE http://localhost:8080/api/payment-methods/{{paymentMethodID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+############################ Expense
+
+POST http://localhost:8080/api/expenses
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "bookID": "{{bookID}}",
+  "categoryID": "{{categoryID}}",
+  "paymentMethodID": "{{paymentMethodID}}",
+  "date": "2023-09-23",
+  "amount": 50.75,
+  "remark": "Grocery shopping"
+}
+
+###
+
+GET http://localhost:8080/api/expenses?book-id={{bookID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+GET http://localhost:8080/api/expenses/{{expenseID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+PUT http://localhost:8080/api/expenses/{{expenseID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "bookID": "{{bookID}}",
+  "categoryID": "{{categoryID}}",
+  "paymentMethodID": "{{paymentMethodID}}",
+  "date": "2023-09-25",
+  "amount": 75.00,
+  "remark": "Updated grocery shopping"
+}
+
+###
+
+DELETE http://localhost:8080/api/expenses/{{expenseID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}

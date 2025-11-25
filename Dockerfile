@@ -1,0 +1,51 @@
+FROM node:22-alpine AS web-build
+
+WORKDIR /app
+
+COPY web/package.json web/pnpm-lock.yaml ./
+
+RUN corepack enable pnpm && pnpm i --frozen-lockfile
+
+COPY web .
+
+RUN pnpm build
+
+FROM golang:1.25.3 AS go-dependencies
+
+WORKDIR /go/src
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+FROM go-dependencies AS go-build-healthcheck
+
+COPY cmd/healthcheck ./cmd/healthcheck
+COPY internal ./internal
+
+RUN CGO_ENABLED=0 go build -o /go/bin/healthcheck cmd/healthcheck/main.go
+
+FROM go-dependencies AS go-build-main
+
+ARG VERSION=dev
+
+COPY cmd/issho ./cmd/issho
+COPY internal ./internal
+COPY web/embed.go ./web/embed.go
+
+COPY --from=web-build /app/build ./web/build
+
+RUN CGO_ENABLED=1 go build -ldflags="-X 'github.com/jljl1337/issho/internal/env.Version=${VERSION}'" -o /go/bin/issho cmd/issho/main.go
+
+FROM gcr.io/distroless/base-nossl AS runtime
+
+WORKDIR /issho
+
+COPY --from=go-build-healthcheck /go/bin/healthcheck /issho/healthcheck
+COPY --from=go-build-main /go/bin/issho /issho/issho
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD ["/issho/healthcheck"]
+
+EXPOSE 8080
+
+CMD ["./issho"]
