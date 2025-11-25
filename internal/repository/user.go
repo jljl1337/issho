@@ -45,10 +45,10 @@ type GetUserByIDParams struct {
 	ID string `db:"id"`
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id string) ([]User, error) {
-	items := []User{}
-	err := NamedSelectContext(ctx, q.db, &items, getUserByID, GetUserByIDParams{ID: id})
-	return items, err
+func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
+	user := User{}
+	err := NamedGetContext(ctx, q.db, &user, getUserByID, GetUserByIDParams{ID: id})
+	return user, err
 }
 
 const getUserByUsername = `

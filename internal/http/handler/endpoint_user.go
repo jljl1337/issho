@@ -20,32 +20,10 @@ type getCurrentUserResponse struct {
 }
 
 func (h *EndpointHandler) registerUserRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /users/exists", h.getUsernameExist)
 	mux.HandleFunc("GET /users/me", h.getCurrentUser)
 	mux.HandleFunc("PATCH /users/me/username", h.updateUsername)
 	mux.HandleFunc("PATCH /users/me/password", h.updatePassword)
 	mux.HandleFunc("DELETE /users/me", h.deleteCurrentUser)
-}
-
-func (h *EndpointHandler) getUsernameExist(w http.ResponseWriter, r *http.Request) {
-	// Input validation
-	username := r.URL.Query().Get("username")
-	if username == "" {
-		http.Error(w, "Username is required", http.StatusBadRequest)
-		return
-	}
-
-	// Process the request
-	exists, err := h.service.UserExistsByUsername(r.Context(), username)
-	if err != nil {
-		common.WriteErrorResponse(w, err)
-		return
-	}
-
-	// Respond to the client
-	response := usernameExistResponse{Exists: exists}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
 }
 
 func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request) {
