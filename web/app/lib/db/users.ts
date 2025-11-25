@@ -3,6 +3,7 @@ import { customFetch } from "~/lib/db/fetch";
 type User = {
   id: string;
   username: string;
+  role: string;
   createdAt: string;
 };
 
