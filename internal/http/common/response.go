@@ -41,33 +41,33 @@ var jsonCodeMap = map[service.ErrorCode]string{
 func WriteErrorResponse(w http.ResponseWriter, err error) {
 	var serviceErr *service.ServiceError
 
-	var httpStatus int
+	var statusCode int
 	var jsonCode string
 	var message string
 
 	if errors.As(err, &serviceErr) {
 		genericErr := mapToGenericServiceError(serviceErr)
-		httpStatus = mapToHTTPStatus(genericErr)
+		statusCode = mapToHTTPStatus(genericErr)
 		if *genericErr == *serviceErr {
-			jsonCode = strconv.Itoa(httpStatus)
+			jsonCode = strconv.Itoa(statusCode)
 		} else {
 			jsonCode = mapToJSONCode(serviceErr)
 		}
 		message = genericErr.Message
 
-		if httpStatus == http.StatusInternalServerError {
+		if statusCode == http.StatusInternalServerError {
 			slog.Error("Internal server error: service error: " + genericErr.Error())
 			jsonCode = "500"
 			message = "Internal server error"
 		}
 	} else {
 		slog.Error("Internal server error: unknown error: " + err.Error())
-		httpStatus = http.StatusInternalServerError
+		statusCode = http.StatusInternalServerError
 		jsonCode = "500"
 		message = "Internal server error"
 	}
 
-	WriteJSONCodeMessageResponse(w, httpStatus, jsonCode, message)
+	WriteJSONCodeMessageResponse(w, message, statusCode, jsonCode)
 }
 
 func mapToGenericServiceError(err error) *service.ServiceError {
@@ -94,12 +94,12 @@ func mapToJSONCode(err *service.ServiceError) string {
 	return "500"
 }
 
-func WriteMessageResponse(w http.ResponseWriter, statusCode int, message string) {
+func WriteMessageResponse(w http.ResponseWriter, message string, statusCode int) {
 	jsonCode := strconv.Itoa(statusCode)
-	WriteJSONCodeMessageResponse(w, statusCode, jsonCode, message)
+	WriteJSONCodeMessageResponse(w, message, statusCode, jsonCode)
 }
 
-func WriteJSONCodeMessageResponse(w http.ResponseWriter, statusCode int, code string, message string) {
+func WriteJSONCodeMessageResponse(w http.ResponseWriter, message string, statusCode int, code string) {
 	response := map[string]string{
 		"code":    code,
 		"message": message,

@@ -34,7 +34,7 @@ func (m *MiddlewareProvider) Auth() Middleware {
 			cookie, err := r.Cookie(env.SessionCookieName)
 			if err != nil {
 				// err is not nil only if the cookie is not present
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				common.WriteMessageResponse(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -42,7 +42,7 @@ func (m *MiddlewareProvider) Auth() Middleware {
 			CSRFToken := r.Header.Get("X-CSRF-Token")
 
 			if CSRFToken == "" && (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch) {
-				http.Error(w, "CSRF token is required", http.StatusUnauthorized)
+				common.WriteMessageResponse(w, "CSRF token is required", http.StatusUnauthorized)
 				return
 			}
 

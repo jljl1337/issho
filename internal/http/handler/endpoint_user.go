@@ -28,7 +28,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
 		slog.Error("Error getting user ID from context")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -45,8 +45,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	common.WriteJSONResponse(w, http.StatusOK, response)
 }
 
 func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request) {
@@ -55,11 +54,11 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 		NewUsername string `json:"newUsername"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 	if req.NewUsername == "" {
-		http.Error(w, "New username is required", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "New username is required", http.StatusBadRequest)
 		return
 	}
 
@@ -67,7 +66,7 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
 		slog.Error("Error getting user ID from context")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -77,8 +76,7 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Respond to the client
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Username updated successfully"))
+	common.WriteMessageResponse(w, "Username updated successfully", http.StatusOK)
 }
 
 func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request) {
@@ -88,11 +86,11 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 		NewPassword string `json:"newPassword"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 	if req.NewPassword == "" {
-		http.Error(w, "New password is required", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "New password is required", http.StatusBadRequest)
 		return
 	}
 
@@ -100,7 +98,7 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
 		slog.Error("Error getting user ID from context")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -110,8 +108,7 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Respond to the client
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Password updated successfully"))
+	common.WriteMessageResponse(w, "Password updated successfully", http.StatusOK)
 }
 
 func (h *EndpointHandler) deleteCurrentUser(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +116,7 @@ func (h *EndpointHandler) deleteCurrentUser(w http.ResponseWriter, r *http.Reque
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
 		slog.Error("Error getting user ID from context")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -131,6 +128,5 @@ func (h *EndpointHandler) deleteCurrentUser(w http.ResponseWriter, r *http.Reque
 	// Respond to the client
 	http.SetCookie(w, NewExpiredSessionCookie())
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User deleted successfully"))
+	common.WriteMessageResponse(w, "User deleted successfully", http.StatusOK)
 }
