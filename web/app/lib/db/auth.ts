@@ -1,3 +1,4 @@
+import { getError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
 
 type CsrfToken = {
@@ -10,12 +11,7 @@ export async function signUp(username: string, password: string) {
     password,
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
 
 /**
@@ -24,8 +20,8 @@ export async function signUp(username: string, password: string) {
 export async function createPreSession() {
   const response = await customFetch("/api/auth/pre-session", "POST");
 
-  if (!response.ok) {
-    const error = await response.text();
+  const error = await getError(response);
+  if (error != null) {
     return { data: null, error };
   }
 
@@ -48,19 +44,14 @@ export async function signIn(
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
 
 export async function getCsrfToken() {
   const response = await customFetch("/api/auth/csrf-token", "GET");
 
-  if (!response.ok) {
-    const error = await response.text();
+  const error = await getError(response);
+  if (error != null) {
     return { data: null, error };
   }
 
@@ -76,12 +67,7 @@ export async function signOut(csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
 
 export async function signOutAll(csrfToken: string) {
@@ -92,10 +78,5 @@ export async function signOutAll(csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }

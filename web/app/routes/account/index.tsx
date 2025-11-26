@@ -51,7 +51,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
     const { error } = await signOut(loaderData.csrfToken);
     if (error) {
-      setError(error);
+      setError(error.message);
       return;
     }
 
@@ -66,7 +66,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
     const { error } = await signOutAll(loaderData.csrfToken);
     if (error) {
-      setError(error);
+      setError(error.message);
       return;
     }
 
@@ -81,7 +81,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
     const { error } = await deleteMe(loaderData.csrfToken);
     if (error) {
-      setError(error);
+      setError(error.message);
       return;
     }
 

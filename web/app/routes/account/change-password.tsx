@@ -60,7 +60,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     );
     if (error) {
       setError("root", {
-        message: error,
+        message: error.message,
       });
       return;
     }

@@ -57,7 +57,7 @@ export default function Page() {
     const { error } = await signUp(values.username, values.password);
     if (error) {
       setError("root", {
-        message: error,
+        message: error.message,
       });
       return;
     }

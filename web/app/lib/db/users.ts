@@ -1,3 +1,4 @@
+import { getError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
 
 type User = {
@@ -10,8 +11,8 @@ type User = {
 export async function getMe() {
   const response = await customFetch("/api/users/me", "GET");
 
-  if (!response.ok) {
-    const error = await response.text();
+  const error = await getError(response);
+  if (error != null) {
     return { data: null, error };
   }
 
@@ -27,12 +28,7 @@ export async function updateUsername(newUsername: string, csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
 
 export async function updatePassword(
@@ -47,12 +43,7 @@ export async function updatePassword(
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
 
 export async function deleteMe(csrfToken: string) {
@@ -63,10 +54,5 @@ export async function deleteMe(csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  return { error: await getError(response) };
 }
