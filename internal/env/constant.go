@@ -7,6 +7,8 @@ var (
 	OwnerRole = "owner"
 	UserRole  = "user"
 
+	DBType                     string
+	PostgresURL                string
 	SQLiteDbPath               string
 	SQLiteDbBusyTimeout        string
 	SQLiteBackupDbPath         string
@@ -36,6 +38,8 @@ var (
 func MustSetConstants() {
 	mustLoadOptionalEnvFile()
 
+	dBType := MustGetString("DB_TYPE", "sqlite")
+	PostgresURL = MustGetString("POSTGRES_URL", "")
 	SQLiteDbPath = MustGetString("SQLITE_DB_PATH", "data/live/db/live.db")
 	SQLiteDbBusyTimeout = MustGetString("SQLITE_BUSY_TIMEOUT", "30000")
 	SQLiteBackupDbPath = MustGetString("SQLITE_BACKUP_DB_PATH", "data/backup/db/backup.db")
@@ -49,6 +53,7 @@ func MustSetConstants() {
 	SessionCookieName = MustGetString("SESSION_COOKIE_NAME", "issho_session_token")
 	SessionCookieHttpOnly = MustGetBool("SESSION_COOKIE_HTTP_ONLY", true)
 	SessionCookieSecure = MustGetBool("SESSION_COOKIE_SECURE", false)
+	sessionCookieSameSite := MustGetString("SESSION_COOKIE_SAME_SITE_MODE", "lax")
 	SessionTokenLength = MustGetInt("SESSION_TOKEN_LENGTH", 32)
 	SessionTokenCharset = MustGetString("SESSION_TOKEN_CHARSET", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	SessionLifetimeMin = MustGetInt("SESSION_LIFETIME_MIN", 60*24*7)
@@ -59,7 +64,15 @@ func MustSetConstants() {
 	PageSizeMax = MustGetInt64("PAGE_SIZE_MAX", 100)
 	PageSizeDefault = MustGetInt64("PAGE_SIZE_DEFAULT", 10)
 
-	sessionCookieSameSite := MustGetString("SESSION_COOKIE_SAME_SITE_MODE", "lax")
+	switch dBType {
+	case "postgres":
+		DBType = "postgres"
+	case "sqlite":
+		DBType = "sqlite"
+	default:
+		DBType = "sqlite"
+	}
+
 	switch sessionCookieSameSite {
 	case "lax":
 		SessionCookieSameSiteMode = http.SameSiteLaxMode

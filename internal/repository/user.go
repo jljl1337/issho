@@ -5,7 +5,7 @@ import (
 )
 
 const createUser = `
-INSERT INTO user (
+INSERT INTO "user" (
     id,
     username,
     password_hash,
@@ -30,7 +30,7 @@ const getUserCountByRole = `
 SELECT
 	COUNT(*) AS count
 FROM
-	user
+	"user"
 WHERE
 	role = :role
 `
@@ -49,7 +49,7 @@ const getUserByID = `
 SELECT
     *
 FROM
-    user
+    "user"
 WHERE
     id = :id
 `
@@ -68,7 +68,7 @@ const getUserByUsername = `
 SELECT
     *
 FROM
-    user
+    "user"
 WHERE
     username = :username
 `
@@ -85,7 +85,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) ([]Use
 
 const updateUserPassword = `
 UPDATE
-    user
+    "user"
 SET
     password_hash = :password_hash,
     updated_at = :updated_at
@@ -105,7 +105,7 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 
 const updateUserUsername = `
 UPDATE
-    user
+    "user"
 SET
     username = :username,
     updated_at = :updated_at
@@ -125,7 +125,7 @@ func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsername
 
 const deleteUser = `
 DELETE FROM
-    user
+    "user"
 WHERE
     id = :id
 `

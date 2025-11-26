@@ -25,7 +25,7 @@ type Server struct {
 
 func NewServer() (*Server, error) {
 	// Connect to the database
-	dbInstance, err := db.NewDB(env.SQLiteDbPath, env.SQLiteDbBusyTimeout)
+	dbInstance, err := db.NewDB(env.DBType, env.SQLiteDbPath, env.SQLiteDbBusyTimeout, env.PostgresURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}

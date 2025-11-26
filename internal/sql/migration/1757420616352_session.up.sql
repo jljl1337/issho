@@ -9,7 +9,7 @@ CREATE TABLE session (
 
     PRIMARY KEY (id),
     UNIQUE (token),
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_session_user_id ON session(user_id);

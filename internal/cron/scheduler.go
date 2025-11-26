@@ -21,34 +21,38 @@ func NewScheduler(dbInstance *sqlx.DB) (gocron.Scheduler, error) {
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
 	}
 
-	// Database backup job
-	if env.SQLiteBackupCronSchedule != "" && env.SQLiteBackupDbPath != "" {
-		_, err = scheduler.NewJob(
-			gocron.CronJob(
-				env.SQLiteBackupCronSchedule,
-				false,
-			),
-			gocron.NewTask(
-				func() {
-					slog.Info("Starting database backup")
+	// Database backup job (only for SQLite)
+	if env.DBType == "sqlite" {
+		if env.SQLiteBackupCronSchedule != "" && env.SQLiteBackupDbPath != "" {
+			_, err = scheduler.NewJob(
+				gocron.CronJob(
+					env.SQLiteBackupCronSchedule,
+					false,
+				),
+				gocron.NewTask(
+					func() {
+						slog.Info("Starting database backup")
 
-					start := time.Now()
+						start := time.Now()
 
-					if err := db.BackupToFile(dbInstance, env.SQLiteBackupDbPath); err != nil {
-						slog.Error("Failed to backup database: " + err.Error())
-						return
-					}
+						if err := db.BackupToFile(dbInstance, env.SQLiteBackupDbPath); err != nil {
+							slog.Error("Failed to backup database: " + err.Error())
+							return
+						}
 
-					slog.Info("Database backup completed in " + time.Since(start).String())
-				},
-			),
-			gocron.WithSingletonMode(gocron.LimitModeReschedule),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create cron job: %w", err)
+						slog.Info("Database backup completed in " + time.Since(start).String())
+					},
+				),
+				gocron.WithSingletonMode(gocron.LimitModeReschedule),
+			)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create cron job: %w", err)
+			}
+		} else {
+			slog.Warn("Database backup cron job not scheduled")
 		}
 	} else {
-		slog.Warn("Database backup cron job not scheduled")
+		slog.Info("Database backup not available for PostgreSQL, skipping cron job")
 	}
 
 	// Session cleanup job
