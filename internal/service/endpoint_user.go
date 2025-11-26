@@ -48,7 +48,7 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 		if user.ID == userID {
 			return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
 		} else {
-			return NewServiceError(ErrCodeConflict, "username already taken")
+			return NewServiceError(ErrCodeUsernameTaken, "username already taken")
 		}
 	}
 
