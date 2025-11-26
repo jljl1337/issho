@@ -1,0 +1,63 @@
+@baseUrl = http://localhost:3000
+@username = 12341234
+@password = 12341234
+@sessionToken = CAE3KdCsDf4vkfM2LqhXoz1CNnmKNKw3
+@csrfToken = 4i0UvAfFeG0VszXiGgP9gjI3jv52QBph
+
+############################## Health
+
+GET {{baseUrl}}/api/health
+
+################################ Auth
+
+POST {{baseUrl}}/api/auth/sign-up
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+POST {{baseUrl}}/api/auth/pre-session
+
+###
+
+POST {{baseUrl}}/api/auth/sign-in
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+POST {{baseUrl}}/api/auth/sign-out
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+POST {{baseUrl}}/api/auth/sign-out-all
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+GET {{baseUrl}}/api/auth/csrf-token
+Cookie: issho_session_token={{sessionToken}}
+
+############################ User
+
+GET {{baseUrl}}/api/users/me
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+DELETE {{baseUrl}}/api/users/me
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}

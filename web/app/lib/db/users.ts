@@ -1,0 +1,72 @@
+import { customFetch } from "~/lib/db/fetch";
+
+type User = {
+  id: string;
+  username: string;
+  role: string;
+  createdAt: string;
+};
+
+export async function getMe() {
+  const response = await customFetch("/api/users/me", "GET");
+
+  if (!response.ok) {
+    const error = await response.text();
+    return { data: null, error };
+  }
+
+  const data: User = await response.json();
+  return { data, error: null };
+}
+
+export async function updateUsername(newUsername: string, csrfToken: string) {
+  const response = await customFetch(
+    "/api/users/me/username",
+    "PATCH",
+    { newUsername },
+    csrfToken,
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    return { error };
+  }
+
+  return { error: null };
+}
+
+export async function updatePassword(
+  oldPassword: string,
+  newPassword: string,
+  csrfToken: string,
+) {
+  const response = await customFetch(
+    "/api/users/me/password",
+    "PATCH",
+    { oldPassword, newPassword },
+    csrfToken,
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    return { error };
+  }
+
+  return { error: null };
+}
+
+export async function deleteMe(csrfToken: string) {
+  const response = await customFetch(
+    "/api/users/me",
+    "DELETE",
+    null,
+    csrfToken,
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    return { error };
+  }
+
+  return { error: null };
+}

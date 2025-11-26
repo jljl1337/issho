@@ -1,0 +1,20 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/jljl1337/issho/internal/env"
+)
+
+func main() {
+	env.MustSetConstants()
+
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/health", env.Port))
+	if err != nil || resp.StatusCode != 200 {
+		os.Exit(1)
+	}
+
+	os.Exit(0)
+}

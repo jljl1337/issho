@@ -1,0 +1,27 @@
+services:
+  issho:
+    extends:
+      file: dev.compose.yml
+      service: issho
+    environment:
+      DB_TYPE: postgres
+      POSTGRES_URL: postgres://issho:issho_password@pg:5432/issho_db?sslmode=disable
+    depends_on:
+      pg:
+        condition: service_healthy
+
+  pg:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: issho
+      POSTGRES_PASSWORD: issho_password
+      POSTGRES_DB: issho_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U issho -d issho_db"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
