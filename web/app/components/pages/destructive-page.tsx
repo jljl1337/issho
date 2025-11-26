@@ -10,24 +10,24 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
-interface DeletePageProps {
+interface DestructivePageProps {
   title: string;
   description: string;
   action: () => Promise<{ error: string | null }>;
   redirectTo: string;
 }
 
-export default function DeletePage({
+export default function DestructivePage({
   title,
   description,
   action,
   redirectTo,
-}: DeletePageProps) {
+}: DestructivePageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  async function onDelete() {
+  async function onDestructive() {
     setIsLoading(true);
     setError(null);
 
@@ -62,10 +62,10 @@ export default function DeletePage({
               <Button
                 variant={"destructive"}
                 className="cursor-pointer"
-                onClick={onDelete}
+                onClick={onDestructive}
                 disabled={isLoading}
               >
-                Delete
+                Confirm
               </Button>
             </div>
             {error && !isLoading && (

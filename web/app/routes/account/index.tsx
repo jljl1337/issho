@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, redirect, useNavigate } from "react-router";
-import type { Route } from "./+types";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { LogOut, Trash2 } from "lucide-react";
 
@@ -12,103 +11,20 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 
 import { useSession } from "~/contexts/session-context";
-import { signOut, signOutAll } from "~/lib/db/auth";
-import { deleteMe } from "~/lib/db/users";
 
 export default function Page() {
-  const {
-    user,
-    csrfToken,
-    isLoggedIn,
-    isLoading: sessionLoading,
-    clearSession,
-  } = useSession();
+  const { user, isLoggedIn, isLoading: sessionLoading } = useSession();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionLoading && !isLoggedIn) {
       navigate("/auth/sign-in");
     }
   }, [isLoggedIn, sessionLoading, navigate]);
-
-  async function onSignOut() {
-    if (!csrfToken) {
-      setError("No CSRF token available");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    const { error } = await signOut(csrfToken);
-    if (error) {
-      setError(error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-    clearSession();
-    navigate("/auth/sign-in");
-  }
-
-  async function onSignOutAll() {
-    if (!csrfToken) {
-      setError("No CSRF token available");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    const { error } = await signOutAll(csrfToken);
-    if (error) {
-      setError(error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-    clearSession();
-    navigate("/auth/sign-in");
-  }
-
-  async function onDeleteAccount() {
-    if (!csrfToken) {
-      setError("No CSRF token available");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    const { error } = await deleteMe(csrfToken);
-    if (error) {
-      setError(error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-    clearSession();
-    navigate("/auth/sign-in");
-  }
 
   return (
     <>
@@ -169,40 +85,16 @@ export default function Page() {
                     Sign out of your account on this device
                   </p>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" className="cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Sign Out</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to sign out of your account?
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button variant="outline" className="cursor-pointer">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        className="cursor-pointer"
-                        onClick={onSignOut}
-                        disabled={isLoading}
-                      >
-                        Yes
-                      </Button>
-                      {error && !isLoading && (
-                        <p className="text-destructive text-sm mt-2">{error}</p>
-                      )}
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  variant="destructive"
+                  className="cursor-pointer"
+                  asChild
+                >
+                  <Link to="/account/sign-out">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Link>
+                </Button>
               </div>
               <Separator />
               {/* Sign Out (all devices) */}
@@ -213,41 +105,16 @@ export default function Page() {
                     Sign out of your account on all devices
                   </p>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" className="cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out (all devices)
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Sign Out</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to sign out of your account on all
-                        devices?
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button variant="outline" className="cursor-pointer">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        className="cursor-pointer"
-                        onClick={onSignOutAll}
-                        disabled={isLoading}
-                      >
-                        Yes
-                      </Button>
-                      {error && !isLoading && (
-                        <p className="text-destructive text-sm mt-2">{error}</p>
-                      )}
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  variant="destructive"
+                  className="cursor-pointer"
+                  asChild
+                >
+                  <Link to="/account/sign-out-all">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out (all devices)
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -268,42 +135,16 @@ export default function Page() {
                     Permanently delete your account and all data
                   </p>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" className="cursor-pointer">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Account
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Delete Account</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete your account? This
-                        action is irreversible and will permanently delete all
-                        your data.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button variant="outline" className="cursor-pointer">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        className="cursor-pointer"
-                        onClick={onDeleteAccount}
-                        disabled={isLoading}
-                      >
-                        Yes
-                      </Button>
-                      {error && !isLoading && (
-                        <p className="text-destructive text-sm mt-2">{error}</p>
-                      )}
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  variant="destructive"
+                  className="cursor-pointer"
+                  asChild
+                >
+                  <Link to="/account/delete">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Account
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

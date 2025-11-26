@@ -21,6 +21,9 @@ export default [
       index("routes/account/index.tsx"),
       route("change-username", "routes/account/change-username.tsx"),
       route("change-password", "routes/account/change-password.tsx"),
+      route("sign-out", "routes/account/sign-out.tsx"),
+      route("sign-out-all", "routes/account/sign-out-all.tsx"),
+      route("delete", "routes/account/delete.tsx"),
     ]),
 
     ...prefix("home", [index("routes/home/index.tsx")]),
