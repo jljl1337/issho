@@ -1,0 +1,12 @@
+services:
+  issho:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./data:/issho/data
