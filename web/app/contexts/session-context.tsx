@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 
-import { getCsrfToken } from "~/lib/db/auth";
-import { isUnauthorizedError } from "~/lib/db/common";
-import { getMe } from "~/lib/db/users";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useCsrfToken } from "~/hooks/use-auth";
+import { useMe } from "~/hooks/use-user";
+import { queryKeys } from "~/lib/react-query/query-keys";
 
 type User = {
   id: string;
@@ -23,68 +25,39 @@ type SessionContextType = {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Use React Query hooks for data fetching
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    refetch: refetchUser,
+  } = useMe();
+  const {
+    data: csrfToken,
+    isLoading: isCsrfLoading,
+    refetch: refetchCsrf,
+  } = useCsrfToken();
+
+  const isLoading = isUserLoading || isCsrfLoading;
+  const isLoggedIn = useMemo(() => user != null, [user]);
 
   const refreshSession = async () => {
-    setIsLoading(true);
-    try {
-      // Fetch user and CSRF token in parallel
-      const [userResult, csrfResult] = await Promise.all([
-        getMe(),
-        getCsrfToken(),
-      ]);
-
-      // If we got CSRF token, set it
-      if (csrfResult.data != null) {
-        setCsrfToken(csrfResult.data);
-      } else {
-        setCsrfToken(null);
-      }
-
-      // Check if user is unauthorized
-      if (userResult.error != null && isUnauthorizedError(userResult.error)) {
-        setIsLoggedIn(false);
-        setUser(null);
-        return;
-      }
-
-      // If we got user data, set it
-      if (userResult.data != null) {
-        setUser(userResult.data);
-        setIsLoggedIn(true);
-      } else {
-        setUser(null);
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error("Failed to refresh session:", error);
-      setIsLoggedIn(false);
-      setUser(null);
-      setCsrfToken(null);
-    } finally {
-      setIsLoading(false);
-    }
+    // Refetch both user and CSRF token
+    await Promise.all([refetchUser(), refetchCsrf()]);
   };
 
   const clearSession = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    setCsrfToken(null);
+    // Clear all cached queries
+    queryClient.clear();
   };
-
-  useEffect(() => {
-    refreshSession();
-  }, []);
 
   return (
     <SessionContext.Provider
       value={{
         isLoggedIn,
-        user,
-        csrfToken,
+        user: user ?? null,
+        csrfToken: csrfToken ?? null,
         isLoading,
         refreshSession,
         clearSession,

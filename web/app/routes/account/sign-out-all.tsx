@@ -3,11 +3,12 @@ import { useNavigate } from "react-router";
 
 import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
-import { signOutAll } from "~/lib/db/auth";
+import { useSignOutAll } from "~/hooks/use-auth";
 
 export default function Page() {
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
+  const signOutAllMutation = useSignOutAll();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -19,8 +20,14 @@ export default function Page() {
     if (!csrfToken) {
       return { error: "No CSRF token available" };
     }
-    const result = await signOutAll(csrfToken);
-    return { error: result.error ? result.error.message : null };
+    try {
+      await signOutAllMutation.mutateAsync(csrfToken);
+      return { error: null };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "Sign out all failed",
+      };
+    }
   }
 
   return (

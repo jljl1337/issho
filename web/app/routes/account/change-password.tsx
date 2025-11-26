@@ -25,12 +25,13 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
-import { updatePassword } from "~/lib/db/users";
+import { useUpdatePassword } from "~/hooks/use-user";
 import { updatePasswordSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
+  const updatePasswordMutation = useUpdatePassword();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -47,10 +48,7 @@ export default function Page() {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
+  const { setError } = form;
 
   async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
     if (!csrfToken) {
@@ -60,20 +58,23 @@ export default function Page() {
       return;
     }
 
-    const { error } = await updatePassword(
-      values.oldPassword,
-      values.newPassword,
-      csrfToken,
-    );
-    if (error) {
-      setError("root", {
-        message: error.message,
+    try {
+      await updatePasswordMutation.mutateAsync({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+        csrfToken,
       });
-      return;
+      navigate("/account");
+    } catch (error) {
+      setError("root", {
+        message:
+          error instanceof Error ? error.message : "Failed to update password",
+      });
     }
-
-    navigate("/account");
   }
+
+  const isSubmitting = updatePasswordMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>

@@ -1,39 +1,38 @@
-import { getError } from "~/lib/db/common";
+import { throwIfError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
 
 type CsrfToken = {
   csrfToken: string;
 };
 
-export async function signUp(username: string, password: string) {
+export async function signUp(
+  username: string,
+  password: string,
+): Promise<void> {
   const response = await customFetch("/api/auth/sign-up", "POST", {
     username,
     password,
   });
 
-  return { error: await getError(response) };
+  await throwIfError(response);
 }
 
 /**
  * Creates a pre-session and returns the CSRF token.
  */
-export async function createPreSession() {
+export async function createPreSession(): Promise<string> {
   const response = await customFetch("/api/auth/pre-session", "POST");
-
-  const error = await getError(response);
-  if (error != null) {
-    return { data: null, error };
-  }
+  await throwIfError(response);
 
   const data: CsrfToken = await response.json();
-  return { data: data.csrfToken, error: null };
+  return data.csrfToken;
 }
 
 export async function signIn(
   username: string,
   password: string,
   csrfToken: string,
-) {
+): Promise<void> {
   const response = await customFetch(
     "/api/auth/sign-in",
     "POST",
@@ -44,22 +43,18 @@ export async function signIn(
     csrfToken,
   );
 
-  return { error: await getError(response) };
+  await throwIfError(response);
 }
 
-export async function getCsrfToken() {
+export async function getCsrfToken(): Promise<string> {
   const response = await customFetch("/api/auth/csrf-token", "GET");
-
-  const error = await getError(response);
-  if (error != null) {
-    return { data: null, error };
-  }
+  await throwIfError(response);
 
   const data: CsrfToken = await response.json();
-  return { data: data.csrfToken, error: null };
+  return data.csrfToken;
 }
 
-export async function signOut(csrfToken: string) {
+export async function signOut(csrfToken: string): Promise<void> {
   const response = await customFetch(
     "/api/auth/sign-out",
     "POST",
@@ -67,10 +62,10 @@ export async function signOut(csrfToken: string) {
     csrfToken,
   );
 
-  return { error: await getError(response) };
+  await throwIfError(response);
 }
 
-export async function signOutAll(csrfToken: string) {
+export async function signOutAll(csrfToken: string): Promise<void> {
   const response = await customFetch(
     "/api/auth/sign-out-all",
     "POST",
@@ -78,5 +73,5 @@ export async function signOutAll(csrfToken: string) {
     csrfToken,
   );
 
-  return { error: await getError(response) };
+  await throwIfError(response);
 }

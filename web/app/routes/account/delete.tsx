@@ -3,11 +3,12 @@ import { useNavigate } from "react-router";
 
 import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
-import { deleteMe } from "~/lib/db/users";
+import { useDeleteMe } from "~/hooks/use-user";
 
 export default function Page() {
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
+  const deleteMeMutation = useDeleteMe();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -19,8 +20,14 @@ export default function Page() {
     if (!csrfToken) {
       return { error: "No CSRF token available" };
     }
-    const result = await deleteMe(csrfToken);
-    return { error: result.error ? result.error.message : null };
+    try {
+      await deleteMeMutation.mutateAsync(csrfToken);
+      return { error: null };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "Delete account failed",
+      };
+    }
   }
 
   return (

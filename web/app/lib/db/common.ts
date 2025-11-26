@@ -1,15 +1,23 @@
 import { redirect } from "react-router";
 
-type Error = {
+export class ApiError extends Error {
   code: string;
-  message: string;
-};
 
-export async function getError(response: Response) {
-  if (!response.ok) {
-    return (await response.json()) as Error;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.code = code;
   }
-  return Promise.resolve(null);
+}
+
+export async function throwIfError(response: Response): Promise<void> {
+  if (!response.ok) {
+    const errorData = (await response.json()) as {
+      code: string;
+      message: string;
+    };
+    throw new ApiError(errorData.code, errorData.message);
+  }
 }
 
 /**
@@ -17,9 +25,9 @@ export async function getError(response: Response) {
  * If any error is "Unauthorized", redirects to the sign-in page.
  * For any other error, redirects to a generic error page.
  *
- * @param errors - An array of error messages (Error objects or null).
+ * @param errors - An array of error messages (ApiError objects or null).
  */
-export function redirectIfNeeded(...errors: (Error | null)[]) {
+export function redirectIfNeeded(...errors: (ApiError | null)[]) {
   for (const error of errors) {
     if (error != null) {
       if (isUnauthorizedError(error)) {
@@ -30,6 +38,6 @@ export function redirectIfNeeded(...errors: (Error | null)[]) {
   }
 }
 
-export function isUnauthorizedError(error: Error): boolean {
+export function isUnauthorizedError(error: ApiError): boolean {
   return error.code === "401";
 }

@@ -1,4 +1,5 @@
-import { Link, redirect, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 import type { Route } from "./+types/sign-in";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,43 +25,27 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
-import { createPreSession, getCsrfToken, signIn } from "~/lib/db/auth";
-import { getMe } from "~/lib/db/users";
+import { usePreSession, useSignIn } from "~/hooks/use-auth";
 
 const formSchema = z.object({
   username: z.string().trim().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
-export async function clientLoader() {
-  const me = await getMe();
+export default function Page() {
+  const { refreshSession, csrfToken, isLoggedIn, isLoading } = useSession();
+  const navigate = useNavigate();
 
-  if (me.data != null) {
-    return redirect("/home");
-  }
+  const preSessionMutation = usePreSession();
+  const signInMutation = useSignIn();
 
-  // Return the CSRF token of the existing pre-session if it is valid
-  const existingPreSessionCSRFToken = await getCsrfToken();
-  if (existingPreSessionCSRFToken.error == null) {
-    return {
-      data: { preSessionCSRFToken: existingPreSessionCSRFToken.data },
-      error: null,
-    };
-  }
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      navigate("/home");
+    }
+  }, [isLoggedIn, isLoading, navigate]);
 
-  const preSessionCSRFToken = await createPreSession();
-  if (preSessionCSRFToken.error != null) {
-    return redirect("/error");
-  }
-
-  return {
-    data: { preSessionCSRFToken: preSessionCSRFToken.data },
-    error: null,
-  };
-}
-
-export default function Page({ loaderData }: Route.ComponentProps) {
-  const { refreshSession } = useSession();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,30 +54,44 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
+  const { setError } = form;
 
-  const navigate = useNavigate();
+  // Create pre-session on mount if no CSRF token exists
+  useEffect(() => {
+    if (!csrfToken && !preSessionMutation.isPending) {
+      preSessionMutation.mutate();
+    }
+  }, [csrfToken, preSessionMutation]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await signIn(
-      values.username,
-      values.password,
-      loaderData.data.preSessionCSRFToken,
-    );
-    if (error) {
+    const tokenToUse = csrfToken || preSessionMutation.data;
+
+    if (!tokenToUse) {
       setError("root", {
-        message: error.message,
+        message: "No CSRF token available. Please try again.",
       });
       return;
     }
 
-    // Refresh session to load user data and CSRF token
-    await refreshSession();
-    navigate("/home");
+    try {
+      await signInMutation.mutateAsync({
+        username: values.username,
+        password: values.password,
+        csrfToken: tokenToUse,
+      });
+
+      // Refresh session to load user data and CSRF token
+      await refreshSession();
+      navigate("/home");
+    } catch (error) {
+      setError("root", {
+        message: error instanceof Error ? error.message : "Sign in failed",
+      });
+    }
   }
+
+  const isSubmitting = signInMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>

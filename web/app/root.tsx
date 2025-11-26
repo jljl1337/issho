@@ -10,11 +10,15 @@ import type { Route } from "./+types/root";
 
 import "~/app.css";
 
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import { Spinner } from "~/components/ui/spinner";
 
 import { ThemeProvider } from "~/components/theme-provider";
 import { NavigationLoadingBar } from "~/components/top-loading-bar";
 import { SessionProvider } from "~/contexts/session-context";
+import { queryClient } from "~/lib/react-query/query-client";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -79,12 +83,15 @@ export function HydrateFallback() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <SessionProvider>
-        <NavigationLoadingBar />
-        <Outlet />
-      </SessionProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <SessionProvider>
+          <NavigationLoadingBar />
+          <Outlet />
+        </SessionProvider>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 

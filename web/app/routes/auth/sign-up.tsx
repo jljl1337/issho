@@ -1,4 +1,5 @@
-import { Link, redirect, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -22,21 +23,24 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
-import { signUp } from "~/lib/db/auth";
-import { getMe } from "~/lib/db/users";
+import { useSession } from "~/contexts/session-context";
+import { useSignUp } from "~/hooks/use-auth";
 import { passwordWithConfirmSchema, usernameSchema } from "~/lib/schemas/auth";
 
 const formSchema = z.intersection(usernameSchema, passwordWithConfirmSchema);
 
-export async function clientLoader() {
-  const me = await getMe();
-
-  if (me.data != null) {
-    return redirect("/home");
-  }
-}
-
 export default function Page() {
+  const navigate = useNavigate();
+  const { isLoggedIn, isLoading } = useSession();
+  const signUpMutation = useSignUp();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      navigate("/home");
+    }
+  }, [isLoggedIn, isLoading, navigate]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,23 +50,24 @@ export default function Page() {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
-
-  const navigate = useNavigate();
+  const { setError } = form;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await signUp(values.username, values.password);
-    if (error) {
-      setError("root", {
-        message: error.message,
+    try {
+      await signUpMutation.mutateAsync({
+        username: values.username,
+        password: values.password,
       });
-      return;
+      navigate("/auth/sign-in");
+    } catch (error) {
+      setError("root", {
+        message: error instanceof Error ? error.message : "Sign up failed",
+      });
     }
-    navigate("/auth/sign-in");
   }
+
+  const isSubmitting = signUpMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>

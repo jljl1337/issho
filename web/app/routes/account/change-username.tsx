@@ -25,12 +25,13 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
-import { updateUsername } from "~/lib/db/users";
+import { useUpdateUsername } from "~/hooks/use-user";
 import { usernameSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
+  const updateUsernameMutation = useUpdateUsername();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -45,10 +46,7 @@ export default function Page() {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
+  const { setError } = form;
 
   async function onSubmit(values: z.infer<typeof usernameSchema>) {
     if (!csrfToken) {
@@ -58,16 +56,22 @@ export default function Page() {
       return;
     }
 
-    const { error } = await updateUsername(values.username, csrfToken);
-    if (error) {
-      setError("root", {
-        message: error.message,
+    try {
+      await updateUsernameMutation.mutateAsync({
+        newUsername: values.username,
+        csrfToken,
       });
-      return;
+      navigate("/account");
+    } catch (error) {
+      setError("root", {
+        message:
+          error instanceof Error ? error.message : "Failed to update username",
+      });
     }
-
-    navigate("/account");
   }
+
+  const isSubmitting = updateUsernameMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>
