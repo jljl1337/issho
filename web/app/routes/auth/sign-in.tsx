@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
+import { useSession } from "~/contexts/session-context";
 import { createPreSession, getCsrfToken, signIn } from "~/lib/db/auth";
 import { getMe } from "~/lib/db/users";
 
@@ -59,6 +60,7 @@ export async function clientLoader() {
 }
 
 export default function Page({ loaderData }: Route.ComponentProps) {
+  const { refreshSession } = useSession();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -86,6 +88,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
       });
       return;
     }
+
+    // Refresh session to load user data and CSRF token
+    await refreshSession();
     navigate("/home");
   }
 

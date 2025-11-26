@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { redirect, useNavigate } from "react-router";
 import type { Route } from "./+types/change-password";
 
@@ -23,19 +24,20 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
-import { getCsrfToken } from "~/lib/db/auth";
-import { redirectIfNeeded } from "~/lib/db/common";
+import { useSession } from "~/contexts/session-context";
 import { updatePassword } from "~/lib/db/users";
 import { updatePasswordSchema } from "~/lib/schemas/auth";
 
-export async function clientLoader() {
-  const csrfToken = await getCsrfToken();
-  redirectIfNeeded(csrfToken.error);
+export default function Page() {
+  const { csrfToken, isLoggedIn, isLoading } = useSession();
+  const navigate = useNavigate();
 
-  return { csrfToken: csrfToken.data! };
-}
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      navigate("/auth/sign-in");
+    }
+  }, [isLoggedIn, isLoading, navigate]);
 
-export default function Page({ loaderData }: Route.ComponentProps) {
   const form = useForm<z.infer<typeof updatePasswordSchema>>({
     resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
@@ -50,13 +52,18 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     formState: { isSubmitting, errors },
   } = form;
 
-  const navigate = useNavigate();
-
   async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
+    if (!csrfToken) {
+      setError("root", {
+        message: "No CSRF token available",
+      });
+      return;
+    }
+
     const { error } = await updatePassword(
       values.oldPassword,
       values.newPassword,
-      loaderData.csrfToken,
+      csrfToken,
     );
     if (error) {
       setError("root", {

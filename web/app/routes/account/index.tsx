@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, redirect, useNavigate } from "react-router";
 import type { Route } from "./+types";
 
@@ -25,68 +25,88 @@ import {
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 
-import { getCsrfToken, signOut, signOutAll } from "~/lib/db/auth";
-import { redirectIfNeeded } from "~/lib/db/common";
-import { deleteMe, getMe } from "~/lib/db/users";
+import { useSession } from "~/contexts/session-context";
+import { signOut, signOutAll } from "~/lib/db/auth";
+import { deleteMe } from "~/lib/db/users";
 
-export async function clientLoader() {
-  const [user, csrfToken] = await Promise.all([getMe(), getCsrfToken()]);
-
-  redirectIfNeeded(user.error, csrfToken.error);
-
-  return {
-    user: user.data!,
-    csrfToken: csrfToken.data!,
-  };
-}
-
-export default function Page({ loaderData }: Route.ComponentProps) {
+export default function Page() {
+  const {
+    user,
+    csrfToken,
+    isLoggedIn,
+    isLoading: sessionLoading,
+    clearSession,
+  } = useSession();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!sessionLoading && !isLoggedIn) {
+      navigate("/auth/sign-in");
+    }
+  }, [isLoggedIn, sessionLoading, navigate]);
+
   async function onSignOut() {
+    if (!csrfToken) {
+      setError("No CSRF token available");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    const { error } = await signOut(loaderData.csrfToken);
+    const { error } = await signOut(csrfToken);
     if (error) {
       setError(error.message);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(false);
-
+    clearSession();
     navigate("/auth/sign-in");
   }
 
   async function onSignOutAll() {
+    if (!csrfToken) {
+      setError("No CSRF token available");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    const { error } = await signOutAll(loaderData.csrfToken);
+    const { error } = await signOutAll(csrfToken);
     if (error) {
       setError(error.message);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(false);
-
+    clearSession();
     navigate("/auth/sign-in");
   }
 
   async function onDeleteAccount() {
+    if (!csrfToken) {
+      setError("No CSRF token available");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    const { error } = await deleteMe(loaderData.csrfToken);
+    const { error } = await deleteMe(csrfToken);
     if (error) {
       setError(error.message);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(false);
-
+    clearSession();
     navigate("/auth/sign-in");
   }
 
@@ -97,11 +117,14 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
           <h1 className="text-4xl">Account</h1>
           <div>
-            <p className="mb-2">User ID: {loaderData.user.id}</p>
-            <p className="mb-2">Username: {loaderData.user.username}</p>
-            <p className="mb-2">Role: {loaderData.user.role}</p>
+            <p className="mb-2">User ID: {user?.id}</p>
+            <p className="mb-2">Username: {user?.username}</p>
+            <p className="mb-2">Role: {user?.role}</p>
             <p className="mb-2">
-              Created At: {new Date(loaderData.user.createdAt).toLocaleString()}
+              Created At:{" "}
+              {user?.createdAt
+                ? new Date(user.createdAt).toLocaleString()
+                : "N/A"}
             </p>
           </div>
 
