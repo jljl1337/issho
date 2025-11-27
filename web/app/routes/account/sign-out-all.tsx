@@ -20,6 +20,10 @@ export default function Page() {
     }
   }, [isLoggedIn, isLoading, navigate]);
 
+  useEffect(() => {
+    document.title = `${t("user.signOutAll")} | Issho`;
+  }, [t]);
+
   async function onSignOutAll() {
     if (!csrfToken) {
       return { error: t("user.noCsrfToken") };
@@ -34,7 +38,6 @@ export default function Page() {
 
   return (
     <>
-      <title>{t("user.signOutAll")} | Issho</title>
       <DestructivePage
         title={t("user.signOutAll")}
         description={t("user.signOutAllConfirm")}

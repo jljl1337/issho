@@ -45,6 +45,10 @@ export default function Page() {
     }
   }, [isLoggedIn, isLoading, navigate]);
 
+  useEffect(() => {
+    document.title = `${t("auth.signUp")} | Issho`;
+  }, [t]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,7 +83,6 @@ export default function Page() {
 
   return (
     <>
-      <title>{t("auth.signUp")} | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
