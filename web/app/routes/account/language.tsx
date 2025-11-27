@@ -128,7 +128,7 @@ export default function Page() {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select a language" />
                               </SelectTrigger>
                             </FormControl>
