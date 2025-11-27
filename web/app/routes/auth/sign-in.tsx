@@ -31,13 +31,13 @@ import { usePreSession, useSignIn } from "~/hooks/use-auth";
 import { translateError } from "~/lib/db/common";
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["auth", "common"]);
   const { refreshSession, csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
 
   const formSchema = z.object({
-    username: z.string().trim().min(1, t("auth.usernameRequired")),
-    password: z.string().min(1, t("auth.passwordRequired")),
+    username: z.string().trim().min(1, t("usernameRequired")),
+    password: z.string().min(1, t("passwordRequired")),
   });
 
   const preSessionMutation = usePreSession();
@@ -51,7 +51,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("auth.signIn")} | Issho`;
+    document.title = `${t("signIn")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,7 +76,7 @@ export default function Page() {
 
     if (!tokenToUse) {
       setError("root", {
-        message: t("auth.noCsrfToken"),
+        message: t("noCsrfToken"),
       });
       return;
     }
@@ -108,8 +108,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("auth.signInTitle")}</CardTitle>
-                <CardDescription>{t("auth.signInDescription")}</CardDescription>
+                <CardTitle>{t("signInTitle")}</CardTitle>
+                <CardDescription>{t("signInDescription")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -122,10 +122,10 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.username")}</FormLabel>
+                          <FormLabel>{t("username")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("auth.usernamePlaceholder")}
+                              placeholder={t("usernamePlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -138,11 +138,11 @@ export default function Page() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.password")}</FormLabel>
+                          <FormLabel>{t("password")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("auth.passwordPlaceholder")}
+                              placeholder={t("passwordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -155,7 +155,7 @@ export default function Page() {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      {t("common.submit")}
+                      {t("submit", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">
@@ -163,12 +163,12 @@ export default function Page() {
                       </div>
                     )}
                     <div className="mt-4 text-center text-sm">
-                      {t("auth.dontHaveAccount")}{" "}
+                      {t("dontHaveAccount")}{" "}
                       <Link
                         to="/auth/sign-up"
                         className="underline underline-offset-4"
                       >
-                        {t("auth.signUp")}
+                        {t("signUp")}
                       </Link>
                     </div>
                   </form>

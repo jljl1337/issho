@@ -31,7 +31,7 @@ import { translateError } from "~/lib/db/common";
 import { usernameSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["user", "auth", "common"]);
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const updateUsernameMutation = useUpdateUsername();
@@ -43,7 +43,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("user.changeUsername")} | Issho`;
+    document.title = `${t("changeUsername")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof usernameSchema>>({
@@ -58,7 +58,7 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof usernameSchema>) {
     if (!csrfToken) {
       setError("root", {
-        message: t("user.noCsrfToken"),
+        message: t("noCsrfToken"),
       });
       return;
     }
@@ -86,10 +86,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("user.changeUsername")}</CardTitle>
-                <CardDescription>
-                  {t("user.changeUsernameDesc")}
-                </CardDescription>
+                <CardTitle>{t("changeUsername")}</CardTitle>
+                <CardDescription>{t("changeUsernameDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -102,10 +100,10 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.username")}</FormLabel>
+                          <FormLabel>{t("username", { ns: "auth" })}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("user.newUsernamePlaceholder")}
+                              placeholder={t("newUsernamePlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -118,7 +116,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      {t("common.save")}
+                      {t("save", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

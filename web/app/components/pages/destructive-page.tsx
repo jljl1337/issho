@@ -25,7 +25,7 @@ export default function DestructivePage({
   action,
   redirectTo,
 }: DestructivePageProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ export default function DestructivePage({
                 className="cursor-pointer"
                 onClick={() => navigate(-1)}
               >
-                {t("destructivePage.cancel")}
+                {t("cancel")}
               </Button>
               <Button
                 variant={"destructive"}
@@ -68,7 +68,7 @@ export default function DestructivePage({
                 onClick={onDestructive}
                 disabled={isLoading}
               >
-                {t("destructivePage.confirm")}
+                {t("confirm")}
               </Button>
             </div>
             {error && !isLoading && (

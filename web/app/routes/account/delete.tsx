@@ -9,7 +9,7 @@ import { useDeleteMe } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("user");
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const deleteMeMutation = useDeleteMe();
@@ -21,12 +21,12 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("user.deleteAccount")} | Issho`;
+    document.title = `${t("deleteAccount")} | Issho`;
   }, [t]);
 
   async function onDeleteAccount() {
     if (!csrfToken) {
-      return { error: t("user.noCsrfToken") };
+      return { error: t("noCsrfToken") };
     }
     try {
       await deleteMeMutation.mutateAsync(csrfToken);
@@ -39,8 +39,8 @@ export default function Page() {
   return (
     <>
       <DestructivePage
-        title={t("user.deleteAccount")}
-        description={t("user.deleteAccountConfirm")}
+        title={t("deleteAccount")}
+        description={t("deleteAccountConfirm")}
         action={onDeleteAccount}
         redirectTo="/auth/sign-in"
       />

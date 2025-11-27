@@ -9,7 +9,7 @@ import { useSignOut } from "~/hooks/use-auth";
 import { translateError } from "~/lib/db/common";
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("user");
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const signOutMutation = useSignOut();
@@ -21,12 +21,12 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("user.signOut")} | Issho`;
+    document.title = `${t("signOut")} | Issho`;
   }, [t]);
 
   async function onSignOut() {
     if (!csrfToken) {
-      return { error: t("user.noCsrfToken") };
+      return { error: t("noCsrfToken") };
     }
     try {
       await signOutMutation.mutateAsync(csrfToken);
@@ -39,8 +39,8 @@ export default function Page() {
   return (
     <>
       <DestructivePage
-        title={t("user.signOut")}
-        description={t("user.signOutConfirm")}
+        title={t("signOut")}
+        description={t("signOutConfirm")}
         action={onSignOut}
         redirectTo="/auth/sign-in"
       />

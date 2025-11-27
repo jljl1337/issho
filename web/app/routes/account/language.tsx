@@ -45,7 +45,7 @@ const formSchema = z.object({
 });
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("user");
   const { isLoggedIn, isLoading: sessionLoading, csrfToken } = useSession();
   const { language, setLanguage, isUpdating } = useLanguage();
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export default function Page() {
   }, [isLoggedIn, sessionLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("user.languageSettings")} | Issho`;
+    document.title = `${t("languageSettings")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -82,7 +82,7 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!csrfToken) {
       setError("root", {
-        message: t("user.noCsrfToken"),
+        message: t("noCsrfToken"),
       });
       return;
     }
@@ -108,8 +108,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("user.languageSettings")}</CardTitle>
-                <CardDescription>{t("user.chooseLanguage")}</CardDescription>
+                <CardTitle>{t("languageSettings")}</CardTitle>
+                <CardDescription>{t("chooseLanguage")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -122,7 +122,7 @@ export default function Page() {
                       name="language"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("user.language")}</FormLabel>
+                          <FormLabel>{t("language")}</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
@@ -149,7 +149,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isUpdating}
                     >
-                      {t("common.save")}
+                      {t("save", { ns: "common" })}
                     </Button>
                     {errors.root && (
                       <div className="text-sm text-destructive text-center">

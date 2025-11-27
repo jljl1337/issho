@@ -1,0 +1,8 @@
+{
+  "title": "Something Went Wrong",
+  "oops": "Oops!",
+  "message": "Something went wrong, please try again later",
+  "usernameTaken": "Username is already taken",
+  "invalidCredentials": "Invalid username or password",
+  "genericError": "An error occurred. Please try again."
+}

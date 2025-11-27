@@ -33,7 +33,7 @@ import { passwordWithConfirmSchema, usernameSchema } from "~/lib/schemas/auth";
 const formSchema = z.intersection(usernameSchema, passwordWithConfirmSchema);
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["auth", "common"]);
   const navigate = useNavigate();
   const { isLoggedIn, isLoading } = useSession();
   const signUpMutation = useSignUp();
@@ -46,7 +46,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("auth.signUp")} | Issho`;
+    document.title = `${t("signUp")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -88,8 +88,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("auth.signUpTitle")}</CardTitle>
-                <CardDescription>{t("auth.signUpDescription")}</CardDescription>
+                <CardTitle>{t("signUpTitle")}</CardTitle>
+                <CardDescription>{t("signUpDescription")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -102,10 +102,10 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.username")}</FormLabel>
+                          <FormLabel>{t("username")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("auth.usernamePlaceholder")}
+                              placeholder={t("usernamePlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -118,11 +118,11 @@ export default function Page() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.password")}</FormLabel>
+                          <FormLabel>{t("password")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("auth.passwordPlaceholder")}
+                              placeholder={t("passwordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -135,11 +135,11 @@ export default function Page() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.confirmPassword")}</FormLabel>
+                          <FormLabel>{t("confirmPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("auth.passwordPlaceholder")}
+                              placeholder={t("passwordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -152,7 +152,7 @@ export default function Page() {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      {t("common.submit")}
+                      {t("submit", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">
@@ -160,12 +160,12 @@ export default function Page() {
                       </div>
                     )}
                     <div className="mt-4 text-center text-sm">
-                      {t("auth.alreadyHaveAccount")}{" "}
+                      {t("alreadyHaveAccount")}{" "}
                       <Link
                         to="/auth/sign-in"
                         className="underline underline-offset-4"
                       >
-                        {t("auth.signIn")}
+                        {t("signIn")}
                       </Link>
                     </div>
                   </form>

@@ -38,7 +38,7 @@ import {
 import { useTheme } from "~/components/theme-provider";
 
 export function AppSidebar() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["sidebar", "navigation", "user"]);
   const { setTheme, theme } = useTheme();
 
   const { pathname } = useLocation();
@@ -47,7 +47,7 @@ export function AppSidebar() {
     <Sidebar variant="inset">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t("sidebar.contents")}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("contents")}</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem key="home">
               <SidebarMenuButton
@@ -56,7 +56,7 @@ export function AppSidebar() {
               >
                 <Link to="/home">
                   <Home />
-                  {t("navigation.home")}
+                  {t("home", { ns: "navigation" })}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -76,7 +76,7 @@ export function AppSidebar() {
                   ) : (
                     <Laptop />
                   )}
-                  {t("sidebar.theme")}
+                  {t("theme")}
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -86,21 +86,21 @@ export function AppSidebar() {
                     value="system"
                     onSelect={() => setTheme("system")}
                   >
-                    {t("sidebar.system")}
+                    {t("system")}
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem
                     className="cursor-pointer"
                     value="light"
                     onSelect={() => setTheme("light")}
                   >
-                    {t("sidebar.light")}
+                    {t("light")}
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem
                     className="cursor-pointer"
                     value="dark"
                     onSelect={() => setTheme("dark")}
                   >
-                    {t("sidebar.dark")}
+                    {t("dark")}
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
@@ -113,7 +113,7 @@ export function AppSidebar() {
             >
               <Link to="/account">
                 <User />
-                {t("user.account")}
+                {t("account", { ns: "user" })}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -121,7 +121,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild isActive={pathname === "/about"}>
               <Link to="/about">
                 <Info />
-                {t("navigation.about")}
+                {t("about", { ns: "navigation" })}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

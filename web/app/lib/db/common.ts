@@ -20,8 +20,8 @@ export class ApiError extends Error {
 export function translateError(error: unknown): string {
   if (error instanceof ApiError) {
     // Check if we have a specific translation for this error code
-    const translationKey = `errors.${error.code}`;
-    const translated = i18n.t(translationKey);
+    const translationKey = error.code;
+    const translated = i18n.t(translationKey, { ns: "error" });
 
     // If the translation key was not found, i18n returns the key itself
     if (translated !== translationKey) {
@@ -30,7 +30,7 @@ export function translateError(error: unknown): string {
   }
 
   // Fallback to generic error message
-  return i18n.t("errors.genericError");
+  return i18n.t("genericError", { ns: "error" });
 }
 
 export async function throwIfError(response: Response): Promise<void> {

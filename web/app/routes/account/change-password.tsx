@@ -31,7 +31,7 @@ import { translateError } from "~/lib/db/common";
 import { updatePasswordSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["user", "auth", "common"]);
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const updatePasswordMutation = useUpdatePassword();
@@ -43,7 +43,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("user.changePassword")} | Issho`;
+    document.title = `${t("changePassword")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof updatePasswordSchema>>({
@@ -60,7 +60,7 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
     if (!csrfToken) {
       setError("root", {
-        message: t("user.noCsrfToken"),
+        message: t("noCsrfToken"),
       });
       return;
     }
@@ -89,10 +89,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("user.changePassword")}</CardTitle>
-                <CardDescription>
-                  {t("user.changePasswordDesc")}
-                </CardDescription>
+                <CardTitle>{t("changePassword")}</CardTitle>
+                <CardDescription>{t("changePasswordDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -105,11 +103,11 @@ export default function Page() {
                       name="oldPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("user.oldPassword")}</FormLabel>
+                          <FormLabel>{t("oldPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("user.oldPasswordPlaceholder")}
+                              placeholder={t("oldPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -122,11 +120,11 @@ export default function Page() {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("user.newPassword")}</FormLabel>
+                          <FormLabel>{t("newPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("user.newPasswordPlaceholder")}
+                              placeholder={t("newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -139,11 +137,13 @@ export default function Page() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("auth.confirmPassword")}</FormLabel>
+                          <FormLabel>
+                            {t("confirmPassword", { ns: "auth" })}
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder={t("user.newPasswordPlaceholder")}
+                              placeholder={t("newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -156,7 +156,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      {t("common.save")}
+                      {t("save", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">
