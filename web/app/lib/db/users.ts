@@ -1,10 +1,13 @@
-import { throwIfError } from "~/lib/db/common";
+import { throwIfError, translateError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
+
+export { translateError };
 
 export type User = {
   id: string;
   username: string;
   role: string;
+  languageCode: string;
   createdAt: string;
 };
 
@@ -39,6 +42,20 @@ export async function updatePassword(
     "/api/users/me/password",
     "PATCH",
     { oldPassword, newPassword },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function updateLanguage(
+  languageCode: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/language",
+    "PATCH",
+    { languageCode },
     csrfToken,
   );
 

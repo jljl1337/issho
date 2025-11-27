@@ -13,7 +13,12 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) SignUp(ctx context.Context, username, password string) error {
+func (s *EndpointService) SignUp(ctx context.Context, username, password, languageCode string) error {
+	// Validate language code (only allow en-US and zh-HK)
+	if languageCode != "en-US" && languageCode != "zh-HK" {
+		languageCode = "en-US" // Default to en-US if invalid
+	}
+
 	usernameValid, err := checkUsername(username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate username: %v", err)
@@ -67,6 +72,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 		Username:     username,
 		PasswordHash: passwordHash,
 		Role:         role,
+		LanguageCode: languageCode,
 		CreatedAt:    currentTime,
 		UpdatedAt:    currentTime,
 	}); err != nil {

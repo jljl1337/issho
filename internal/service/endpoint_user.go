@@ -107,6 +107,26 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	return nil
 }
 
+func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
+	// Validate language code (only allow en-US and zh-HK)
+	if languageCode != "en-US" && languageCode != "zh-HK" {
+		return NewServiceError(ErrCodeUnprocessable, "invalid language code: must be en-US or zh-HK")
+	}
+
+	queries := repository.New(s.db)
+
+	err := queries.UpdateUserLanguage(ctx, repository.UpdateUserLanguageParams{
+		ID:           userID,
+		LanguageCode: languageCode,
+		UpdatedAt:    generator.NowISO8601(),
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update language: %v", err)
+	}
+
+	return nil
+}
+
 func (s *EndpointService) DeleteUserByID(ctx context.Context, userID string) error {
 	queries := repository.New(s.db)
 

@@ -4,6 +4,7 @@ import type { Route } from "./+types/change-username";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import type z from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -26,9 +27,11 @@ import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
 import { useUpdateUsername } from "~/hooks/use-user";
+import { translateError } from "~/lib/db/common";
 import { usernameSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
+  const { t } = useTranslation();
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const updateUsernameMutation = useUpdateUsername();
@@ -51,7 +54,7 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof usernameSchema>) {
     if (!csrfToken) {
       setError("root", {
-        message: "No CSRF token available",
+        message: t("user.noCsrfToken"),
       });
       return;
     }
@@ -64,8 +67,7 @@ export default function Page() {
       navigate("/account");
     } catch (error) {
       setError("root", {
-        message:
-          error instanceof Error ? error.message : "Failed to update username",
+        message: translateError(error),
       });
     }
   }
@@ -75,14 +77,16 @@ export default function Page() {
 
   return (
     <>
-      <title>Change Username | Issho</title>
+      <title>{t("user.changeUsername")} | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Change Username</CardTitle>
-                <CardDescription>Change your account username</CardDescription>
+                <CardTitle>{t("user.changeUsername")}</CardTitle>
+                <CardDescription>
+                  {t("user.changeUsernameDesc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -95,9 +99,12 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>{t("auth.username")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="your_new_username" {...field} />
+                            <Input
+                              placeholder={t("user.newUsernamePlaceholder")}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -108,7 +115,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      Save
+                      {t("common.save")}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

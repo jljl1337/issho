@@ -11,8 +11,9 @@ import (
 )
 
 type signUpSignInRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	LanguageCode string `json:"languageCode,omitempty"`
 }
 
 type signInPreSessionCSRFTokenResponse struct {
@@ -42,7 +43,11 @@ func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Process the request
-	if err := h.service.SignUp(r.Context(), req.Username, req.Password); err != nil {
+	languageCode := req.LanguageCode
+	if languageCode == "" {
+		languageCode = "en-US" // Default to en-US if not provided
+	}
+	if err := h.service.SignUp(r.Context(), req.Username, req.Password, languageCode); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}

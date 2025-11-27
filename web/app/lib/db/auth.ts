@@ -1,5 +1,7 @@
-import { throwIfError } from "~/lib/db/common";
+import { throwIfError, translateError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
+
+export { translateError };
 
 type CsrfToken = {
   csrfToken: string;
@@ -8,10 +10,12 @@ type CsrfToken = {
 export async function signUp(
   username: string,
   password: string,
+  languageCode?: string,
 ): Promise<void> {
   const response = await customFetch("/api/auth/sign-up", "POST", {
     username,
     password,
+    ...(languageCode && { languageCode }),
   });
 
   await throwIfError(response);

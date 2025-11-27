@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
+import { useTranslation } from "react-i18next";
+
 import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
 import { useDeleteMe } from "~/hooks/use-user";
+import { translateError } from "~/lib/db/common";
 
 export default function Page() {
+  const { t } = useTranslation();
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const deleteMeMutation = useDeleteMe();
@@ -18,24 +22,22 @@ export default function Page() {
 
   async function onDeleteAccount() {
     if (!csrfToken) {
-      return { error: "No CSRF token available" };
+      return { error: t("user.noCsrfToken") };
     }
     try {
       await deleteMeMutation.mutateAsync(csrfToken);
       return { error: null };
     } catch (error) {
-      return {
-        error: error instanceof Error ? error.message : "Delete account failed",
-      };
+      return { error: translateError(error) };
     }
   }
 
   return (
     <>
-      <title>Delete Account | Issho</title>
+      <title>{t("user.deleteAccount")} | Issho</title>
       <DestructivePage
-        title="Delete Account"
-        description="Are you sure you want to delete your account? This action is irreversible and will permanently delete all your data."
+        title={t("user.deleteAccount")}
+        description={t("user.deleteAccountConfirm")}
         action={onDeleteAccount}
         redirectTo="/auth/sign-in"
       />

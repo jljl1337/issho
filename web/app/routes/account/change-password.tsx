@@ -4,6 +4,7 @@ import type { Route } from "./+types/change-password";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -26,9 +27,11 @@ import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
 import { useUpdatePassword } from "~/hooks/use-user";
+import { translateError } from "~/lib/db/common";
 import { updatePasswordSchema } from "~/lib/schemas/auth";
 
 export default function Page() {
+  const { t } = useTranslation();
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const updatePasswordMutation = useUpdatePassword();
@@ -53,7 +56,7 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
     if (!csrfToken) {
       setError("root", {
-        message: "No CSRF token available",
+        message: t("user.noCsrfToken"),
       });
       return;
     }
@@ -67,8 +70,7 @@ export default function Page() {
       navigate("/account");
     } catch (error) {
       setError("root", {
-        message:
-          error instanceof Error ? error.message : "Failed to update password",
+        message: translateError(error),
       });
     }
   }
@@ -78,14 +80,16 @@ export default function Page() {
 
   return (
     <>
-      <title>Change Password | Issho</title>
+      <title>{t("user.changePassword")} | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Change your account password</CardDescription>
+                <CardTitle>{t("user.changePassword")}</CardTitle>
+                <CardDescription>
+                  {t("user.changePasswordDesc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -98,11 +102,11 @@ export default function Page() {
                       name="oldPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Old Password</FormLabel>
+                          <FormLabel>{t("user.oldPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="oldP@assw0rd8to64char"
+                              placeholder={t("user.oldPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -115,11 +119,11 @@ export default function Page() {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Password</FormLabel>
+                          <FormLabel>{t("user.newPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="newP@assw0rd8to64char"
+                              placeholder={t("user.newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -132,11 +136,11 @@ export default function Page() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
+                          <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="newP@assw0rd8to64char"
+                              placeholder={t("user.newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -149,7 +153,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      Save
+                      {t("common.save")}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

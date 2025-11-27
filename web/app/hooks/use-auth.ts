@@ -44,11 +44,13 @@ export function useSignUp() {
     mutationFn: async ({
       username,
       password,
+      languageCode,
     }: {
       username: string;
       password: string;
+      languageCode?: string;
     }) => {
-      await signUpApi(username, password);
+      await signUpApi(username, password, languageCode);
     },
   });
 }

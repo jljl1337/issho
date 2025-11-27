@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useTranslation } from "react-i18next";
+
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -23,6 +25,7 @@ export default function DestructivePage({
   action,
   redirectTo,
 }: DestructivePageProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -57,7 +60,7 @@ export default function DestructivePage({
                 className="cursor-pointer"
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                {t("destructivePage.cancel")}
               </Button>
               <Button
                 variant={"destructive"}
@@ -65,7 +68,7 @@ export default function DestructivePage({
                 onClick={onDestructive}
                 disabled={isLoading}
               >
-                Confirm
+                {t("destructivePage.confirm")}
               </Button>
             </div>
             {error && !isLoading && (

@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
+import { useTranslation } from "react-i18next";
+
 import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
 import { useSignOutAll } from "~/hooks/use-auth";
+import { translateError } from "~/lib/db/common";
 
 export default function Page() {
+  const { t } = useTranslation();
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const signOutAllMutation = useSignOutAll();
@@ -18,24 +22,22 @@ export default function Page() {
 
   async function onSignOutAll() {
     if (!csrfToken) {
-      return { error: "No CSRF token available" };
+      return { error: t("user.noCsrfToken") };
     }
     try {
       await signOutAllMutation.mutateAsync(csrfToken);
       return { error: null };
     } catch (error) {
-      return {
-        error: error instanceof Error ? error.message : "Sign out all failed",
-      };
+      return { error: translateError(error) };
     }
   }
 
   return (
     <>
-      <title>Sign Out All Devices | Issho</title>
+      <title>{t("user.signOutAll")} | Issho</title>
       <DestructivePage
-        title="Sign Out All Devices"
-        description="Are you sure you want to sign out of your account on all devices? You will be logged out everywhere."
+        title={t("user.signOutAll")}
+        description={t("user.signOutAllConfirm")}
         action={onSignOutAll}
         redirectTo="/auth/sign-in"
       />

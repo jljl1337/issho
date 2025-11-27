@@ -9,6 +9,7 @@ import {
 import type { Route } from "./+types/root";
 
 import "~/app.css";
+import "~/i18n";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -17,6 +18,7 @@ import { Spinner } from "~/components/ui/spinner";
 
 import { ThemeProvider } from "~/components/theme-provider";
 import { NavigationLoadingBar } from "~/components/top-loading-bar";
+import { LanguageProvider } from "~/contexts/language-context";
 import { SessionProvider } from "~/contexts/session-context";
 import { queryClient } from "~/lib/react-query/query-client";
 
@@ -86,8 +88,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <SessionProvider>
-          <NavigationLoadingBar />
-          <Outlet />
+          <LanguageProvider>
+            <NavigationLoadingBar />
+            <Outlet />
+          </LanguageProvider>
         </SessionProvider>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />

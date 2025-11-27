@@ -4,6 +4,7 @@ import type { Route } from "./+types/sign-in";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -24,17 +25,20 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
+import { LanguageSwitcher } from "~/components/language-switcher";
 import { useSession } from "~/contexts/session-context";
 import { usePreSession, useSignIn } from "~/hooks/use-auth";
-
-const formSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
+import { translateError } from "~/lib/db/common";
 
 export default function Page() {
+  const { t } = useTranslation();
   const { refreshSession, csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
+
+  const formSchema = z.object({
+    username: z.string().trim().min(1, t("auth.usernameRequired")),
+    password: z.string().min(1, t("auth.passwordRequired")),
+  });
 
   const preSessionMutation = usePreSession();
   const signInMutation = useSignIn();
@@ -68,7 +72,7 @@ export default function Page() {
 
     if (!tokenToUse) {
       setError("root", {
-        message: "No CSRF token available. Please try again.",
+        message: t("auth.noCsrfToken"),
       });
       return;
     }
@@ -85,7 +89,7 @@ export default function Page() {
       navigate("/home");
     } catch (error) {
       setError("root", {
-        message: error instanceof Error ? error.message : "Sign in failed",
+        message: translateError(error),
       });
     }
   }
@@ -95,16 +99,14 @@ export default function Page() {
 
   return (
     <>
-      <title>Sign In | Issho</title>
+      <title>{t("auth.signIn")} | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Sign in to your account</CardTitle>
-                <CardDescription>
-                  Enter your credentials below to sign in
-                </CardDescription>
+                <CardTitle>{t("auth.signInTitle")}</CardTitle>
+                <CardDescription>{t("auth.signInDescription")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -117,9 +119,12 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>{t("auth.username")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="your_username" {...field} />
+                            <Input
+                              placeholder={t("auth.usernamePlaceholder")}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -130,11 +135,11 @@ export default function Page() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>{t("auth.password")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="yourVerySecureP@ssw0rd!"
+                              placeholder={t("auth.passwordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -147,7 +152,7 @@ export default function Page() {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      Submit
+                      {t("common.submit")}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">
@@ -155,18 +160,21 @@ export default function Page() {
                       </div>
                     )}
                     <div className="mt-4 text-center text-sm">
-                      Don&apos;t have an account?{" "}
+                      {t("auth.dontHaveAccount")}{" "}
                       <Link
                         to="/auth/sign-up"
                         className="underline underline-offset-4"
                       >
-                        Sign up
+                        {t("auth.signUp")}
                       </Link>
                     </div>
                   </form>
                 </Form>
               </CardContent>
             </Card>
+            <div className="flex justify-center">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { redirect } from "react-router";
 
+import i18n from "~/i18n";
+
 export class ApiError extends Error {
   code: string;
 
@@ -8,6 +10,27 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.code = code;
   }
+}
+
+/**
+ * Translates an API error to a user-friendly message.
+ * If the error code has a specific translation, it will be used.
+ * Otherwise, a generic error message will be shown.
+ */
+export function translateError(error: unknown): string {
+  if (error instanceof ApiError) {
+    // Check if we have a specific translation for this error code
+    const translationKey = `errors.${error.code}`;
+    const translated = i18n.t(translationKey);
+
+    // If the translation key was not found, i18n returns the key itself
+    if (translated !== translationKey) {
+      return translated;
+    }
+  }
+
+  // Fallback to generic error message
+  return i18n.t("errors.genericError");
 }
 
 export async function throwIfError(response: Response): Promise<void> {

@@ -10,6 +10,7 @@ type User = {
   id: string;
   username: string;
   role: string;
+  languageCode: string;
   createdAt: string;
 };
 
