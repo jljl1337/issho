@@ -85,6 +85,11 @@
     "version": "Version",
     "loading": "Loading..."
   },
+  "error": {
+    "title": "Something Went Wrong",
+    "oops": "Oops!",
+    "message": "Something went wrong, please try again later"
+  },
   "messages": {
     "welcomeBack": "Welcome back!",
     "accountCreated": "Account created successfully",

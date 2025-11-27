@@ -85,6 +85,11 @@
     "version": "版本",
     "loading": "載入中..."
   },
+  "error": {
+    "title": "發生錯誤",
+    "oops": "哎呀！",
+    "message": "發生錯誤，請稍後再試"
+  },
   "messages": {
     "welcomeBack": "歡迎回來！",
     "accountCreated": "帳戶建立成功",
