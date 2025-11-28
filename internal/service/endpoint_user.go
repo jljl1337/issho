@@ -108,9 +108,9 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 }
 
 func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
-	// Validate language code (only allow en-US and zh-HK)
-	if languageCode != "en-US" && languageCode != "zh-HK" {
-		return NewServiceError(ErrCodeUnprocessable, "invalid language code: must be en-US or zh-HK")
+	languageCodeValid := checkLanguageCode(languageCode)
+	if !languageCodeValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
 	}
 
 	queries := repository.New(s.db)

@@ -42,12 +42,12 @@ func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Process the request
-	languageCode := req.LanguageCode
-	if languageCode == "" {
-		languageCode = "en-US" // Default to en-US if not provided
+	if req.LanguageCode == "" {
+		common.WriteMessageResponse(w, "Language code is required", http.StatusBadRequest)
+		return
 	}
-	if err := h.service.SignUp(r.Context(), req.Username, req.Password, languageCode); err != nil {
+
+	if err := h.service.SignUp(r.Context(), req.Username, req.Password, req.LanguageCode); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}

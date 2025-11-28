@@ -14,11 +14,6 @@ import (
 )
 
 func (s *EndpointService) SignUp(ctx context.Context, username, password, languageCode string) error {
-	// Validate language code (only allow en-US and zh-HK)
-	if languageCode != "en-US" && languageCode != "zh-HK" {
-		languageCode = "en-US" // Default to en-US if invalid
-	}
-
 	usernameValid, err := checkUsername(username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate username: %v", err)
@@ -33,6 +28,11 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password, langua
 	}
 	if !passwordValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid password format")
+	}
+
+	languageCodeValid := checkLanguageCode(languageCode)
+	if !languageCodeValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
 	}
 
 	queries := repository.New(s.db)
