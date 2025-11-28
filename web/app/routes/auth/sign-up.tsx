@@ -29,9 +29,16 @@ import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 import { useSignUp } from "~/hooks/use-auth";
 import { translateError } from "~/lib/db/common";
-import { passwordWithConfirmSchema, usernameSchema } from "~/lib/schemas/auth";
+import {
+  emailSchema,
+  passwordWithConfirmSchema,
+  usernameSchema,
+} from "~/lib/schemas/auth";
 
-const formSchema = z.intersection(usernameSchema, passwordWithConfirmSchema);
+const formSchema = z.intersection(
+  z.intersection(usernameSchema, emailSchema),
+  passwordWithConfirmSchema,
+);
 
 export default function Page() {
   const { t } = useTranslation(["auth", "common"]);
@@ -55,6 +62,7 @@ export default function Page() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
@@ -66,6 +74,7 @@ export default function Page() {
     try {
       await signUpMutation.mutateAsync({
         username: values.username,
+        email: values.email,
         password: values.password,
         languageCode: language,
       });
@@ -105,6 +114,23 @@ export default function Page() {
                           <FormControl>
                             <Input
                               placeholder={t("usernamePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("email")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder={t("emailPlaceholder")}
                               {...field}
                             />
                           </FormControl>

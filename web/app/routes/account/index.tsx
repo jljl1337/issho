@@ -45,6 +45,9 @@ export default function Page() {
               {t("username")}: {user?.username}
             </p>
             <p className="mb-2">
+              {t("email")}: {user?.email}
+            </p>
+            <p className="mb-2">
               {t("role")}: {user?.role}
             </p>
             <p className="mb-2">

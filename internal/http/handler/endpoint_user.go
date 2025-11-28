@@ -12,6 +12,7 @@ import (
 type getCurrentUserResponse struct {
 	ID           string `json:"id"`
 	Username     string `json:"username"`
+	Email        string `json:"email"`
 	Role         string `json:"role"`
 	LanguageCode string `json:"languageCode"`
 	CreatedAt    string `json:"createdAt"`
@@ -44,6 +45,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 	response := getCurrentUserResponse{
 		ID:           user.ID,
 		Username:     user.Username,
+		Email:        user.Email,
 		Role:         user.Role,
 		LanguageCode: user.LanguageCode,
 		CreatedAt:    user.CreatedAt,

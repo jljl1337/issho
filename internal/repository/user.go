@@ -8,6 +8,7 @@ const createUser = `
 INSERT INTO "user" (
     id,
     username,
+    email,
     password_hash,
 	role,
 	language_code,
@@ -16,6 +17,7 @@ INSERT INTO "user" (
 ) VALUES (
 	:id,
 	:username,
+	:email,
 	:password_hash,
 	:role,
 	:language_code,
@@ -82,6 +84,25 @@ type GetUserByUsernameParams struct {
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) ([]User, error) {
 	items := []User{}
 	err := NamedSelectContext(ctx, q.db, &items, getUserByUsername, GetUserByUsernameParams{Username: username})
+	return items, err
+}
+
+const getUserByEmail = `
+SELECT
+    *
+FROM
+    "user"
+WHERE
+    email = :email
+`
+
+type GetUserByEmailParams struct {
+	Email string `db:"email"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) ([]User, error) {
+	items := []User{}
+	err := NamedSelectContext(ctx, q.db, &items, getUserByEmail, GetUserByEmailParams{Email: email})
 	return items, err
 }
 

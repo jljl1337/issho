@@ -10,6 +10,7 @@
   "preferences": "Preferences",
   "userId": "User ID",
   "username": "Username",
+  "email": "Email",
   "role": "Role",
   "createdAt": "Created At",
   "general": "General",

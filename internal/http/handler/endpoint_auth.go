@@ -10,10 +10,17 @@ import (
 	"github.com/jljl1337/issho/internal/http/middleware"
 )
 
-type signUpSignInRequest struct {
+type signUpRequest struct {
 	Username     string `json:"username"`
+	Email        string `json:"email"`
 	Password     string `json:"password"`
-	LanguageCode string `json:"languageCode,omitempty"`
+	LanguageCode string `json:"languageCode"`
+}
+
+type signInRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type signInPreSessionCSRFTokenResponse struct {
@@ -31,14 +38,14 @@ func (h *EndpointHandler) registerAuthRoutes(mux *http.ServeMux) {
 
 func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	// Input validation
-	var req signUpSignInRequest
+	var req signUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		common.WriteMessageResponse(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	if req.Username == "" || req.Password == "" {
-		common.WriteMessageResponse(w, "Username and password are required", http.StatusBadRequest)
+	if req.Username == "" || req.Email == "" || req.Password == "" {
+		common.WriteMessageResponse(w, "Username, email and password are required", http.StatusBadRequest)
 		return
 	}
 
@@ -47,7 +54,7 @@ func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.SignUp(r.Context(), req.Username, req.Password, req.LanguageCode); err != nil {
+	if err := h.service.SignUp(r.Context(), req.Username, req.Email, req.Password, req.LanguageCode); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -86,19 +93,25 @@ func (h *EndpointHandler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req signUpSignInRequest
+	var req signInRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		common.WriteMessageResponse(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	if req.Username == "" || req.Password == "" {
-		common.WriteMessageResponse(w, "Username and password are required", http.StatusBadRequest)
+	// Validate that exactly one of username or email is provided
+	if (req.Username == "" && req.Email == "") || (req.Username != "" && req.Email != "") {
+		common.WriteMessageResponse(w, "Either username or email must be provided, but not both", http.StatusBadRequest)
+		return
+	}
+
+	if req.Password == "" {
+		common.WriteMessageResponse(w, "Password is required", http.StatusBadRequest)
 		return
 	}
 
 	// Process the request
-	sessionToken, CSRFToken, err := h.service.SignIn(r.Context(), preSessionToken.Value, preSessionCSRFToken, req.Username, req.Password)
+	sessionToken, CSRFToken, err := h.service.SignIn(r.Context(), preSessionToken.Value, preSessionCSRFToken, req.Username, req.Email, req.Password)
 	if err != nil {
 		common.WriteErrorResponse(w, err)
 		return

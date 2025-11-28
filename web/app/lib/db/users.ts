@@ -6,6 +6,7 @@ export { translateError };
 export type User = {
   id: string;
   username: string;
+  email: string;
   role: string;
   languageCode: string;
   createdAt: string;

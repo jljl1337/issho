@@ -9,11 +9,13 @@ type CsrfToken = {
 
 export async function signUp(
   username: string,
+  email: string,
   password: string,
   languageCode?: string,
 ): Promise<void> {
   const response = await customFetch("/api/auth/sign-up", "POST", {
     username,
+    email,
     password,
     ...(languageCode && { languageCode }),
   });
@@ -33,7 +35,7 @@ export async function createPreSession(): Promise<string> {
 }
 
 export async function signIn(
-  username: string,
+  credentials: { username?: string; email?: string },
   password: string,
   csrfToken: string,
 ): Promise<void> {
@@ -41,7 +43,7 @@ export async function signIn(
     "/api/auth/sign-in",
     "POST",
     {
-      username,
+      ...credentials,
       password,
     },
     csrfToken,

@@ -2,6 +2,8 @@
   "usernameMinLength": "Username must be at least 3 characters",
   "usernameMaxLength": "Username must be at most 30 characters",
   "usernameInvalidFormat": "Username can only contain lowercase letters, numbers, and underscores",
+  "emailRequired": "Email is required",
+  "emailInvalid": "Please enter a valid email address",
   "passwordMinLength": "Password must be at least 8 characters",
   "passwordMaxLength": "Password must be at most 64 characters",
   "passwordInvalidFormat": "Password can only contain letters, numbers, and one of !@#$%^&*",

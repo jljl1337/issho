@@ -11,6 +11,14 @@ export const usernameSchema = z.object({
     .regex(/^[a-z0-9_]+$/, i18n.t("validation.usernameInvalidFormat")),
 });
 
+export const emailSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email(i18n.t("validation.emailInvalid"))
+    .min(1, i18n.t("validation.emailRequired")),
+});
+
 const password = z
   .string()
   .min(8, i18n.t("validation.passwordMinLength"))
