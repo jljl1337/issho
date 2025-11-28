@@ -13,7 +13,7 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) SignUp(ctx context.Context, username, password string) error {
+func (s *EndpointService) SignUp(ctx context.Context, username, password, languageCode string) error {
 	usernameValid, err := checkUsername(username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate username: %v", err)
@@ -30,6 +30,11 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 		return NewServiceError(ErrCodeUnprocessable, "invalid password format")
 	}
 
+	languageCodeValid := checkLanguageCode(languageCode)
+	if !languageCodeValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
+	}
+
 	queries := repository.New(s.db)
 
 	users, err := queries.GetUserByUsername(ctx, username)
@@ -42,7 +47,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 	}
 
 	if len(users) > 0 {
-		return NewServiceError(ErrCodeConflict, "username already exists")
+		return NewServiceError(ErrCodeUsernameTaken, "username already exists")
 	}
 
 	passwordHash, err := crypto.HashPassword(password, env.PasswordBcryptCost)
@@ -67,6 +72,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password string)
 		Username:     username,
 		PasswordHash: passwordHash,
 		Role:         role,
+		LanguageCode: languageCode,
 		CreatedAt:    currentTime,
 		UpdatedAt:    currentTime,
 	}); err != nil {
@@ -120,7 +126,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	if len(sessions) < 1 {
 		slog.Debug("Session not found")
-		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
+		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid pre-session")
 	}
 
 	session := sessions[0]
@@ -128,20 +134,20 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	// Check if the session is already associated with a user
 	if session.UserID.Valid {
 		slog.Debug("Session is is not a pre-session")
-		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
+		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid pre-session")
 	}
 
 	// CSRF token does not match
 	if preSessionCSRFToken != "" && session.CsrfToken != preSessionCSRFToken {
 		slog.Debug("CSRF token does not match")
-		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
+		return "", "", NewServiceError(ErrCodeUnauthorized, "csrf token does not match")
 	}
 
 	// Session expired
 	now := time.Now()
 	nowISO8601 := format.TimeToISO8601(now)
 	if session.ExpiresAt < nowISO8601 {
-		return "", "", NewServiceError(ErrCodeUnauthorized, "session expired")
+		return "", "", NewServiceError(ErrCodeUnauthorized, "pre-session expired")
 	}
 
 	// Validate credentials
@@ -156,14 +162,14 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	if len(users) < 1 {
 		slog.Debug("User not found")
-		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
+		return "", "", NewServiceError(ErrCodeInvalidCredentials, "invalid credentials")
 	}
 
 	user := users[0]
 
 	if !crypto.CheckPasswordHash(password, user.PasswordHash) {
 		slog.Debug("Invalid password")
-		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid credentials")
+		return "", "", NewServiceError(ErrCodeInvalidCredentials, "invalid credentials")
 	}
 
 	cost, err := crypto.Cost(user.PasswordHash)

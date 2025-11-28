@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/jljl1337/issho/internal/env"
+	"github.com/jljl1337/issho/internal/http/common"
 )
 
 type versionResponse struct {
@@ -16,6 +16,5 @@ func (h *EndpointHandler) registerVersionRoutes(mux *http.ServeMux) {
 }
 
 func (h *EndpointHandler) version(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(versionResponse{Version: env.Version})
+	common.WriteJSONResponse(w, http.StatusOK, versionResponse{Version: env.Version})
 }

@@ -1,0 +1,161 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+
+import { languages, useLanguage } from "~/contexts/language-context";
+import { useSession } from "~/contexts/session-context";
+
+const formSchema = z.object({
+  language: z.enum([...languages.map((lang) => lang.code)]),
+});
+
+export default function Page() {
+  const { t } = useTranslation("user");
+  const { isLoggedIn, isLoading: sessionLoading, csrfToken } = useSession();
+  const { language, setLanguage, isUpdating } = useLanguage();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!sessionLoading && !isLoggedIn) {
+      navigate("/auth/sign-in");
+    }
+  }, [isLoggedIn, sessionLoading, navigate]);
+
+  useEffect(() => {
+    document.title = `${t("languageSettings")} | Issho`;
+  }, [t]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      language: language,
+    },
+  });
+
+  const { setError } = form;
+
+  useEffect(() => {
+    if (!sessionLoading && !isLoggedIn) {
+      navigate("/auth/sign-in");
+    }
+  }, [isLoggedIn, sessionLoading, navigate]);
+
+  useEffect(() => {
+    form.reset({ language });
+  }, [language, form]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!csrfToken) {
+      setError("root", {
+        message: t("noCsrfToken"),
+      });
+      return;
+    }
+
+    const result = await setLanguage(values.language, csrfToken);
+
+    if (result.error) {
+      setError("root", {
+        message: result.error,
+      });
+      return;
+    }
+
+    navigate("/account");
+  }
+
+  const errors = form.formState.errors;
+
+  return (
+    <>
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
+        <div className="w-full max-w-sm">
+          <div className="flex flex-col gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("languageSettings")}</CardTitle>
+                <CardDescription>{t("chooseLanguage")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="language"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("language")}</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a language" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {languages.map((lang) => (
+                                <SelectItem key={lang.code} value={lang.code}>
+                                  {lang.nativeName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full cursor-pointer"
+                      disabled={isUpdating}
+                    >
+                      {t("save", { ns: "common" })}
+                    </Button>
+                    {errors.root && (
+                      <div className="text-sm text-destructive text-center">
+                        {errors.root.message}
+                      </div>
+                    )}
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -48,7 +48,7 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 		if user.ID == userID {
 			return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
 		} else {
-			return NewServiceError(ErrCodeConflict, "username already taken")
+			return NewServiceError(ErrCodeUsernameTaken, "username already taken")
 		}
 	}
 
@@ -102,6 +102,26 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update password: %v", err)
+	}
+
+	return nil
+}
+
+func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
+	languageCodeValid := checkLanguageCode(languageCode)
+	if !languageCodeValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
+	}
+
+	queries := repository.New(s.db)
+
+	err := queries.UpdateUserLanguage(ctx, repository.UpdateUserLanguageParams{
+		ID:           userID,
+		LanguageCode: languageCode,
+		UpdatedAt:    generator.NowISO8601(),
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update language: %v", err)
 	}
 
 	return nil

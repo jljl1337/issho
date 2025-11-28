@@ -1,8 +1,10 @@
-import { Link, redirect, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 import type { Route } from "./+types/sign-in";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -23,42 +25,35 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
-import { createPreSession, getCsrfToken, signIn } from "~/lib/db/auth";
-import { getMe } from "~/lib/db/users";
+import { LanguageSwitcher } from "~/components/language-switcher";
+import { useSession } from "~/contexts/session-context";
+import { usePreSession, useSignIn } from "~/hooks/use-auth";
+import { translateError } from "~/lib/db/common";
 
-const formSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
+export default function Page() {
+  const { t } = useTranslation(["auth", "common"]);
+  const { refreshSession, csrfToken, isLoggedIn, isLoading } = useSession();
+  const navigate = useNavigate();
 
-export async function clientLoader() {
-  const me = await getMe();
+  const formSchema = z.object({
+    username: z.string().trim().min(1, t("usernameRequired")),
+    password: z.string().min(1, t("passwordRequired")),
+  });
 
-  if (me.data != null) {
-    return redirect("/home");
-  }
+  const preSessionMutation = usePreSession();
+  const signInMutation = useSignIn();
 
-  // Return the CSRF token of the existing pre-session if it is valid
-  const existingPreSessionCSRFToken = await getCsrfToken();
-  if (existingPreSessionCSRFToken.error == null) {
-    return {
-      data: { preSessionCSRFToken: existingPreSessionCSRFToken.data },
-      error: null,
-    };
-  }
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      navigate("/home");
+    }
+  }, [isLoggedIn, isLoading, navigate]);
 
-  const preSessionCSRFToken = await createPreSession();
-  if (preSessionCSRFToken.error != null) {
-    return redirect("/error");
-  }
+  useEffect(() => {
+    document.title = `${t("signIn")} | Issho`;
+  }, [t]);
 
-  return {
-    data: { preSessionCSRFToken: preSessionCSRFToken.data },
-    error: null,
-  };
-}
-
-export default function Page({ loaderData }: Route.ComponentProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,40 +62,54 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
+  const { setError } = form;
 
-  const navigate = useNavigate();
+  // Create pre-session on mount if no CSRF token exists
+  useEffect(() => {
+    if (!csrfToken && !preSessionMutation.isPending) {
+      preSessionMutation.mutate();
+    }
+  }, [csrfToken, preSessionMutation]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await signIn(
-      values.username,
-      values.password,
-      loaderData.data.preSessionCSRFToken,
-    );
-    if (error) {
+    const tokenToUse = csrfToken || preSessionMutation.data;
+
+    if (!tokenToUse) {
       setError("root", {
-        message: error,
+        message: t("noCsrfToken"),
       });
       return;
     }
-    navigate("/home");
+
+    try {
+      await signInMutation.mutateAsync({
+        username: values.username,
+        password: values.password,
+        csrfToken: tokenToUse,
+      });
+
+      // Refresh session to load user data and CSRF token
+      await refreshSession();
+      navigate("/home");
+    } catch (error) {
+      setError("root", {
+        message: translateError(error),
+      });
+    }
   }
+
+  const isSubmitting = signInMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>
-      <title>Sign In | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Sign in to your account</CardTitle>
-                <CardDescription>
-                  Enter your credentials below to sign in
-                </CardDescription>
+                <CardTitle>{t("signInTitle")}</CardTitle>
+                <CardDescription>{t("signInDescription")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -113,9 +122,12 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>{t("username")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="your_username" {...field} />
+                            <Input
+                              placeholder={t("usernamePlaceholder")}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -126,11 +138,11 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel>{t("password")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="yourVerySecureP@ssw0rd!"
+                              placeholder={t("passwordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -143,7 +155,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       className="w-full"
                       disabled={isSubmitting}
                     >
-                      Submit
+                      {t("submit", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">
@@ -151,18 +163,21 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       </div>
                     )}
                     <div className="mt-4 text-center text-sm">
-                      Don&apos;t have an account?{" "}
+                      {t("dontHaveAccount")}{" "}
                       <Link
                         to="/auth/sign-up"
                         className="underline underline-offset-4"
                       >
-                        Sign up
+                        {t("signUp")}
                       </Link>
                     </div>
                   </form>
                 </Form>
               </CardContent>
             </Card>
+            <div className="flex justify-center">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </div>

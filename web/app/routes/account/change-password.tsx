@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { redirect, useNavigate } from "react-router";
 import type { Route } from "./+types/change-password";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -23,19 +25,27 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
-import { getCsrfToken } from "~/lib/db/auth";
-import { redirectIfNeeded } from "~/lib/db/common";
-import { updatePassword } from "~/lib/db/users";
+import { useSession } from "~/contexts/session-context";
+import { useUpdatePassword } from "~/hooks/use-user";
+import { translateError } from "~/lib/db/common";
 import { updatePasswordSchema } from "~/lib/schemas/auth";
 
-export async function clientLoader() {
-  const csrfToken = await getCsrfToken();
-  redirectIfNeeded(csrfToken.error);
+export default function Page() {
+  const { t } = useTranslation(["user", "auth", "common"]);
+  const { csrfToken, isLoggedIn, isLoading } = useSession();
+  const navigate = useNavigate();
+  const updatePasswordMutation = useUpdatePassword();
 
-  return { csrfToken: csrfToken.data! };
-}
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      navigate("/auth/sign-in");
+    }
+  }, [isLoggedIn, isLoading, navigate]);
 
-export default function Page({ loaderData }: Route.ComponentProps) {
+  useEffect(() => {
+    document.title = `${t("changePassword")} | Issho`;
+  }, [t]);
+
   const form = useForm<z.infer<typeof updatePasswordSchema>>({
     resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
@@ -45,39 +55,42 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     },
   });
 
-  const {
-    setError,
-    formState: { isSubmitting, errors },
-  } = form;
-
-  const navigate = useNavigate();
+  const { setError } = form;
 
   async function onSubmit(values: z.infer<typeof updatePasswordSchema>) {
-    const { error } = await updatePassword(
-      values.oldPassword,
-      values.newPassword,
-      loaderData.csrfToken,
-    );
-    if (error) {
+    if (!csrfToken) {
       setError("root", {
-        message: error,
+        message: t("noCsrfToken"),
       });
       return;
     }
 
-    navigate("/account");
+    try {
+      await updatePasswordMutation.mutateAsync({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+        csrfToken,
+      });
+      navigate("/account");
+    } catch (error) {
+      setError("root", {
+        message: translateError(error),
+      });
+    }
   }
+
+  const isSubmitting = updatePasswordMutation.isPending;
+  const errors = form.formState.errors;
 
   return (
     <>
-      <title>Change Password | Issho</title>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Change your account password</CardDescription>
+                <CardTitle>{t("changePassword")}</CardTitle>
+                <CardDescription>{t("changePasswordDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -90,11 +103,11 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       name="oldPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Old Password</FormLabel>
+                          <FormLabel>{t("oldPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="oldP@assw0rd8to64char"
+                              placeholder={t("oldPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -107,11 +120,11 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Password</FormLabel>
+                          <FormLabel>{t("newPassword")}</FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="newP@assw0rd8to64char"
+                              placeholder={t("newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -124,11 +137,13 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
+                          <FormLabel>
+                            {t("confirmPassword", { ns: "auth" })}
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="password"
-                              placeholder="newP@assw0rd8to64char"
+                              placeholder={t("newPasswordPlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -141,7 +156,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      Save
+                      {t("save", { ns: "common" })}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

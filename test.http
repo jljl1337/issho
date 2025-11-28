@@ -1,12 +1,16 @@
 @baseUrl = http://localhost:3000
-@username = 12341234
+@username = 123412345
 @password = 12341234
-@sessionToken = CAE3KdCsDf4vkfM2LqhXoz1CNnmKNKw3
-@csrfToken = 4i0UvAfFeG0VszXiGgP9gjI3jv52QBph
+@sessionToken = RCXNzyFBFrOS4xIHd1ntJ1oMVz6ms3Yh
+@csrfToken = 0aLWJtDgVRHUwZueAqJ79g7RI6KK08Ds
 
 ############################## Health
 
 GET {{baseUrl}}/api/health
+
+############################## Version
+
+GET {{baseUrl}}/api/version
 
 ################################ Auth
 
@@ -61,3 +65,14 @@ Cookie: issho_session_token={{sessionToken}}
 DELETE {{baseUrl}}/api/users/me
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
+
+###
+
+PATCH {{baseUrl}}/api/users/me/username
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "newUsername": "12341234"
+}

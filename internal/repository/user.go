@@ -10,6 +10,7 @@ INSERT INTO "user" (
     username,
     password_hash,
 	role,
+	language_code,
     created_at,
     updated_at
 ) VALUES (
@@ -17,6 +18,7 @@ INSERT INTO "user" (
 	:username,
 	:password_hash,
 	:role,
+	:language_code,
 	:created_at,
 	:updated_at
 )
@@ -121,6 +123,26 @@ type UpdateUserUsernameParams struct {
 
 func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsernameParams) error {
 	return NamedExecOneRowContext(ctx, q.db, updateUserUsername, arg)
+}
+
+const updateUserLanguage = `
+UPDATE
+    "user"
+SET
+    language_code = :language_code,
+    updated_at = :updated_at
+WHERE
+    id = :id
+`
+
+type UpdateUserLanguageParams struct {
+	LanguageCode string `db:"language_code"`
+	UpdatedAt    string `db:"updated_at"`
+	ID           string `db:"id"`
+}
+
+func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updateUserLanguage, arg)
 }
 
 const deleteUser = `

@@ -12,6 +12,9 @@ const (
 	ErrCodeConflict
 	ErrCodeUnprocessable
 	ErrCodeInternal
+
+	ErrCodeUsernameTaken
+	ErrCodeInvalidCredentials
 )
 
 type ServiceError struct {

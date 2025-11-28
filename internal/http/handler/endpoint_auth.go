@@ -11,8 +11,9 @@ import (
 )
 
 type signUpSignInRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	LanguageCode string `json:"languageCode,omitempty"`
 }
 
 type signInPreSessionCSRFTokenResponse struct {
@@ -32,24 +33,27 @@ func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	var req signUpSignInRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		http.Error(w, "Username and password are required", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Username and password are required", http.StatusBadRequest)
 		return
 	}
 
-	// Process the request
-	if err := h.service.SignUp(r.Context(), req.Username, req.Password); err != nil {
+	if req.LanguageCode == "" {
+		common.WriteMessageResponse(w, "Language code is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.SignUp(r.Context(), req.Username, req.Password, req.LanguageCode); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
 
 	// Respond to the client
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User signed up successfully"))
+	common.WriteMessageResponse(w, "User signed up successfully", http.StatusCreated)
 }
 
 func (h *EndpointHandler) preSession(w http.ResponseWriter, r *http.Request) {
@@ -63,8 +67,7 @@ func (h *EndpointHandler) preSession(w http.ResponseWriter, r *http.Request) {
 	// Respond to the client
 	http.SetCookie(w, NewActiveSessionCookie(sessionToken))
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(signInPreSessionCSRFTokenResponse{
+	common.WriteJSONResponse(w, http.StatusOK, signInPreSessionCSRFTokenResponse{
 		CSRFToken: CSRFToken,
 	})
 }
@@ -73,24 +76,24 @@ func (h *EndpointHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	preSessionToken, err := r.Cookie(env.SessionCookieName)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		common.WriteMessageResponse(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	preSessionCSRFToken := r.Header.Get("X-CSRF-Token")
 	if preSessionCSRFToken == "" {
-		http.Error(w, "CSRF token is required", http.StatusUnauthorized)
+		common.WriteMessageResponse(w, "CSRF token is required", http.StatusUnauthorized)
 		return
 	}
 
 	var req signUpSignInRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		http.Error(w, "Username and password are required", http.StatusBadRequest)
+		common.WriteMessageResponse(w, "Username and password are required", http.StatusBadRequest)
 		return
 	}
 
@@ -104,8 +107,7 @@ func (h *EndpointHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	// Respond to the client
 	http.SetCookie(w, NewActiveSessionCookie(sessionToken))
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(signInPreSessionCSRFTokenResponse{
+	common.WriteJSONResponse(w, http.StatusOK, signInPreSessionCSRFTokenResponse{
 		CSRFToken: CSRFToken,
 	})
 }
@@ -114,7 +116,7 @@ func (h *EndpointHandler) signOut(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	sessionToken, err := r.Cookie(env.SessionCookieName)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		common.WriteMessageResponse(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -127,8 +129,7 @@ func (h *EndpointHandler) signOut(w http.ResponseWriter, r *http.Request) {
 	// Respond to the client
 	http.SetCookie(w, NewExpiredSessionCookie())
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User logged out successfully"))
+	common.WriteMessageResponse(w, "User logged out successfully", http.StatusOK)
 }
 
 func (h *EndpointHandler) signOutAll(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +138,7 @@ func (h *EndpointHandler) signOutAll(w http.ResponseWriter, r *http.Request) {
 	userID, err := middleware.GetUserIDFromContext(ctx)
 	if err != nil {
 		slog.Error("Error getting user ID from context")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -149,15 +150,14 @@ func (h *EndpointHandler) signOutAll(w http.ResponseWriter, r *http.Request) {
 	// Respond to the client
 	http.SetCookie(w, NewExpiredSessionCookie())
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User logged out from all sessions successfully"))
+	common.WriteMessageResponse(w, "User logged out from all sessions successfully", http.StatusOK)
 }
 
 func (h *EndpointHandler) csrfToken(w http.ResponseWriter, r *http.Request) {
 	// Input validation
 	sessionToken, err := r.Cookie(env.SessionCookieName)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		common.WriteMessageResponse(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -169,8 +169,7 @@ func (h *EndpointHandler) csrfToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond to the client
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(signInPreSessionCSRFTokenResponse{
+	common.WriteJSONResponse(w, http.StatusOK, signInPreSessionCSRFTokenResponse{
 		CSRFToken: CSRFToken,
 	})
 }

@@ -1,25 +1,28 @@
+import { throwIfError, translateError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
 
-type User = {
+export { translateError };
+
+export type User = {
   id: string;
   username: string;
   role: string;
+  languageCode: string;
   createdAt: string;
 };
 
-export async function getMe() {
+export async function getMe(): Promise<User> {
   const response = await customFetch("/api/users/me", "GET");
-
-  if (!response.ok) {
-    const error = await response.text();
-    return { data: null, error };
-  }
+  await throwIfError(response);
 
   const data: User = await response.json();
-  return { data, error: null };
+  return data;
 }
 
-export async function updateUsername(newUsername: string, csrfToken: string) {
+export async function updateUsername(
+  newUsername: string,
+  csrfToken: string,
+): Promise<void> {
   const response = await customFetch(
     "/api/users/me/username",
     "PATCH",
@@ -27,19 +30,14 @@ export async function updateUsername(newUsername: string, csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  await throwIfError(response);
 }
 
 export async function updatePassword(
   oldPassword: string,
   newPassword: string,
   csrfToken: string,
-) {
+): Promise<void> {
   const response = await customFetch(
     "/api/users/me/password",
     "PATCH",
@@ -47,15 +45,24 @@ export async function updatePassword(
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  await throwIfError(response);
 }
 
-export async function deleteMe(csrfToken: string) {
+export async function updateLanguage(
+  languageCode: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/language",
+    "PATCH",
+    { languageCode },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function deleteMe(csrfToken: string): Promise<void> {
   const response = await customFetch(
     "/api/users/me",
     "DELETE",
@@ -63,10 +70,5 @@ export async function deleteMe(csrfToken: string) {
     csrfToken,
   );
 
-  if (!response.ok) {
-    const error = await response.text();
-    return { error };
-  }
-
-  return { error: null };
+  await throwIfError(response);
 }

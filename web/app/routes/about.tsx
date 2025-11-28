@@ -1,29 +1,34 @@
-import { redirect } from "react-router";
+import { useEffect } from "react";
+import { redirect, useNavigate } from "react-router";
 import type { Route } from "./+types/about";
 
-import { isUnauthorizedError } from "~/lib/db/common";
-import { getVersion } from "~/lib/db/version";
+import { useTranslation } from "react-i18next";
 
-export async function clientLoader() {
-  const version = await getVersion();
+import { useVersion } from "~/hooks/use-version";
 
-  if (version.error != null) {
-    if (isUnauthorizedError(version.error)) {
-      return redirect("/auth/sign-in");
+export default function Page() {
+  const { t } = useTranslation("navigation");
+  const navigate = useNavigate();
+  const { data: version, isLoading, error } = useVersion();
+
+  useEffect(() => {
+    if (error) {
+      navigate("/error");
     }
-    return redirect("/error");
-  }
-  return { version: version.data };
-}
+  }, [error, navigate]);
 
-export default function Page({ loaderData }: Route.ComponentProps) {
+  useEffect(() => {
+    document.title = `${t("about")} | Issho`;
+  }, [t]);
+
   return (
     <>
-      <title>About | Issho</title>
       <div className="h-full flex items-center justify-center">
         <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <h1 className="text-4xl">About</h1>
-          <p className="mb-2">Version: {loaderData.version}</p>
+          <h1 className="text-4xl">{t("about")}</h1>
+          <p className="mb-2">
+            {t("version")}: {isLoading ? t("loading") : version}
+          </p>
         </div>
       </div>
     </>

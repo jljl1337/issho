@@ -1,11 +1,10 @@
+import { throwIfError } from "~/lib/db/common";
 import { customFetch } from "~/lib/db/fetch";
 
-export async function getVersion() {
+export async function getVersion(): Promise<string> {
   const response = await customFetch("/api/version", "GET");
-  if (!response.ok) {
-    const error = await response.text();
-    return { data: null, error };
-  }
+  await throwIfError(response);
+
   const data: { version: string } = await response.json();
-  return { data: data.version, error: null };
+  return data.version;
 }

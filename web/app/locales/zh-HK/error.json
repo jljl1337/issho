@@ -1,0 +1,8 @@
+{
+  "title": "發生錯誤",
+  "oops": "哎呀！",
+  "message": "發生錯誤，請稍後再試",
+  "usernameTaken": "用戶名稱已被使用",
+  "invalidCredentials": "用戶名稱或密碼錯誤",
+  "genericError": "發生錯誤，請重試。"
+}

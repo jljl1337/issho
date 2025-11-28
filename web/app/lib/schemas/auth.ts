@@ -1,23 +1,22 @@
 import { z } from "zod";
 
+import i18n from "~/i18n";
+
 export const usernameSchema = z.object({
   username: z
     .string()
     .trim()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username must be at most 30 characters")
-    .regex(
-      /^[a-z0-9_]+$/,
-      "Username can only contain lowercase letters, numbers, and underscores",
-    ),
+    .min(3, i18n.t("validation.usernameMinLength"))
+    .max(30, i18n.t("validation.usernameMaxLength"))
+    .regex(/^[a-z0-9_]+$/, i18n.t("validation.usernameInvalidFormat")),
 });
 
 const password = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(64, "Password must be at most 64 characters")
+  .min(8, i18n.t("validation.passwordMinLength"))
+  .max(64, i18n.t("validation.passwordMaxLength"))
   .regex(/^[A-Za-z0-9!@#$%^&*]+$/, {
-    message: "Password can only contain letters, numbers, and one of !@#$%^&*",
+    message: i18n.t("validation.passwordInvalidFormat"),
   });
 
 export const passwordSchema = z.object({
@@ -30,17 +29,17 @@ export const passwordWithConfirmSchema = passwordSchema
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: i18n.t("validation.passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });
 
 export const updatePasswordSchema = z
   .object({
-    oldPassword: z.string().min(1, "Old password is required"),
+    oldPassword: z.string().min(1, i18n.t("validation.oldPasswordRequired")),
     newPassword: password,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: i18n.t("validation.passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });

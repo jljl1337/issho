@@ -2,6 +2,11 @@ package service
 
 import "regexp"
 
+var mapLanguageCodeAllowed = map[string]bool{
+	"en-US": true,
+	"zh-HK": true,
+}
+
 func checkUsername(username string) (bool, error) {
 	r, err := regexp.Compile("^[a-zA-Z0-9_]{3,30}$")
 	if err != nil {
@@ -18,4 +23,9 @@ func checkPassword(password string) (bool, error) {
 	}
 
 	return r.MatchString(password), nil
+}
+
+func checkLanguageCode(languageCode string) bool {
+	_, exists := mapLanguageCodeAllowed[languageCode]
+	return exists
 }
