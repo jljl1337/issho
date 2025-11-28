@@ -80,6 +80,19 @@ export default function Page() {
                 </Button>
               </div>
               <Separator />
+              {/* Change Email */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base">{t("changeEmail")}</Label>
+                  <p className="text-muted-foreground text-sm">
+                    {t("changeEmailDesc")}
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link to="/account/change-email">{t("changeEmail")}</Link>
+                </Button>
+              </div>
+              <Separator />
               {/* Change Password */}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">

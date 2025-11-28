@@ -34,6 +34,20 @@ export async function updateUsername(
   await throwIfError(response);
 }
 
+export async function updateEmail(
+  newEmail: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/email",
+    "PATCH",
+    { newEmail },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
 export async function updatePassword(
   oldPassword: string,
   newPassword: string,

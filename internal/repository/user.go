@@ -146,6 +146,26 @@ func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsername
 	return NamedExecOneRowContext(ctx, q.db, updateUserUsername, arg)
 }
 
+const updateUserEmail = `
+UPDATE
+    "user"
+SET
+    email = :email,
+    updated_at = :updated_at
+WHERE
+    id = :id
+`
+
+type UpdateUserEmailParams struct {
+	Email     string `db:"email"`
+	UpdatedAt string `db:"updated_at"`
+	ID        string `db:"id"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updateUserEmail, arg)
+}
+
 const updateUserLanguage = `
 UPDATE
     "user"

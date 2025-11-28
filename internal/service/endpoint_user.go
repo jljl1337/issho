@@ -107,6 +107,50 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	return nil
 }
 
+func (s *EndpointService) UpdateEmailByID(ctx context.Context, userID, newEmail string) error {
+	// Validate new email
+	newEmailValid, err := checkEmail(newEmail)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to validate new email: %v", err)
+	}
+	if !newEmailValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid new email format")
+	}
+
+	queries := repository.New(s.db)
+
+	// Check if new email is the same as the old one or already taken
+	users, err := queries.GetUserByEmail(ctx, newEmail)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
+	}
+
+	if len(users) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple users found with the same email")
+	}
+
+	if len(users) == 1 {
+		user := users[0]
+
+		if user.ID == userID {
+			return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
+		} else {
+			return NewServiceError(ErrCodeEmailTaken, "email already taken")
+		}
+	}
+
+	err = queries.UpdateUserEmail(ctx, repository.UpdateUserEmailParams{
+		ID:        userID,
+		Email:     newEmail,
+		UpdatedAt: generator.NowISO8601(),
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update email: %v", err)
+	}
+
+	return nil
+}
+
 func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
 	languageCodeValid := checkLanguageCode(languageCode)
 	if !languageCodeValid {

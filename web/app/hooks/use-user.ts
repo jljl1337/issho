@@ -4,6 +4,7 @@ import { ApiError, isUnauthorizedError } from "~/lib/db/common";
 import {
   deleteMe as deleteMeApi,
   getMe,
+  updateEmail as updateEmailApi,
   updateLanguage as updateLanguageApi,
   updatePassword as updatePasswordApi,
   updateUsername as updateUsernameApi,
@@ -47,6 +48,29 @@ export function useUpdateUsername() {
       csrfToken: string;
     }) => {
       await updateUsernameApi(newUsername, csrfToken);
+    },
+    onSuccess: () => {
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+    },
+  });
+}
+
+/**
+ * Mutation hook to update email
+ */
+export function useUpdateEmail() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      newEmail,
+      csrfToken,
+    }: {
+      newEmail: string;
+      csrfToken: string;
+    }) => {
+      await updateEmailApi(newEmail, csrfToken);
     },
     onSuccess: () => {
       // Invalidate user query to refetch updated data
