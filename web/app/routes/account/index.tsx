@@ -45,6 +45,9 @@ export default function Page() {
               {t("username")}: {user?.username}
             </p>
             <p className="mb-2">
+              {t("email")}: {user?.email}
+            </p>
+            <p className="mb-2">
               {t("role")}: {user?.role}
             </p>
             <p className="mb-2">
@@ -74,6 +77,19 @@ export default function Page() {
                   <Link to="/account/change-username">
                     {t("changeUsername")}
                   </Link>
+                </Button>
+              </div>
+              <Separator />
+              {/* Change Email */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base">{t("changeEmail")}</Label>
+                  <p className="text-muted-foreground text-sm">
+                    {t("changeEmailDesc")}
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link to="/account/change-email">{t("changeEmail")}</Link>
                 </Button>
               </div>
               <Separator />

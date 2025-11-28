@@ -20,6 +20,7 @@ export default [
     ...prefix("account", [
       index("routes/account/index.tsx"),
       route("change-username", "routes/account/change-username.tsx"),
+      route("change-email", "routes/account/change-email.tsx"),
       route("change-password", "routes/account/change-password.tsx"),
       route("language", "routes/account/language.tsx"),
       route("sign-out", "routes/account/sign-out.tsx"),

@@ -13,13 +13,21 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) SignUp(ctx context.Context, username, password, languageCode string) error {
+func (s *EndpointService) SignUp(ctx context.Context, username, email, password, languageCode string) error {
 	usernameValid, err := checkUsername(username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate username: %v", err)
 	}
 	if !usernameValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid username format")
+	}
+
+	emailValid, err := checkEmail(email)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to validate email: %v", err)
+	}
+	if !emailValid {
+		return NewServiceError(ErrCodeUnprocessable, "invalid email format")
 	}
 
 	passwordValid, err := checkPassword(password)
@@ -50,6 +58,19 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password, langua
 		return NewServiceError(ErrCodeUsernameTaken, "username already exists")
 	}
 
+	usersByEmail, err := queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get user by email: %v", err)
+	}
+
+	if len(usersByEmail) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple users found with the same email")
+	}
+
+	if len(usersByEmail) > 0 {
+		return NewServiceError(ErrCodeEmailTaken, "email already exists")
+	}
+
 	passwordHash, err := crypto.HashPassword(password, env.PasswordBcryptCost)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
@@ -70,6 +91,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, password, langua
 	if err = queries.CreateUser(ctx, repository.User{
 		ID:           generator.NewULID(),
 		Username:     username,
+		Email:        email,
 		PasswordHash: passwordHash,
 		Role:         role,
 		LanguageCode: languageCode,
@@ -110,7 +132,11 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 
 // SignIn authenticates a user and creates a new session.
 // It returns non-empty session token and CSRF token if the credentials are valid.
-func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessionCSRFToken, username, password string) (string, string, error) {
+func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessionCSRFToken, username, email, password string) (string, string, error) {
+	if username == "" && email == "" {
+		return "", "", NewServiceError(ErrCodeBadRequest, "either username or email must be provided")
+	}
+
 	queries := repository.New(s.db)
 
 	// Validate pre-session
@@ -151,9 +177,17 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	}
 
 	// Validate credentials
-	users, err := queries.GetUserByUsername(ctx, username)
-	if err != nil {
-		return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get user by username: %v", err)
+	var users []repository.User
+	if email != "" {
+		users, err = queries.GetUserByEmail(ctx, email)
+		if err != nil {
+			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get user by email: %v", err)
+		}
+	} else {
+		users, err = queries.GetUserByUsername(ctx, username)
+		if err != nil {
+			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get user by username: %v", err)
+		}
 	}
 
 	if len(users) > 1 {

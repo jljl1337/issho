@@ -14,6 +14,7 @@ const (
 	ErrCodeInternal
 
 	ErrCodeUsernameTaken
+	ErrCodeEmailTaken
 	ErrCodeInvalidCredentials
 )
 

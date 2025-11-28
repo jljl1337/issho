@@ -4,15 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useCsrfToken } from "~/hooks/use-auth";
 import { useMe } from "~/hooks/use-user";
-import { queryKeys } from "~/lib/react-query/query-keys";
-
-type User = {
-  id: string;
-  username: string;
-  role: string;
-  languageCode: string;
-  createdAt: string;
-};
+import type { User } from "~/lib/db/users";
 
 type SessionContextType = {
   isLoggedIn: boolean;

@@ -6,6 +6,7 @@ export { translateError };
 export type User = {
   id: string;
   username: string;
+  email: string;
   role: string;
   languageCode: string;
   createdAt: string;
@@ -27,6 +28,20 @@ export async function updateUsername(
     "/api/users/me/username",
     "PATCH",
     { newUsername },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function updateEmail(
+  newEmail: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/email",
+    "PATCH",
+    { newEmail },
     csrfToken,
   );
 

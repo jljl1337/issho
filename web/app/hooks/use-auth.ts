@@ -43,14 +43,16 @@ export function useSignUp() {
   return useMutation({
     mutationFn: async ({
       username,
+      email,
       password,
       languageCode,
     }: {
       username: string;
+      email: string;
       password: string;
       languageCode?: string;
     }) => {
-      await signUpApi(username, password, languageCode);
+      await signUpApi(username, email, password, languageCode);
     },
   });
 }
@@ -64,14 +66,16 @@ export function useSignIn() {
   return useMutation({
     mutationFn: async ({
       username,
+      email,
       password,
       csrfToken,
     }: {
-      username: string;
+      username?: string;
+      email?: string;
       password: string;
       csrfToken: string;
     }) => {
-      await signInApi(username, password, csrfToken);
+      await signInApi({ username, email }, password, csrfToken);
     },
     onSuccess: () => {
       // Invalidate user and CSRF token queries to refetch

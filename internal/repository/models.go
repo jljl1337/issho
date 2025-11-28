@@ -14,6 +14,7 @@ type Migration struct {
 type User struct {
 	ID           string `json:"id" db:"id"`
 	Username     string `json:"username" db:"username"`
+	Email        string `json:"email" db:"email"`
 	PasswordHash string `json:"passwordHash" db:"password_hash"`
 	Role         string `json:"role" db:"role"`
 	LanguageCode string `json:"languageCode" db:"language_code"`

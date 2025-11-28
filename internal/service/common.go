@@ -1,6 +1,8 @@
 package service
 
-import "regexp"
+import (
+	"regexp"
+)
 
 var mapLanguageCodeAllowed = map[string]bool{
 	"en-US": true,
@@ -28,4 +30,13 @@ func checkPassword(password string) (bool, error) {
 func checkLanguageCode(languageCode string) bool {
 	_, exists := mapLanguageCodeAllowed[languageCode]
 	return exists
+}
+
+func checkEmail(email string) (bool, error) {
+	r, err := regexp.Compile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	if err != nil {
+		return false, err
+	}
+
+	return r.MatchString(email), nil
 }

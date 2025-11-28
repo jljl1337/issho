@@ -12,6 +12,7 @@ import (
 type getCurrentUserResponse struct {
 	ID           string `json:"id"`
 	Username     string `json:"username"`
+	Email        string `json:"email"`
 	Role         string `json:"role"`
 	LanguageCode string `json:"languageCode"`
 	CreatedAt    string `json:"createdAt"`
@@ -20,6 +21,7 @@ type getCurrentUserResponse struct {
 func (h *EndpointHandler) registerUserRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /users/me", h.getCurrentUser)
 	mux.HandleFunc("PATCH /users/me/username", h.updateUsername)
+	mux.HandleFunc("PATCH /users/me/email", h.updateEmail)
 	mux.HandleFunc("PATCH /users/me/password", h.updatePassword)
 	mux.HandleFunc("PATCH /users/me/language", h.updateLanguage)
 	mux.HandleFunc("DELETE /users/me", h.deleteCurrentUser)
@@ -44,6 +46,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 	response := getCurrentUserResponse{
 		ID:           user.ID,
 		Username:     user.Username,
+		Email:        user.Email,
 		Role:         user.Role,
 		LanguageCode: user.LanguageCode,
 		CreatedAt:    user.CreatedAt,
@@ -80,6 +83,37 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 
 	// Respond to the client
 	common.WriteMessageResponse(w, "Username updated successfully", http.StatusOK)
+}
+
+func (h *EndpointHandler) updateEmail(w http.ResponseWriter, r *http.Request) {
+	// Input validation
+	var req struct {
+		NewEmail string `json:"newEmail"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		common.WriteMessageResponse(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	if req.NewEmail == "" {
+		common.WriteMessageResponse(w, "New email is required", http.StatusBadRequest)
+		return
+	}
+
+	// Process the request
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		slog.Error("Error getting user ID from context")
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.UpdateEmailByID(r.Context(), userID, req.NewEmail); err != nil {
+		common.WriteErrorResponse(w, err)
+		return
+	}
+
+	// Respond to the client
+	common.WriteMessageResponse(w, "Email updated successfully", http.StatusOK)
 }
 
 func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request) {

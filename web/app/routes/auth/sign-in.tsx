@@ -82,8 +82,13 @@ export default function Page() {
     }
 
     try {
+      // Determine if input is email or username based on @ character
+      const isEmail = values.username.includes("@");
+
       await signInMutation.mutateAsync({
-        username: values.username,
+        ...(isEmail
+          ? { email: values.username }
+          : { username: values.username }),
         password: values.password,
         csrfToken: tokenToUse,
       });
@@ -122,10 +127,10 @@ export default function Page() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("username")}</FormLabel>
+                          <FormLabel>{t("usernameOrEmail")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("usernamePlaceholder")}
+                              placeholder={t("usernameOrEmailPlaceholder")}
                               {...field}
                             />
                           </FormControl>

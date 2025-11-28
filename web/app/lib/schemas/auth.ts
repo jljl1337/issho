@@ -6,17 +6,24 @@ export const usernameSchema = z.object({
   username: z
     .string()
     .trim()
-    .min(3, i18n.t("validation.usernameMinLength"))
-    .max(30, i18n.t("validation.usernameMaxLength"))
-    .regex(/^[a-z0-9_]+$/, i18n.t("validation.usernameInvalidFormat")),
+    .min(3, i18n.t("validation:usernameMinLength"))
+    .max(30, i18n.t("validation:usernameMaxLength"))
+    .regex(/^[a-z0-9_]+$/, i18n.t("validation:usernameInvalidFormat")),
+});
+
+export const emailSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email(i18n.t("validation:emailInvalid"))),
 });
 
 const password = z
   .string()
-  .min(8, i18n.t("validation.passwordMinLength"))
-  .max(64, i18n.t("validation.passwordMaxLength"))
+  .min(8, i18n.t("validation:passwordMinLength"))
+  .max(64, i18n.t("validation:passwordMaxLength"))
   .regex(/^[A-Za-z0-9!@#$%^&*]+$/, {
-    message: i18n.t("validation.passwordInvalidFormat"),
+    message: i18n.t("validation:passwordInvalidFormat"),
   });
 
 export const passwordSchema = z.object({
@@ -29,17 +36,17 @@ export const passwordWithConfirmSchema = passwordSchema
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: i18n.t("validation.passwordsDoNotMatch"),
+    message: i18n.t("validation:passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });
 
 export const updatePasswordSchema = z
   .object({
-    oldPassword: z.string().min(1, i18n.t("validation.oldPasswordRequired")),
+    oldPassword: z.string().min(1, i18n.t("validation:oldPasswordRequired")),
     newPassword: password,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: i18n.t("validation.passwordsDoNotMatch"),
+    message: i18n.t("validation:passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });
