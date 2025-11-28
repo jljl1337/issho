@@ -7,7 +7,16 @@ import { useUpdateLanguage } from "~/hooks/use-user";
 
 const LANGUAGE_STORAGE_KEY = "issho_language";
 
-type LanguageCode = "en-US" | "zh-HK";
+export const languages = [
+  { code: "en-US", nativeName: "English (US)" },
+  { code: "zh-HK", nativeName: "中文 (香港)" },
+] as const;
+
+type LanguageCode = (typeof languages)[number]["code"];
+
+const isValidLanguage = (lang: string): lang is LanguageCode => {
+  return languages.some((l) => l.code === lang);
+};
 
 interface LanguageContextType {
   language: LanguageCode;
@@ -33,17 +42,23 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const initializeLanguage = async () => {
       if (isLoggedIn && user) {
         // User is logged in - use language from user and store in localStorage
-        const backendLanguage = user.languageCode as LanguageCode;
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, backendLanguage);
-        setLanguageState(backendLanguage);
-        await i18n.changeLanguage(backendLanguage);
+        const backendLanguage = user.languageCode;
+        const validLanguage = isValidLanguage(backendLanguage)
+          ? backendLanguage
+          : "en-US";
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, validLanguage);
+        setLanguageState(validLanguage);
+        await i18n.changeLanguage(validLanguage);
       } else {
         // User is not logged in - use localStorage only
-        const cachedLanguage =
-          (localStorage.getItem(LANGUAGE_STORAGE_KEY) as LanguageCode) ||
-          "en-US";
-        setLanguageState(cachedLanguage);
-        await i18n.changeLanguage(cachedLanguage);
+        var cachedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+        const validLanguage =
+          cachedLanguage && isValidLanguage(cachedLanguage)
+            ? cachedLanguage
+            : "en-US";
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, validLanguage);
+        setLanguageState(validLanguage);
+        await i18n.changeLanguage(validLanguage);
       }
     };
 

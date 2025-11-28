@@ -30,18 +30,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
-import { useLanguage } from "~/contexts/language-context";
+import { languages, useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 
-const languages = [
-  { code: "en-US", name: "English (US)", nativeName: "English (US)" },
-  { code: "zh-HK", name: "Chinese (HK)", nativeName: "中文 (香港)" },
-] as const;
-
-type LanguageCode = (typeof languages)[number]["code"];
-
 const formSchema = z.object({
-  language: z.enum(["en-US", "zh-HK"]),
+  language: z.enum([...languages.map((lang) => lang.code)]),
 });
 
 export default function Page() {

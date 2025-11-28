@@ -8,12 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 
-import { useLanguage } from "~/contexts/language-context";
-
-const languages = [
-  { code: "en-US", name: "English (US)", nativeName: "English (US)" },
-  { code: "zh-HK", name: "Chinese (HK)", nativeName: "中文 (香港)" },
-] as const;
+import { languages, useLanguage } from "~/contexts/language-context";
 
 export function LanguageSwitcher() {
   const { language, setLanguage, isUpdating } = useLanguage();

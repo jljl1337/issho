@@ -25,6 +25,7 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { LanguageSwitcher } from "~/components/language-switcher";
+import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 import { useSignUp } from "~/hooks/use-auth";
 import { translateError } from "~/lib/db/common";
@@ -36,6 +37,7 @@ export default function Page() {
   const { t } = useTranslation(["auth", "common"]);
   const navigate = useNavigate();
   const { isLoggedIn, isLoading } = useSession();
+  const { language } = useLanguage();
   const signUpMutation = useSignUp();
 
   // Redirect if already logged in
@@ -62,13 +64,10 @@ export default function Page() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // Get current language from localStorage
-      const languageCode = localStorage.getItem("issho_language") || "en-US";
-
       await signUpMutation.mutateAsync({
         username: values.username,
         password: values.password,
-        languageCode,
+        languageCode: language,
       });
       navigate("/auth/sign-in");
     } catch (error) {
