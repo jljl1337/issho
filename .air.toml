@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "cd web && pnpm react-router typegen && pnpm build && cd .. && go build -o ./tmp/main cmd/issho/main.go"
+cmd = "go build -o ./tmp/main cmd/issho/main.go"
 exclude_dir = ["assets", "tmp", "vendor", "data"]
 exclude_file = []
 exclude_regex = ["_test.go"]
@@ -13,7 +13,7 @@ exclude_unchanged = false
 follow_symlink = false
 full_bin = ""
 include_dir = []
-include_ext = ["go", "ts", "tsx"]
+include_ext = ["go", "env"]
 include_file = []
 kill_delay = "1s"
 log = "build-errors.log"
