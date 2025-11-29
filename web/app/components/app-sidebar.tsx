@@ -60,6 +60,17 @@ export function AppSidebar() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem key="posts">
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith("/posts")}
+              >
+                <Link to="/posts">
+                  <List />
+                  {t("posts", { ns: "navigation" })}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

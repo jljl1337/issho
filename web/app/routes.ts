@@ -29,6 +29,7 @@ export default [
     ]),
 
     ...prefix("home", [index("routes/home/index.tsx")]),
+    ...prefix("posts", [index("routes/posts/index.tsx")]),
   ]),
 
   route("error", "routes/error.tsx"),
