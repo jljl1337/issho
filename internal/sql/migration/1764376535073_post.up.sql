@@ -13,3 +13,4 @@ CREATE TABLE post (
 );
 
 CREATE INDEX idx_post_user_id ON post(user_id);
+CREATE INDEX idx_post_published_at ON post(published_at);
