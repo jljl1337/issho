@@ -115,7 +115,7 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 	currentTime := generator.NowISO8601()
 	expiresAt := format.TimeToISO8601(time.Now().Add(time.Duration(env.PreSessionLifetimeMin) * time.Minute))
 
-	if err := queries.CreateSession(ctx, repository.CreateSessionParams{
+	if err := queries.CreateSession(ctx, repository.Session{
 		ID:        sessionID,
 		UserID:    sql.NullString{Valid: false},
 		Token:     sessionToken,
@@ -246,7 +246,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	}
 
 	// Create a new session associated with the user
-	err = queries.CreateSession(ctx, repository.CreateSessionParams{
+	err = queries.CreateSession(ctx, repository.Session{
 		ID:        sessionID,
 		UserID:    sql.NullString{String: user.ID, Valid: true},
 		Token:     sessionToken,

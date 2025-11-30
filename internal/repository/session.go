@@ -25,17 +25,7 @@ INSERT INTO session (
 )
 `
 
-type CreateSessionParams struct {
-	ID        string         `db:"id"`
-	UserID    sql.NullString `db:"user_id"`
-	Token     string         `db:"token"`
-	CsrfToken string         `db:"csrf_token"`
-	ExpiresAt string         `db:"expires_at"`
-	CreatedAt string         `db:"created_at"`
-	UpdatedAt string         `db:"updated_at"`
-}
-
-func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
+func (q *Queries) CreateSession(ctx context.Context, arg Session) error {
 	return NamedExecOneRowContext(ctx, q.db, createSession, arg)
 }
 
