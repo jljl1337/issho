@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Editor from "@monaco-editor/react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import ReactMarkdown from "react-markdown";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -20,6 +19,7 @@ import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 
 import { DateTimePicker } from "~/components/datetime-picker";
+import { MarkdownRenderer } from "~/components/markdown-renderer";
 
 interface PostEditorPageProps {
   initialData?: {
@@ -138,10 +138,7 @@ export function PostEditorPage({
               </h2>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              <div className="prose dark:prose-invert max-w-none break-all">
-                {/* TODO: break word in code block */}
-                <ReactMarkdown>{contentValue}</ReactMarkdown>
-              </div>
+              <MarkdownRenderer content={contentValue} />
             </div>
           </div>
         </div>
