@@ -26,19 +26,27 @@ export default function Layout() {
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
+      const wasMobile = isMobile;
       setIsMobile(mobile);
-      // Only auto-open on desktop if not already set
-      if (!mobile) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
+
+      // Only auto-adjust when crossing the mobile/desktop boundary
+      if (wasMobile !== mobile) {
+        if (!mobile) {
+          setIsOpen(true);
+        } else {
+          setIsOpen(false);
+        }
       }
     };
 
-    checkMobile();
+    // Initial setup
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    setIsOpen(!mobile);
+
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  }, [isMobile]);
   const { t } = useTranslation(["sidebar", "navigation", "user"]);
   const { setTheme, theme } = useTheme();
   const { pathname } = useLocation();
