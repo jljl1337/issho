@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
 
+import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 import { DataTable } from "~/components/tables/data-table";
 import TableRowDropdown from "~/components/tables/dropdown";
 import { useLanguage } from "~/contexts/language-context";
@@ -174,43 +175,39 @@ export default function Page() {
   ];
 
   return (
-    <>
-      <div className="h-full flex items-center justify-center">
-        <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl">{t("posts")}</h1>
-            <Button asChild>
-              <Link to="/posts/create">
-                <PlusIcon className="mr-2 h-4 w-4" />
-                {t("createPost")}
-              </Link>
-            </Button>
-          </div>
-
-          {postsLoading && allPosts.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-muted-foreground">{t("loadingPosts")}</p>
-            </div>
-          ) : (
-            <>
-              <DataTable columns={columns} data={allPosts} />
-
-              {hasMorePosts && (
-                <div className="flex justify-center mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
-                    className="cursor-pointer"
-                  >
-                    {isLoadingMore ? t("loading") : t("loadMore")}
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+    <VerticallyCenterPage className="flex flex-col gap-4">
+      <h1 className="text-4xl">{t("posts")}</h1>
+      <div>
+        <Button asChild>
+          <Link to="/posts/create">
+            <PlusIcon className="mr-2 h-4 w-4" />
+            {t("createPost")}
+          </Link>
+        </Button>
       </div>
-    </>
+
+      {postsLoading && allPosts.length === 0 ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">{t("loadingPosts")}</p>
+        </div>
+      ) : (
+        <>
+          <DataTable columns={columns} data={allPosts} />
+
+          {hasMorePosts && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="cursor-pointer"
+              >
+                {isLoadingMore ? t("loading") : t("loadMore")}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </VerticallyCenterPage>
   );
 }

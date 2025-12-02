@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
+import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 import { useSession } from "~/contexts/session-context";
 
 export default function Page() {
@@ -22,12 +23,8 @@ export default function Page() {
   }, [t]);
 
   return (
-    <>
-      <div className="h-full flex items-center justify-center">
-        <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <h1 className="text-4xl">{t("home")}</h1>
-        </div>
-      </div>
-    </>
+    <VerticallyCenterPage className="flex flex-col gap-4">
+      <h1 className="text-4xl">{t("home")}</h1>
+    </VerticallyCenterPage>
   );
 }
