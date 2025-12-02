@@ -5,13 +5,19 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
-import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 import { formatDate } from "~/lib/format/date";
 
@@ -26,36 +32,76 @@ export function DateTimePicker({
   onChange,
   label = "Publish Date & Time",
 }: DateTimePickerProps) {
-  const { i18n } = useTranslation();
-  const [time, setTime] = useState(
-    value ? value.toTimeString().slice(0, 5) : "12:00",
+  const { t, i18n } = useTranslation();
+  const [hour, setHour] = useState(
+    value ? String(value.getHours() % 12 || 12) : "12",
+  );
+  const [minute, setMinute] = useState(
+    value ? String(value.getMinutes()).padStart(2, "0") : "00",
+  );
+  const [period, setPeriod] = useState<"am" | "pm">(
+    value && value.getHours() >= 12 ? "pm" : "am",
   );
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
 
-    const [hours, minutes] = time.split(":").map(Number);
+    const hours24 =
+      period === "pm" && hour !== "12"
+        ? Number(hour) + 12
+        : period === "am" && hour === "12"
+          ? 0
+          : Number(hour);
     const newDate = new Date(selectedDate);
-    newDate.setHours(hours, minutes, 0, 0);
+    newDate.setHours(hours24, Number(minute), 0, 0);
     onChange(newDate);
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
-    setTime(newTime);
+  const updateTime = (
+    newHour?: string,
+    newMinute?: string,
+    newPeriod?: "am" | "pm",
+  ) => {
+    if (!value) return;
 
-    if (value) {
-      const [hours, minutes] = newTime.split(":").map(Number);
-      const newDate = new Date(value);
-      newDate.setHours(hours, minutes, 0, 0);
-      onChange(newDate);
-    }
+    const h = newHour ?? hour;
+    const m = newMinute ?? minute;
+    const p = newPeriod ?? period;
+
+    const hours24 =
+      p === "pm" && h !== "12"
+        ? Number(h) + 12
+        : p === "am" && h === "12"
+          ? 0
+          : Number(h);
+
+    const newDate = new Date(value);
+    newDate.setHours(hours24, Number(m), 0, 0);
+    onChange(newDate);
+  };
+
+  const handleHourChange = (newHour: string) => {
+    setHour(newHour);
+    updateTime(newHour, undefined, undefined);
+  };
+
+  const handleMinuteChange = (newMinute: string) => {
+    setMinute(newMinute);
+    updateTime(undefined, newMinute, undefined);
+  };
+
+  const handlePeriodChange = (newPeriod: string) => {
+    const p = newPeriod as "am" | "pm";
+    setPeriod(p);
+    updateTime(undefined, undefined, p);
   };
 
   const handleSetNow = () => {
     const now = new Date();
     onChange(now);
-    setTime(now.toTimeString().slice(0, 5));
+    setHour(String(now.getHours() % 12 || 12));
+    setMinute(String(now.getMinutes()).padStart(2, "0"));
+    setPeriod(now.getHours() >= 12 ? "pm" : "am");
   };
 
   const handleClear = () => {
@@ -89,34 +135,70 @@ export function DateTimePicker({
             />
           </PopoverContent>
         </Popover>
+      </div>
+      {value && (
+        <div className="flex gap-2">
+          <Select value={hour} onValueChange={handleHourChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => {
+                const h = String(i + 1);
+                return (
+                  <SelectItem key={h} value={h}>
+                    {h}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          <Select value={minute} onValueChange={handleMinuteChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 60 }, (_, i) => {
+                const m = String(i).padStart(2, "0");
+                return (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          <Select value={period} onValueChange={handlePeriodChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="am">{t("time:am")}</SelectItem>
+              <SelectItem value="pm">{t("time:pm")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      <div className="flex gap-2">
         {value && (
           <Button
             type="button"
             variant="outline"
-            size="icon"
             onClick={handleClear}
-            title="Clear date"
+            className="flex-1"
           >
             <X className="h-4 w-4" />
           </Button>
         )}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSetNow}
+          className="flex-1"
+        >
+          {t("time:setToNow")}
+        </Button>
       </div>
-      {value && (
-        <Input
-          type="time"
-          value={time}
-          onChange={handleTimeChange}
-          className="w-full"
-        />
-      )}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleSetNow}
-        className="w-full"
-      >
-        Set to Now
-      </Button>
     </div>
   );
 }
