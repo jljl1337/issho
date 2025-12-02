@@ -11,5 +11,6 @@
   "error": "錯誤",
   "success": "成功",
   "confirm": "確認",
-  "openMenu": "開啟選單"
+  "openMenu": "開啟選單",
+  "reset": "重設"
 }

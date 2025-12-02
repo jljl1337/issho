@@ -146,7 +146,7 @@ export function PostEditorPage({
         </div>
 
         {/* Right sidebar for metadata */}
-        <div className="flex w-80 flex-col border-l bg-muted/30">
+        <div className="flex w-96 flex-col border-l bg-muted/30">
           <div className="border-b p-4">
             <h2 className="text-lg font-semibold">
               {t("postSettings", { ns: "post" })}
