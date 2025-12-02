@@ -1,8 +1,10 @@
 @baseUrl = http://localhost:3000
-@username = 123412345
+@username = 12341234
+@email = 12341234@example.com
 @password = 12341234
-@sessionToken = RCXNzyFBFrOS4xIHd1ntJ1oMVz6ms3Yh
-@csrfToken = 0aLWJtDgVRHUwZueAqJ79g7RI6KK08Ds
+@sessionToken = im8yW7DxcbAik7QI8UUNildXDNFqwGxc
+@csrfToken = U1Sb0N3vQMhxfuzwsGdZgXpn0Xre8yBv
+@postID = 01KBE8AG5K73NMM90GD8DHKRZ7
 
 ############################## Health
 
@@ -19,7 +21,9 @@ Content-Type: application/json
 
 {
   "username": "{{username}}",
-  "password": "{{password}}"
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "languageCode": "zh-HK"
 }
 
 ###
@@ -76,3 +80,47 @@ Content-Type: application/json
 {
   "newUsername": "12341234"
 }
+
+############################ Post
+
+POST {{baseUrl}}/api/posts
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "title": "New Post",
+  "description": "This is a new post",
+  "content": "Post content goes here",
+  "publishedAt": "2023-01-01T00:00:00Z"
+}
+
+###
+
+GET {{baseUrl}}/api/posts?&pageSize=10
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+GET {{baseUrl}}/api/posts/{{postID}}
+Cookie: issho_session_token={{sessionToken}}
+
+###
+
+PUT {{baseUrl}}/api/posts/{{postID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Post",
+  "description": "This is an updated post",
+  "content": "Updated post content goes here",
+  "publishedAt": "2023-02-01T00:00:00Z"
+}
+
+###
+
+DELETE {{baseUrl}}/api/posts/{{postID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}

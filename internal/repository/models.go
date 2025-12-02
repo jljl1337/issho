@@ -31,3 +31,14 @@ type Session struct {
 	CreatedAt string         `json:"createdAt" db:"created_at"`
 	UpdatedAt string         `json:"updatedAt" db:"updated_at"`
 }
+
+type Post struct {
+	ID          string  `json:"id" db:"id"`
+	UserID      *string `json:"userID" db:"user_id"`
+	Title       string  `json:"title" db:"title"`
+	Description string  `json:"description" db:"description"`
+	Content     string  `json:"content" db:"content"`
+	PublishedAt *string `json:"publishedAt" db:"published_at"`
+	CreatedAt   string  `json:"createdAt" db:"created_at"`
+	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
+}

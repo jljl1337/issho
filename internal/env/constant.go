@@ -29,8 +29,8 @@ var (
 	PreSessionLifetimeMin      int
 	CSRFTokenLength            int
 	CSRFTokenCharset           string
-	PageSizeMax                int64
-	PageSizeDefault            int64
+	PageSizeMax                int
+	PageSizeDefault            int
 
 	SessionCookieSameSiteMode http.SameSite
 )
@@ -61,8 +61,8 @@ func MustSetConstants() {
 	PreSessionLifetimeMin = MustGetInt("PRE_SESSION_LIFETIME_MIN", 15)
 	CSRFTokenLength = MustGetInt("CSRF_TOKEN_LENGTH", 32)
 	CSRFTokenCharset = MustGetString("CSRF_TOKEN_CHARSET", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	PageSizeMax = MustGetInt64("PAGE_SIZE_MAX", 100)
-	PageSizeDefault = MustGetInt64("PAGE_SIZE_DEFAULT", 10)
+	PageSizeMax = MustGetInt("PAGE_SIZE_MAX", 100)
+	PageSizeDefault = MustGetInt("PAGE_SIZE_DEFAULT", 10)
 
 	switch dBType {
 	case "postgres":

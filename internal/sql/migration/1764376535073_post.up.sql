@@ -3,7 +3,7 @@ CREATE TABLE post (
     user_id TEXT,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    content TEXT,
+    content TEXT NOT NULL,
     published_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
