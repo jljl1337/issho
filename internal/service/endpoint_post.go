@@ -169,14 +169,14 @@ func (s *EndpointService) UpdatePostByID(ctx context.Context, arg UpdatePostByID
 
 	now := generator.NowISO8601()
 
-	// If already published, do not allow updating publishedAt
-	if post.PublishedAt != nil && *post.PublishedAt <= now {
-		arg.PublishedAt = post.PublishedAt
-	} else {
-		// Ensure publishedAt is not set to a past time
-		if arg.PublishedAt != nil && *arg.PublishedAt < now {
-			arg.PublishedAt = &now
-		}
+	// Ensure publishedAt is not set to a past time
+	if arg.PublishedAt != nil && *arg.PublishedAt < now {
+		arg.PublishedAt = &now
+	}
+
+	// If already published and is not converting to draft, keep the original publishedAt
+	if post.PublishedAt != nil && *post.PublishedAt <= now && arg.PublishedAt != nil {
+		return NewServiceError(ErrCodeUpdatePublishedAt, "cannot update publishedAt of an already published post")
 	}
 
 	updateParams := repository.UpdatePostByIDParams{

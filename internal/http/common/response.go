@@ -22,6 +22,7 @@ var genericErrorMap = map[service.ErrorCode]service.ErrorCode{
 	service.ErrCodeUsernameTaken:      service.ErrCodeConflict,
 	service.ErrCodeEmailTaken:         service.ErrCodeConflict,
 	service.ErrCodeInvalidCredentials: service.ErrCodeUnauthorized,
+	service.ErrCodeUpdatePublishedAt:  service.ErrCodeUnprocessable,
 }
 
 var HTTPStatusMap = map[service.ErrorCode]int{
@@ -38,6 +39,7 @@ var jsonCodeMap = map[service.ErrorCode]string{
 	service.ErrCodeUsernameTaken:      "usernameTaken",
 	service.ErrCodeEmailTaken:         "emailTaken",
 	service.ErrCodeInvalidCredentials: "invalidCredentials",
+	service.ErrCodeUpdatePublishedAt:  "updatePublishedAt",
 }
 
 func WriteErrorResponse(w http.ResponseWriter, err error) {
