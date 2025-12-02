@@ -17,7 +17,7 @@ export type Post = {
 export type GetPostListParams = {
   orderBy?: string;
   ascending?: boolean;
-  includeDrafts?: boolean;
+  includeAll?: boolean;
   pageSize?: number;
   cursor?: string;
   cursorId?: string;
@@ -34,8 +34,8 @@ export async function getPosts(params?: GetPostListParams): Promise<Post[]> {
   if (params?.ascending !== undefined) {
     searchParams.set("ascending", params.ascending.toString());
   }
-  if (params?.includeDrafts !== undefined) {
-    searchParams.set("include-drafts", params.includeDrafts.toString());
+  if (params?.includeAll !== undefined) {
+    searchParams.set("include-all", params.includeAll.toString());
   }
   if (params?.pageSize) {
     searchParams.set("page-size", params.pageSize.toString());

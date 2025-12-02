@@ -1,16 +1,18 @@
-export function dateToYYYYMMDD(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+export function formatDate(date: Date, locale: string) {
+  return date.toLocaleDateString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
-export function YYYYMMDDToDate(dateString: string) {
-  const [year, month, day] = dateString.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-export function YYYYMMDDToLocaleDateString(dateString: string) {
-  const date = YYYYMMDDToDate(dateString);
-  return date.toLocaleDateString();
+export function formatDateTime(date: Date, locale: string) {
+  return date.toLocaleString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }

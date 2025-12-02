@@ -1,0 +1,17 @@
+{
+  "posts": "Posts",
+  "createPost": "Create Post",
+  "editPost": "Edit Post",
+  "deletePost": "Delete Post",
+  "title": "Title",
+  "description": "Description",
+  "status": "Status",
+  "createdAt": "Created At",
+  "updatedAt": "Updated At",
+  "draft": "Draft",
+  "published": "Published",
+  "scheduled": "Scheduled",
+  "loadingPosts": "Loading posts...",
+  "loadMore": "Load More",
+  "loading": "Loading..."
+}
