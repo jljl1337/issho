@@ -116,11 +116,11 @@ func (h *EndpointHandler) GetPostList(w http.ResponseWriter, r *http.Request) {
 		arg.Ascending = false
 	}
 
-	includeDrafts := r.URL.Query().Get("include-drafts")
+	includeDrafts := r.URL.Query().Get("include-all")
 	if includeDrafts == "true" {
-		arg.IncludeDrafts = true
+		arg.IncludeAll = true
 	} else {
-		arg.IncludeDrafts = false
+		arg.IncludeAll = false
 	}
 
 	pageSize := r.URL.Query().Get("page-size")

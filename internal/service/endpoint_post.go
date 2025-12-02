@@ -52,21 +52,21 @@ func (s *EndpointService) CreatePost(ctx context.Context, arg CreatePostParams) 
 }
 
 type GetPostListParams struct {
-	UserRole      string
-	UserID        *string
-	SearchQuery   *string
-	Cursor        *string
-	CursorID      *string
-	OrderBy       string
-	Ascending     bool
-	IncludeDrafts bool
-	PageSize      int
+	UserRole    string
+	UserID      *string
+	SearchQuery *string
+	Cursor      *string
+	CursorID    *string
+	OrderBy     string
+	Ascending   bool
+	IncludeAll  bool
+	PageSize    int
 }
 
 func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams) ([]repository.Post, error) {
 	// Input validation and adjustments
 	if arg.UserRole == env.UserRole {
-		arg.IncludeDrafts = false
+		arg.IncludeAll = false
 
 		now := generator.NowISO8601()
 		if arg.OrderBy == "published_at" && arg.Cursor != nil && *arg.Cursor > now {
@@ -83,14 +83,15 @@ func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams
 	queries := repository.New(s.db)
 
 	params := repository.GetPostListParams{
-		UserID:        arg.UserID,
-		SearchQuery:   arg.SearchQuery,
-		OrderBy:       arg.OrderBy,
-		Ascending:     arg.Ascending,
-		IncludeDrafts: arg.IncludeDrafts,
-		PageSize:      arg.PageSize,
-		Cursor:        arg.Cursor,
-		CursorID:      arg.CursorID,
+		UserID:      arg.UserID,
+		SearchQuery: arg.SearchQuery,
+		OrderBy:     arg.OrderBy,
+		Ascending:   arg.Ascending,
+		IncludeAll:  arg.IncludeAll,
+		Now:         generator.NowISO8601(),
+		PageSize:    arg.PageSize,
+		Cursor:      arg.Cursor,
+		CursorID:    arg.CursorID,
 	}
 
 	posts, err := queries.GetPostList(ctx, params)

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/jljl1337/issho/internal/template"
 )
@@ -45,7 +46,7 @@ const getPostList = `
 			description LIKE '%%' || :search_query || '%%' OR
 			content LIKE '%%' || :search_query || '%%'
 		)) AND
-		(:include_drafts = TRUE OR published_at IS NOT NULL) AND (
+		(:include_all = TRUE OR (published_at IS NOT NULL AND published_at <= :now)) AND (
 			:cursor IS NULL OR :cursor_id IS NULL OR 
 			{{.OrderBy}} {{if .Ascending}}>{{else}}<{{end}} :cursor OR (
 				{{.OrderBy}} = :cursor AND id {{if .Ascending}}>{{else}}<{{end}} :cursor_id
@@ -59,17 +60,19 @@ const getPostList = `
 `
 
 type GetPostListParams struct {
-	UserID        *string `db:"user_id"`
-	SearchQuery   *string `db:"search_query"`
-	OrderBy       string  // not a db tag, used for formatting
-	Ascending     bool    // not a db tag, used for formatting
-	IncludeDrafts bool    `db:"include_drafts"`
-	PageSize      int     `db:"page_size"`
-	Cursor        *string `db:"cursor"`
-	CursorID      *string `db:"cursor_id"`
+	UserID      *string `db:"user_id"`
+	SearchQuery *string `db:"search_query"`
+	OrderBy     string  // not a db tag, used for formatting
+	Ascending   bool    // not a db tag, used for formatting
+	IncludeAll  bool    `db:"include_all"`
+	Now         string  `db:"now"`
+	PageSize    int     `db:"page_size"`
+	Cursor      *string `db:"cursor"`
+	CursorID    *string `db:"cursor_id"`
 }
 
 func (q *Queries) GetPostList(ctx context.Context, arg GetPostListParams) ([]Post, error) {
+	slog.Debug(fmt.Sprintf("GetPostList called with params: %+v", arg))
 	if arg.OrderBy != "updated_at" && arg.OrderBy != "published_at" {
 		return nil, fmt.Errorf("invalid OrderBy value")
 	}
