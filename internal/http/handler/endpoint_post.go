@@ -92,6 +92,16 @@ func (h *EndpointHandler) GetPostList(w http.ResponseWriter, r *http.Request) {
 		arg.Cursor = &cursor
 	}
 
+	cursorID := r.URL.Query().Get("cursor-id")
+	if cursorID != "" {
+		arg.CursorID = &cursorID
+	}
+
+	if (cursor != "" && cursorID == "") || (cursor == "" && cursorID != "") {
+		common.WriteMessageResponse(w, "Both cursor and cursor-id must be provided together", http.StatusBadRequest)
+		return
+	}
+
 	orderBy := r.URL.Query().Get("order-by")
 	if orderBy != "" {
 		arg.OrderBy = orderBy

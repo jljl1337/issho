@@ -51,6 +51,7 @@ type GetPostListParams struct {
 	UserID        *string
 	SearchQuery   *string
 	Cursor        *string
+	CursorID      *string
 	OrderBy       string
 	Ascending     bool
 	IncludeDrafts bool
@@ -84,6 +85,7 @@ func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams
 		IncludeNulls: arg.IncludeDrafts,
 		PageSize:     arg.PageSize,
 		Cursor:       arg.Cursor,
+		CursorID:     arg.CursorID,
 	}
 
 	posts, err := queries.GetPostList(ctx, params)
