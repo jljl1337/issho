@@ -131,7 +131,7 @@ export function PostEditorPage({
           </div>
 
           {/* Preview */}
-          <div className="flex w-1/2 flex-col">
+          <div className="flex w-1/2 min-w-0 flex-col">
             <div className="border-b p-4">
               <h2 className="text-lg font-semibold">
                 {t("preview", { ns: "post" })}
