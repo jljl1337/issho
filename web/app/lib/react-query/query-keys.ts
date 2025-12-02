@@ -14,4 +14,6 @@ export const queryKeys = {
     all: ["version"] as const,
     get: () => [...queryKeys.version.all, "get"] as const,
   },
+  posts: (params?: any) => ["posts", params] as const,
+  post: (id: string) => ["posts", id] as const,
 } as const;
