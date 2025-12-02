@@ -138,7 +138,7 @@ export function PostEditorPage({
               </h2>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              <div className="prose dark:prose-invert max-w-none">
+              <div className="prose dark:prose-invert max-w-none break-all">
                 <ReactMarkdown>{contentValue}</ReactMarkdown>
               </div>
             </div>
