@@ -139,6 +139,7 @@ export function PostEditorPage({
             </div>
             <div className="flex-1 overflow-auto p-6">
               <div className="prose dark:prose-invert max-w-none break-all">
+                {/* TODO: break word in code block */}
                 <ReactMarkdown>{contentValue}</ReactMarkdown>
               </div>
             </div>
