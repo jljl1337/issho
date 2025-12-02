@@ -113,7 +113,9 @@ export default function Layout() {
             isOpen ? "justify-between" : "justify-center",
           )}
         >
-          {isOpen && <span className="font-semibold">{t("menu")}</span>}
+          {isOpen && (
+            <span className="font-semibold truncate">{t("menu")}</span>
+          )}
           {!isMobile && (
             <button
               onClick={() => setIsOpen(!isOpen)}
