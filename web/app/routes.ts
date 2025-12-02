@@ -33,6 +33,7 @@ export default [
     ...prefix("posts", [
       index("routes/posts/index.tsx"),
       route("create", "routes/posts/create.tsx"),
+      route(":id", "routes/posts/$id.tsx"),
       route("edit/:id", "routes/posts/edit.$id.tsx"),
       route("delete/:id", "routes/posts/delete.$id.tsx"),
     ]),
