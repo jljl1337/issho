@@ -5,25 +5,25 @@ import (
 )
 
 const createUser = `
-INSERT INTO "user" (
-    id,
-    username,
-    email,
-    password_hash,
-	role,
-	language_code,
-    created_at,
-    updated_at
-) VALUES (
-	:id,
-	:username,
-	:email,
-	:password_hash,
-	:role,
-	:language_code,
-	:created_at,
-	:updated_at
-)
+	INSERT INTO "user" (
+		id,
+		username,
+		email,
+		password_hash,
+		role,
+		language_code,
+		created_at,
+		updated_at
+	) VALUES (
+		:id,
+		:username,
+		:email,
+		:password_hash,
+		:role,
+		:language_code,
+		:created_at,
+		:updated_at
+	)
 `
 
 func (q *Queries) CreateUser(ctx context.Context, arg User) error {
@@ -31,12 +31,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg User) error {
 }
 
 const getUserCountByRole = `
-SELECT
-	COUNT(*) AS count
-FROM
-	"user"
-WHERE
-	role = :role
+	SELECT
+		COUNT(*) AS count
+	FROM
+		"user"
+	WHERE
+		role = :role
 `
 
 type GetUserCountByRoleParams struct {
@@ -50,12 +50,12 @@ func (q *Queries) GetUserCountByRole(ctx context.Context, role string) (int, err
 }
 
 const getUserByID = `
-SELECT
-    *
-FROM
-    "user"
-WHERE
-    id = :id
+	SELECT
+		*
+	FROM
+		"user"
+	WHERE
+		id = :id
 `
 
 type GetUserByIDParams struct {
@@ -69,12 +69,12 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 }
 
 const getUserByUsername = `
-SELECT
-    *
-FROM
-    "user"
-WHERE
-    username = :username
+	SELECT
+		*
+	FROM
+		"user"
+	WHERE
+		username = :username
 `
 
 type GetUserByUsernameParams struct {
@@ -88,12 +88,12 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) ([]Use
 }
 
 const getUserByEmail = `
-SELECT
-    *
-FROM
-    "user"
-WHERE
-    email = :email
+	SELECT
+		*
+	FROM
+		"user"
+	WHERE
+		email = :email
 `
 
 type GetUserByEmailParams struct {
@@ -107,13 +107,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) ([]User, err
 }
 
 const updateUserPassword = `
-UPDATE
-    "user"
-SET
-    password_hash = :password_hash,
-    updated_at = :updated_at
-WHERE
-    id = :id
+	UPDATE
+		"user"
+	SET
+		password_hash = :password_hash,
+		updated_at = :updated_at
+	WHERE
+		id = :id
 `
 
 type UpdateUserPasswordParams struct {
@@ -127,13 +127,13 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 }
 
 const updateUserUsername = `
-UPDATE
-    "user"
-SET
-    username = :username,
-    updated_at = :updated_at
-WHERE
-    id = :id
+	UPDATE
+		"user"
+	SET
+		username = :username,
+		updated_at = :updated_at
+	WHERE
+		id = :id
 `
 
 type UpdateUserUsernameParams struct {
@@ -147,13 +147,13 @@ func (q *Queries) UpdateUserUsername(ctx context.Context, arg UpdateUserUsername
 }
 
 const updateUserEmail = `
-UPDATE
-    "user"
-SET
-    email = :email,
-    updated_at = :updated_at
-WHERE
-    id = :id
+	UPDATE
+		"user"
+	SET
+		email = :email,
+		updated_at = :updated_at
+	WHERE
+		id = :id
 `
 
 type UpdateUserEmailParams struct {
@@ -167,13 +167,13 @@ func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams
 }
 
 const updateUserLanguage = `
-UPDATE
-    "user"
-SET
-    language_code = :language_code,
-    updated_at = :updated_at
-WHERE
-    id = :id
+	UPDATE
+		"user"
+	SET
+		language_code = :language_code,
+		updated_at = :updated_at
+	WHERE
+		id = :id
 `
 
 type UpdateUserLanguageParams struct {
@@ -187,10 +187,10 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 }
 
 const deleteUser = `
-DELETE FROM
-    "user"
-WHERE
-    id = :id
+	DELETE FROM
+		"user"
+	WHERE
+		id = :id
 `
 
 type DeleteUserParams struct {

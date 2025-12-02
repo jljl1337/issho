@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run issho dev",
+      "dependsOn": [
+        "Run air",
+        "Run pnpm dev"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run air",
+      "type": "shell",
+      "command": "air",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "myGroup"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run pnpm dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "myGroup"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

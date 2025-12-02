@@ -8,5 +8,6 @@
   "passwordMaxLength": "Password must be at most 64 characters",
   "passwordInvalidFormat": "Password can only contain letters, numbers, and one of !@#$%^&*",
   "passwordsDoNotMatch": "Passwords do not match",
-  "oldPasswordRequired": "Old password is required"
+  "oldPasswordRequired": "Old password is required",
+  "titleRequired": "Title is required"
 }

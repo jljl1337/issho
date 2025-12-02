@@ -6,46 +6,36 @@ import (
 )
 
 const createSession = `
-INSERT INTO session (
-    id,
-    user_id,
-    token,
-    csrf_token,
-    expires_at,
-    created_at,
-    updated_at
-) VALUES (
-	:id,
-	:user_id,
-	:token,
-	:csrf_token,
-	:expires_at,
-	:created_at,
-	:updated_at
-)
+	INSERT INTO session (
+		id,
+		user_id,
+		token,
+		csrf_token,
+		expires_at,
+		created_at,
+		updated_at
+	) VALUES (
+		:id,
+		:user_id,
+		:token,
+		:csrf_token,
+		:expires_at,
+		:created_at,
+		:updated_at
+	)
 `
 
-type CreateSessionParams struct {
-	ID        string         `db:"id"`
-	UserID    sql.NullString `db:"user_id"`
-	Token     string         `db:"token"`
-	CsrfToken string         `db:"csrf_token"`
-	ExpiresAt string         `db:"expires_at"`
-	CreatedAt string         `db:"created_at"`
-	UpdatedAt string         `db:"updated_at"`
-}
-
-func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
+func (q *Queries) CreateSession(ctx context.Context, arg Session) error {
 	return NamedExecOneRowContext(ctx, q.db, createSession, arg)
 }
 
 const getSessionByToken = `
-SELECT
-	*
-FROM
-    session
-WHERE
-    token = :token
+	SELECT
+		*
+	FROM
+		session
+	WHERE
+		token = :token
 `
 
 type GetSessionByTokenParams struct {
@@ -59,13 +49,13 @@ func (q *Queries) GetSessionByToken(ctx context.Context, token string) ([]Sessio
 }
 
 const updateSessionByToken = `
-UPDATE
-    session
-SET
-    expires_at = :expires_at,
-    updated_at = :updated_at
-WHERE
-    token = :token
+	UPDATE
+		session
+	SET
+		expires_at = :expires_at,
+		updated_at = :updated_at
+	WHERE
+		token = :token
 `
 
 type UpdateSessionByTokenParams struct {
@@ -79,14 +69,14 @@ func (q *Queries) UpdateSessionByToken(ctx context.Context, arg UpdateSessionByT
 }
 
 const updateSessionByUserID = `
-UPDATE
-    session
-SET
-    expires_at = :expires_at,
-    updated_at = :updated_at
-WHERE
-    user_id = :user_id AND
-    expires_at > :expires_at
+	UPDATE
+		session
+	SET
+		expires_at = :expires_at,
+		updated_at = :updated_at
+	WHERE
+		user_id = :user_id AND
+		expires_at > :expires_at
 `
 
 type UpdateSessionByUserIDParams struct {
@@ -100,10 +90,10 @@ func (q *Queries) UpdateSessionByUserID(ctx context.Context, arg UpdateSessionBy
 }
 
 const deleteSessionByExpiresAt = `
-DELETE FROM
-    session
-WHERE
-    expires_at < :expires_at
+	DELETE FROM
+		session
+	WHERE
+		expires_at < :expires_at
 `
 
 type DeleteSessionByExpiresAtParams struct {

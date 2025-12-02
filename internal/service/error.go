@@ -16,6 +16,7 @@ const (
 	ErrCodeUsernameTaken
 	ErrCodeEmailTaken
 	ErrCodeInvalidCredentials
+	ErrCodeUpdatePublishedAt
 )
 
 type ServiceError struct {

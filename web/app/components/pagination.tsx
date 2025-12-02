@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 import {
   ArrowLeftToLineIcon,
-  ArrowRightToLineIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
@@ -10,19 +9,15 @@ import {
 import { Button } from "~/components/ui/button";
 
 interface PaginationProps {
-  page: number;
-  totalPages: number;
+  isFirstPage: boolean;
   firstPageUrl: string;
-  lastPageUrl: string;
   previousPageUrl: string;
   nextPageUrl: string;
 }
 
 export default function Pagination({
-  page,
-  totalPages,
+  isFirstPage,
   firstPageUrl,
-  lastPageUrl,
   previousPageUrl,
   nextPageUrl,
 }: PaginationProps) {
@@ -31,8 +26,8 @@ export default function Pagination({
       <Button
         variant="outline"
         className="hidden h-8 w-8 p-0 lg:flex"
-        disabled={page === 1}
-        asChild={!(page === 1)}
+        disabled={isFirstPage}
+        asChild={!isFirstPage}
       >
         <Link to={firstPageUrl}>
           <span className="sr-only">Go to first page</span>
@@ -43,41 +38,18 @@ export default function Pagination({
         variant="outline"
         className="size-8"
         size="icon"
-        disabled={page === 1}
-        asChild={!(page === 1)}
+        disabled={isFirstPage}
+        asChild={!isFirstPage}
       >
         <Link to={previousPageUrl}>
           <span className="sr-only">Go to previous page</span>
           <ChevronLeftIcon />
         </Link>
       </Button>
-      <div>
-        <span className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </span>
-      </div>
-      <Button
-        variant="outline"
-        className="size-8"
-        size="icon"
-        disabled={page === totalPages}
-        asChild={!(page === totalPages)}
-      >
+      <Button variant="outline" className="size-8" size="icon" asChild>
         <Link to={nextPageUrl}>
           <span className="sr-only">Go to next page</span>
           <ChevronRightIcon />
-        </Link>
-      </Button>
-      <Button
-        variant="outline"
-        className="hidden size-8 lg:flex"
-        size="icon"
-        disabled={page === totalPages}
-        asChild={!(page === totalPages)}
-      >
-        <Link to={lastPageUrl}>
-          <span className="sr-only">Go to last page</span>
-          <ArrowRightToLineIcon />
         </Link>
       </Button>
     </div>

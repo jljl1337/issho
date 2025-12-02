@@ -12,6 +12,7 @@ import (
 type contextKey string
 
 const UserIDKey contextKey = "user_id"
+const UserRoleKey contextKey = "user_role"
 
 func (m *MiddlewareProvider) Auth() Middleware {
 	return func(next http.Handler) http.Handler {
@@ -47,14 +48,15 @@ func (m *MiddlewareProvider) Auth() Middleware {
 			}
 
 			// Validate session token (and CSRF token)
-			userID, err := m.service.GetSessionUserIDAndRefreshSession(r.Context(), cookie.Value, CSRFToken)
+			user, err := m.service.GetSessionUserAndRefreshSession(r.Context(), cookie.Value, CSRFToken)
 			if err != nil {
 				common.WriteErrorResponse(w, err)
 				return
 			}
 
-			// Add user ID to context
-			ctx := context.WithValue(r.Context(), UserIDKey, userID)
+			// Add user to context
+			ctx := context.WithValue(r.Context(), UserIDKey, user.ID)
+			ctx = context.WithValue(ctx, UserRoleKey, user.Role)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -69,4 +71,15 @@ func GetUserIDFromContext(ctx context.Context) (string, error) {
 		return "", errors.New("failed to get user ID from context")
 	}
 	return userID, nil
+}
+
+// GetUserRoleFromContext retrieves the user role from the context.
+//
+// It returns an error if the user role is not found or is of an unexpected type.
+func GetUserRoleFromContext(ctx context.Context) (string, error) {
+	userRole, ok := ctx.Value(UserRoleKey).(string)
+	if !ok {
+		return "", errors.New("failed to get user role from context")
+	}
+	return userRole, nil
 }

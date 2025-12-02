@@ -1,0 +1,12 @@
+{
+  "am": "AM",
+  "pm": "PM",
+  "setToNow": "Set to Now",
+  "pickADate": "Pick a date",
+  "year": "Year",
+  "month": "Month",
+  "day": "Day",
+  "hour": "Hour",
+  "minute": "Minute",
+  "period": "AM/PM"
+}

@@ -5,5 +5,6 @@
   "usernameTaken": "Username is already taken",
   "emailTaken": "Email address is already taken",
   "invalidCredentials": "Invalid username or password",
+  "updatePublishedAt": "Please convert published posts to draft before updating the publish time",
   "genericError": "An error occurred. Please try again."
 }

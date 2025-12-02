@@ -22,3 +22,12 @@ export {
 
 // Version hooks
 export { useVersion } from "./use-version";
+
+// Post hooks
+export {
+  usePosts,
+  usePost,
+  useCreatePost,
+  useUpdatePost,
+  useDeletePost,
+} from "./use-posts";
