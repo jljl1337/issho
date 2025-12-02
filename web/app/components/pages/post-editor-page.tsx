@@ -95,7 +95,7 @@ export function PostEditorPage({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex h-[calc(100vh-4rem)] w-full" // TODO: Cannot work without hardcoded height
+        className="flex h-full w-full"
       >
         {/* Main content area with editor and preview */}
         <div className="flex flex-1 overflow-hidden">
