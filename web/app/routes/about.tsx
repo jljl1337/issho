@@ -4,6 +4,7 @@ import type { Route } from "./+types/about";
 
 import { useTranslation } from "react-i18next";
 
+import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 import { useVersion } from "~/hooks/use-version";
 
 export default function Page() {
@@ -22,15 +23,11 @@ export default function Page() {
   }, [t]);
 
   return (
-    <>
-      <div className="h-full flex items-center justify-center">
-        <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <h1 className="text-4xl">{t("about")}</h1>
-          <p className="mb-2">
-            {t("version")}: {isLoading ? t("loading") : version}
-          </p>
-        </div>
-      </div>
-    </>
+    <VerticallyCenterPage className="flex flex-col gap-4">
+      <h1 className="text-4xl">{t("about")}</h1>
+      <p className="mb-2">
+        {t("version")}: {isLoading ? t("loading") : version}
+      </p>
+    </VerticallyCenterPage>
   );
 }

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { MarkdownRenderer } from "~/components/markdown-renderer";
+import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 import { useSession } from "~/contexts/session-context";
 import { usePost } from "~/hooks/use-posts";
 import { ApiError } from "~/lib/db/common";
@@ -37,27 +38,25 @@ export default function Page() {
 
   if (sessionLoading || postLoading) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <VerticallyCenterPage className="flex flex-col gap-4">
         <p className="text-muted-foreground">{t("loading")}</p>
-      </div>
+      </VerticallyCenterPage>
     );
   }
 
   if (!post) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <VerticallyCenterPage className="flex flex-col gap-4">
         <p className="text-muted-foreground">{t("postNotFound")}</p>
-      </div>
+      </VerticallyCenterPage>
     );
   }
 
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="h-full max-w-[90rem] min-w-0 flex-1 flex flex-col p-8 gap-4">
-        <article className="prose prose-lg dark:prose-invert max-w-none">
-          <MarkdownRenderer content={post.content || ""} />
-        </article>
-      </div>
-    </div>
+    <VerticallyCenterPage className="flex flex-col gap-4">
+      <article className="prose prose-lg dark:prose-invert max-w-none">
+        <MarkdownRenderer content={post.content || ""} />
+      </article>
+    </VerticallyCenterPage>
   );
 }
