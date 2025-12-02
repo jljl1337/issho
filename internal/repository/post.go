@@ -45,29 +45,28 @@ const getPostList = `
 			description LIKE '%%' || :search_query || '%%' OR
 			content LIKE '%%' || :search_query || '%%'
 		)) AND
-		(:include_nulls = TRUE OR {{.OrderBy}} IS NOT NULL) AND
-		(:cursor IS NULL OR :cursor_id IS NULL OR 
+		(:include_drafts = TRUE OR published_at IS NOT NULL) AND (
+			:cursor IS NULL OR :cursor_id IS NULL OR 
 			{{.OrderBy}} {{if .Ascending}}>{{else}}<{{end}} :cursor OR (
 				{{.OrderBy}} = :cursor AND id {{if .Ascending}}>{{else}}<{{end}} :cursor_id
 			)
 		)
 	ORDER BY
-		{{.OrderBy}} {{if .Ascending}}ASC{{else}}DESC{{end}} NULLS {{if .NullsFirst}}FIRST{{else}}LAST{{end}},
+		{{.OrderBy}} {{if .Ascending}}ASC{{else}}DESC{{end}},
 		id {{if .Ascending}}ASC{{else}}DESC{{end}}
 	LIMIT
 		:page_size
 `
 
 type GetPostListParams struct {
-	UserID       *string `db:"user_id"`
-	SearchQuery  *string `db:"search_query"`
-	OrderBy      string  // not a db tag, used for formatting
-	Ascending    bool    // not a db tag, used for formatting
-	NullsFirst   bool    // not a db tag, used for formatting
-	IncludeNulls bool    `db:"include_nulls"`
-	PageSize     int     `db:"page_size"`
-	Cursor       *string `db:"cursor"`
-	CursorID     *string `db:"cursor_id"`
+	UserID        *string `db:"user_id"`
+	SearchQuery   *string `db:"search_query"`
+	OrderBy       string  // not a db tag, used for formatting
+	Ascending     bool    // not a db tag, used for formatting
+	IncludeDrafts bool    `db:"include_drafts"`
+	PageSize      int     `db:"page_size"`
+	Cursor        *string `db:"cursor"`
+	CursorID      *string `db:"cursor_id"`
 }
 
 func (q *Queries) GetPostList(ctx context.Context, arg GetPostListParams) ([]Post, error) {

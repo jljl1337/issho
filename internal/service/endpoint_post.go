@@ -23,9 +23,14 @@ func (s *EndpointService) CreatePost(ctx context.Context, arg CreatePostParams) 
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create post")
 	}
 
-	queries := repository.New(s.db)
-
 	now := generator.NowISO8601()
+
+	// Ensure publishedAt is not set to a past time
+	if arg.PublishedAt != nil && *arg.PublishedAt < now {
+		arg.PublishedAt = &now
+	}
+
+	queries := repository.New(s.db)
 
 	post := repository.Post{
 		ID:          generator.NewULID(),
@@ -78,14 +83,14 @@ func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams
 	queries := repository.New(s.db)
 
 	params := repository.GetPostListParams{
-		UserID:       arg.UserID,
-		SearchQuery:  arg.SearchQuery,
-		OrderBy:      arg.OrderBy,
-		Ascending:    arg.Ascending,
-		IncludeNulls: arg.IncludeDrafts,
-		PageSize:     arg.PageSize,
-		Cursor:       arg.Cursor,
-		CursorID:     arg.CursorID,
+		UserID:        arg.UserID,
+		SearchQuery:   arg.SearchQuery,
+		OrderBy:       arg.OrderBy,
+		Ascending:     arg.Ascending,
+		IncludeDrafts: arg.IncludeDrafts,
+		PageSize:      arg.PageSize,
+		Cursor:        arg.Cursor,
+		CursorID:      arg.CursorID,
 	}
 
 	posts, err := queries.GetPostList(ctx, params)
@@ -162,6 +167,16 @@ func (s *EndpointService) UpdatePostByID(ctx context.Context, arg UpdatePostByID
 	}
 
 	now := generator.NowISO8601()
+
+	// If already published, do not allow updating publishedAt
+	if post.PublishedAt != nil && *post.PublishedAt <= now {
+		arg.PublishedAt = post.PublishedAt
+	} else {
+		// Ensure publishedAt is not set to a past time
+		if arg.PublishedAt != nil && *arg.PublishedAt < now {
+			arg.PublishedAt = &now
+		}
+	}
 
 	updateParams := repository.UpdatePostByIDParams{
 		Title:       arg.Title,
