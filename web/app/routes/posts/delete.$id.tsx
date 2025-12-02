@@ -7,10 +7,11 @@ import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
 import { useDeletePost } from "~/hooks/use-posts";
 import { translateError } from "~/lib/db/common";
+import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
   const { t } = useTranslation("post");
-  const { csrfToken, isLoggedIn, isLoading } = useSession();
+  const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
   const { id } = useParams();
   const deletePostMutation = useDeletePost();
@@ -19,7 +20,11 @@ export default function Page() {
     if (!isLoading && !isLoggedIn) {
       navigate("/auth/sign-in");
     }
-  }, [isLoggedIn, isLoading, navigate]);
+
+    if (!isLoading && user && isUser(user.role)) {
+      navigate(-1);
+    }
+  }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
     document.title = `${t("deletePost")} | Issho`;

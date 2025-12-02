@@ -5,9 +5,15 @@ import { PostEditorPage } from "~/components/pages/post-editor-page";
 import { useSession } from "~/contexts/session-context";
 import { usePost, useUpdatePost } from "~/hooks/use-posts";
 import { ApiError, translateError } from "~/lib/db/common";
+import { isUser as isUserRole } from "~/lib/validation/role";
 
 export default function Page() {
-  const { isLoggedIn, isLoading: sessionLoading, csrfToken } = useSession();
+  const {
+    user,
+    isLoggedIn,
+    isLoading: sessionLoading,
+    csrfToken,
+  } = useSession();
   const navigate = useNavigate();
   const { id } = useParams();
   const {
@@ -22,7 +28,11 @@ export default function Page() {
     if (!sessionLoading && !isLoggedIn) {
       navigate("/auth/sign-in");
     }
-  }, [isLoggedIn, sessionLoading, navigate]);
+
+    if (!sessionLoading && user && isUserRole(user.role)) {
+      navigate(-1);
+    }
+  }, [user, isLoggedIn, sessionLoading, navigate]);
 
   useEffect(() => {
     document.title = `Edit Post | Issho`;

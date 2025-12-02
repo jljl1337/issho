@@ -5,9 +5,10 @@ import { PostEditorPage } from "~/components/pages/post-editor-page";
 import { useSession } from "~/contexts/session-context";
 import { useCreatePost } from "~/hooks/use-posts";
 import { translateError } from "~/lib/db/common";
+import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { isLoggedIn, isLoading, csrfToken } = useSession();
+  const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
   const createPost = useCreatePost();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -16,7 +17,11 @@ export default function Page() {
     if (!isLoading && !isLoggedIn) {
       navigate("/auth/sign-in");
     }
-  }, [isLoggedIn, isLoading, navigate]);
+
+    if (!isLoading && user && isUser(user.role)) {
+      navigate(-1);
+    }
+  }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
     document.title = `Create Post | Issho`;
