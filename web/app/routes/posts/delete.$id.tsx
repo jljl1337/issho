@@ -3,13 +3,17 @@ import { useNavigate, useParams } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
+import DestructivePage from "~/components/pages/destructive-page";
 import { useSession } from "~/contexts/session-context";
+import { useDeletePost } from "~/hooks/use-posts";
+import { translateError } from "~/lib/db/common";
 
 export default function Page() {
-  const { t } = useTranslation("navigation");
-  const { isLoggedIn, isLoading } = useSession();
+  const { t } = useTranslation("post");
+  const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
   const { id } = useParams();
+  const deletePostMutation = useDeletePost();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -18,20 +22,32 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `Delete Post | Issho`;
-  }, []);
+    document.title = `${t("deletePost")} | Issho`;
+  }, [t]);
+
+  async function onDeletePost() {
+    if (!csrfToken) {
+      return { error: t("noCsrfToken") };
+    }
+    if (!id) {
+      return { error: "Post ID is required" };
+    }
+    try {
+      await deletePostMutation.mutateAsync({ id, csrfToken });
+      return { error: null };
+    } catch (error) {
+      return { error: translateError(error) };
+    }
+  }
 
   return (
     <>
-      <div className="h-full flex items-center justify-center">
-        <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <h1 className="text-4xl">Delete Post</h1>
-          <p className="text-muted-foreground">
-            Delete confirmation for post ID: {id}
-          </p>
-          <p className="text-muted-foreground">Coming soon...</p>
-        </div>
-      </div>
+      <DestructivePage
+        title={t("deletePost")}
+        description={t("deletePostConfirm")}
+        action={onDeletePost}
+        redirectTo="/posts"
+      />
     </>
   );
 }
