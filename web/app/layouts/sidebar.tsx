@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
 
+import { SidebarButton } from "~/components/sidebar-button";
 import { useTheme } from "~/components/theme-provider";
 
 export default function Layout() {
@@ -116,7 +117,7 @@ export default function Layout() {
           {!isMobile && (
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="rounded-md p-2 hover:bg-accent transition-colors"
+              className="rounded-md p-2 hover:bg-accent transition-colors cursor-pointer"
               aria-label={isOpen ? "Minimize menu" : "Expand menu"}
             >
               {isOpen ? (
@@ -131,22 +132,20 @@ export default function Layout() {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname.startsWith(item.to);
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={closeSidebar}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground",
-                )}
+                className="block"
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {isOpen && <span>{item.label}</span>}
+                <SidebarButton
+                  icon={item.icon}
+                  label={item.label}
+                  isOpen={isOpen}
+                  isActive={isActive}
+                />
               </Link>
             );
           })}
@@ -154,30 +153,27 @@ export default function Layout() {
 
         {/* Footer */}
         <div className="border-t p-2">
-          <button
+          <SidebarButton
+            icon={ThemeIcon}
+            label={t("theme")}
+            isOpen={isOpen}
             onClick={cycleTheme}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
-          >
-            <ThemeIcon className="h-5 w-5 shrink-0" />
-            {isOpen && <span>{t("theme")}</span>}
-          </button>
+          />
           {footerItems.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname.startsWith(item.to);
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 onClick={closeSidebar}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground",
-                )}
+                className="block"
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {isOpen && <span>{item.label}</span>}
+                <SidebarButton
+                  icon={item.icon}
+                  label={item.label}
+                  isOpen={isOpen}
+                  isActive={isActive}
+                />
               </Link>
             );
           })}
