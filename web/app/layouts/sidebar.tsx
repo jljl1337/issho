@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 
 import {
+  ArrowLeftFromLine,
   Home,
   Info,
   Laptop,
@@ -10,7 +11,6 @@ import {
   Moon,
   Sun,
   User,
-  X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -121,7 +121,7 @@ export default function Layout() {
               aria-label={isOpen ? "Minimize menu" : "Expand menu"}
             >
               {isOpen ? (
-                <X className="h-5 w-5" />
+                <ArrowLeftFromLine className="h-5 w-5" />
               ) : (
                 <Menu className="h-5 w-5" />
               )}
@@ -152,7 +152,7 @@ export default function Layout() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t p-2">
+        <div className="border-t space-y-1 p-2">
           <SidebarButton
             icon={ThemeIcon}
             label={t("theme")}
@@ -191,7 +191,11 @@ export default function Layout() {
             className="fixed bottom-6 right-6 z-50 rounded-full bg-primary text-primary-foreground p-4 shadow-lg hover:bg-primary/90 transition-all active:scale-95"
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? (
+              <ArrowLeftFromLine className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         )}
       </main>
