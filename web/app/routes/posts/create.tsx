@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useTranslation } from "react-i18next";
-
+import { PostEditorPage } from "~/components/pages/post-editor-page";
 import { useSession } from "~/contexts/session-context";
+import { useCreatePost } from "~/hooks/use-posts";
+import { translateError } from "~/lib/db/common";
 
 export default function Page() {
-  const { t } = useTranslation("navigation");
-  const { isLoggedIn, isLoading } = useSession();
+  const { isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
+  const createPost = useCreatePost();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -20,16 +22,39 @@ export default function Page() {
     document.title = `Create Post | Issho`;
   }, []);
 
+  const handleSave = async (data: {
+    title: string;
+    description: string;
+    content: string;
+    publishedAt: string | null;
+  }) => {
+    if (!csrfToken) {
+      setErrorMessage("No CSRF token available");
+      return;
+    }
+
+    setErrorMessage(null);
+
+    try {
+      await createPost.mutateAsync({
+        params: data,
+        csrfToken,
+      });
+      navigate("/posts");
+    } catch (error) {
+      setErrorMessage(translateError(error));
+    }
+  };
+
+  if (isLoading || !isLoggedIn) {
+    return null;
+  }
+
   return (
-    <>
-      <div className="h-full flex items-center justify-center">
-        <div className="h-full max-w-[90rem] flex-1 flex flex-col p-8 gap-4">
-          <h1 className="text-4xl">Create Post</h1>
-          <p className="text-muted-foreground">
-            Post creation form coming soon...
-          </p>
-        </div>
-      </div>
-    </>
+    <PostEditorPage
+      onSave={handleSave}
+      isLoading={createPost.isPending}
+      errorMessage={errorMessage}
+    />
   );
 }

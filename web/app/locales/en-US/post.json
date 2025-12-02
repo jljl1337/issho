@@ -13,5 +13,13 @@
   "scheduled": "Scheduled",
   "loadingPosts": "Loading posts...",
   "loadMore": "Load More",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "editor": "Editor",
+  "preview": "Preview",
+  "postSettings": "Post Settings",
+  "titlePlaceholder": "Enter post title",
+  "descriptionPlaceholder": "Enter post description",
+  "publishDateTime": "Publish Date & Time",
+  "savePost": "Save Post",
+  "saving": "Saving..."
 }

@@ -13,5 +13,13 @@
   "scheduled": "已排程",
   "loadingPosts": "載入帖文中...",
   "loadMore": "載入更多",
-  "loading": "載入中..."
+  "loading": "載入中...",
+  "editor": "編輯器",
+  "preview": "預覽",
+  "postSettings": "帖文設定",
+  "titlePlaceholder": "輸入帖文標題",
+  "descriptionPlaceholder": "輸入帖文描述",
+  "publishDateTime": "發布日期與時間",
+  "savePost": "儲存帖文",
+  "saving": "儲存中..."
 }
