@@ -43,6 +43,16 @@ type Post struct {
 	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
 }
 
+type Product struct {
+	ID          string  `json:"id" db:"id"`
+	ExternalID  *string `json:"externalId" db:"external_id"`
+	Name        string  `json:"name" db:"name"`
+	Description string  `json:"description" db:"description"`
+	IsActive    int     `json:"isActive" db:"is_active"`
+	CreatedAt   string  `json:"createdAt" db:"created_at"`
+	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
+}
+
 type Price struct {
 	ID                     string  `json:"id" db:"id"`
 	Name                   string  `json:"name" db:"name"`

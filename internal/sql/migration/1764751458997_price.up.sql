@@ -1,5 +1,7 @@
 CREATE TABLE price (
     id TEXT NOT NULL,
+    external_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     price_amount INTEGER NOT NULL,
@@ -11,5 +13,7 @@ CREATE TABLE price (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
 
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE (external_id),
+    FOREIGN KEY (product_id) REFERENCES product(id)
 );
