@@ -37,6 +37,12 @@ export default [
       route("edit/:id", "routes/posts/edit.$id.tsx"),
       route("delete/:id", "routes/posts/delete.$id.tsx"),
     ]),
+
+    ...prefix("products", [
+      index("routes/products/index.tsx"),
+      route("create", "routes/products/create.tsx"),
+      route("edit/:id", "routes/products/edit.$id.tsx"),
+    ]),
   ]),
 
   route("error", "routes/error.tsx"),

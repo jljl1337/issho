@@ -12,5 +12,6 @@
   "success": "成功",
   "confirm": "確認",
   "openMenu": "開啟選單",
-  "reset": "重設"
+  "reset": "重設",
+  "noResults": "沒有結果"
 }

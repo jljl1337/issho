@@ -9,6 +9,7 @@ import {
   List,
   Menu,
   Moon,
+  ShoppingCart,
   Sun,
   User,
 } from "lucide-react";
@@ -61,6 +62,11 @@ export default function Layout() {
       to: "/posts",
       icon: List,
       label: t("posts", { ns: "navigation" }),
+    },
+    {
+      to: "/products",
+      icon: ShoppingCart,
+      label: t("products", { ns: "navigation" }),
     },
   ];
 

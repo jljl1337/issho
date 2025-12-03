@@ -5,6 +5,7 @@ import enError from "./locales/en-US/error.json";
 import enMessages from "./locales/en-US/messages.json";
 import enNavigation from "./locales/en-US/navigation.json";
 import enPost from "./locales/en-US/post.json";
+import enProduct from "./locales/en-US/product.json";
 import enSidebar from "./locales/en-US/sidebar.json";
 import enTime from "./locales/en-US/time.json";
 import enUser from "./locales/en-US/user.json";
@@ -16,6 +17,7 @@ import zhError from "./locales/zh-HK/error.json";
 import zhMessages from "./locales/zh-HK/messages.json";
 import zhNavigation from "./locales/zh-HK/navigation.json";
 import zhPost from "./locales/zh-HK/post.json";
+import zhProduct from "./locales/zh-HK/product.json";
 import zhSidebar from "./locales/zh-HK/sidebar.json";
 import zhTime from "./locales/zh-HK/time.json";
 import zhUser from "./locales/zh-HK/user.json";
@@ -35,6 +37,7 @@ const resources = {
     messages: enMessages,
     post: enPost,
     time: enTime,
+    product: enProduct,
   },
   "zh-HK": {
     common: zhCommon,
@@ -47,6 +50,7 @@ const resources = {
     messages: zhMessages,
     post: zhPost,
     time: zhTime,
+    product: zhProduct,
   },
 };
 
