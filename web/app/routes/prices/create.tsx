@@ -31,6 +31,7 @@ export default function Page() {
   }, [t]);
 
   const handleSave = async (data: {
+    productId: string;
     name: string;
     description: string;
     priceAmount: number;

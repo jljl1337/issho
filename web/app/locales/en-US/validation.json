@@ -12,5 +12,6 @@
   "titleRequired": "Title is required",
   "nameRequired": "Name is required",
   "priceRequired": "Price must be 0 or greater",
-  "currencyRequired": "Currency is required"
+  "currencyRequired": "Currency is required",
+  "productRequired": "Product is required"
 }

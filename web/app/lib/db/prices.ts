@@ -5,6 +5,8 @@ export { translateError };
 
 export type Price = {
   id: string;
+  externalId: string;
+  productId: string;
   name: string;
   description: string;
   priceAmount: number;
@@ -55,6 +57,7 @@ export async function getPriceById(id: string): Promise<Price> {
 }
 
 export type CreatePriceParams = {
+  productId: string;
   name: string;
   description: string;
   priceAmount: number;

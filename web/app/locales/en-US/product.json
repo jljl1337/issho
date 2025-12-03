@@ -21,5 +21,9 @@
   "noCsrfToken": "No CSRF token available",
   "yes": "Yes",
   "no": "No",
-  "activeDescription": "Whether this product is currently active"
+  "activeDescription": "Whether this product is currently active",
+  "product": "Product",
+  "selectProduct": "Select a product",
+  "productCannotBeChanged": "Product cannot be changed after creation",
+  "failedToLoadProducts": "Failed to load products"
 }

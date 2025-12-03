@@ -21,5 +21,9 @@
   "noCsrfToken": "無 CSRF 令牌可用",
   "yes": "是",
   "no": "否",
-  "activeDescription": "此產品目前是否啟用"
+  "activeDescription": "此產品目前是否啟用",
+  "product": "產品",
+  "selectProduct": "選擇產品",
+  "productCannotBeChanged": "產品建立後無法更改",
+  "failedToLoadProducts": "無法載入產品"
 }

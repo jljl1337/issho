@@ -91,3 +91,40 @@ export async function updateProduct(
 
   await throwIfError(response);
 }
+
+/**
+ * Fetch all products by making multiple paginated requests if needed
+ */
+export async function getAllProducts(): Promise<Product[]> {
+  const allProducts: Product[] = [];
+  let cursor: string | undefined;
+  let cursorId: string | undefined;
+  const pageSize = 50; // Use a reasonable page size
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const products = await getProducts({
+      pageSize,
+      cursor,
+      cursorId,
+    });
+
+    if (products.length === 0) {
+      break;
+    }
+
+    allProducts.push(...products);
+
+    // If we got fewer products than the page size, we've reached the end
+    if (products.length < pageSize) {
+      break;
+    }
+
+    // Set cursor for next iteration
+    const lastProduct = products[products.length - 1];
+    cursor = lastProduct.updatedAt;
+    cursorId = lastProduct.id;
+  }
+
+  return allProducts;
+}

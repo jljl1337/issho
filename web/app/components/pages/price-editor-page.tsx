@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -34,10 +34,11 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { getAllProducts, type Product } from "~/lib/db/products";
 
 interface PriceEditorPageProps {
   initialData?: {
+    productId?: string;
     name: string;
     description: string;
     priceAmount: number;
@@ -48,6 +49,7 @@ interface PriceEditorPageProps {
     isActive: boolean;
   };
   onSave?: (data: {
+    productId: string;
     name: string;
     description: string;
     priceAmount: number;
@@ -69,9 +71,13 @@ export function PriceEditorPage({
   errorMessage = null,
   mode,
 }: PriceEditorPageProps) {
-  const { t } = useTranslation(["price", "validation"]);
+  const { t } = useTranslation(["price", "validation", "product"]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productError, setProductError] = useState<string | null>(null);
 
   const formSchema = z.object({
+    productId: z.string().min(1, t("productRequired", { ns: "validation" })),
     name: z.string().min(1, t("nameRequired", { ns: "validation" })),
     description: z.string(),
     priceAmount: z.number().min(0, t("priceRequired", { ns: "validation" })),
@@ -84,9 +90,28 @@ export function PriceEditorPage({
     isActive: z.boolean(),
   });
 
+  // Fetch all products on component mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        setProductError(null);
+        const allProducts = await getAllProducts();
+        setProducts(allProducts);
+      } catch (error) {
+        setProductError(t("failedToLoadProducts", { ns: "product" }));
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, [t]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      productId: initialData?.productId || "",
       name: initialData?.name || "",
       description: initialData?.description || "",
       priceAmount: initialData?.priceAmount || 0,
@@ -104,6 +129,7 @@ export function PriceEditorPage({
   useEffect(() => {
     if (initialData) {
       form.reset({
+        productId: initialData.productId || "",
         name: initialData.name,
         description: initialData.description,
         priceAmount: initialData.priceAmount,
@@ -161,6 +187,49 @@ export function PriceEditorPage({
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
                 >
+                  {/* Product Selection */}
+                  <FormField
+                    control={form.control}
+                    name="productId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("product", { ns: "product" })}</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={loadingProducts || mode === "edit"}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue
+                                placeholder={
+                                  loadingProducts
+                                    ? t("loadingProducts", { ns: "product" })
+                                    : t("selectProduct", { ns: "product" })
+                                }
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {products.map((product) => (
+                              <SelectItem key={product.id} value={product.id}>
+                                {product.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {mode === "edit" && (
+                          <FormDescription>
+                            {t("productCannotBeChanged", { ns: "product" })}
+                          </FormDescription>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Separator />
+
                   {/* Name */}
                   <FormField
                     control={form.control}
@@ -375,6 +444,11 @@ export function PriceEditorPage({
                   />
 
                   {/* Error Message */}
+                  {productError && (
+                    <div className="text-sm text-destructive">
+                      {productError}
+                    </div>
+                  )}
                   {errorMessage && (
                     <div className="text-sm text-destructive">
                       {errorMessage}
@@ -384,7 +458,7 @@ export function PriceEditorPage({
                   {/* Save Button */}
                   <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || loadingProducts}
                     className="w-full cursor-pointer"
                   >
                     {isLoading ? t("saving") : t("savePrice")}

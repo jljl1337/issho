@@ -12,5 +12,6 @@
   "titleRequired": "標題為必填項",
   "nameRequired": "名稱為必填項",
   "priceRequired": "價格必須為 0 或更大",
-  "currencyRequired": "貨幣為必填項"
+  "currencyRequired": "貨幣為必填項",
+  "productRequired": "產品為必填項"
 }
