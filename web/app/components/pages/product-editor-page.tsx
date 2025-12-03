@@ -157,6 +157,7 @@ export function ProductEditorPage({
                             onCheckedChange={(checked) => {
                               field.onChange(checked === true);
                             }}
+                            disabled={mode === "create"}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
