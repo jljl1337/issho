@@ -1,17 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { ProductEditorPage } from "~/components/pages/product-editor-page";
 import { useSession } from "~/contexts/session-context";
-import { useProduct } from "~/hooks/use-products";
-import { ApiError } from "~/lib/db/common";
+import { useProduct, useUpdateProduct } from "~/hooks/use-products";
+import { ApiError, translateError } from "~/lib/db/common";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
   const { t } = useTranslation("product");
-  const { user, isLoggedIn, isLoading } = useSession();
+  const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
   const { id } = useParams();
   const {
@@ -19,6 +19,8 @@ export default function Page() {
     isLoading: productLoading,
     error: productError,
   } = useProduct(id || "");
+  const updateProduct = useUpdateProduct();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -45,23 +47,50 @@ export default function Page() {
     }
   }, [productError, navigate]);
 
-  if (productLoading) {
-    return (
-      <VerticallyCenterPage className="flex flex-col gap-4">
-        <p className="text-muted-foreground">{t("loading")}</p>
-      </VerticallyCenterPage>
-    );
+  const handleSave = async (data: {
+    name: string;
+    description: string;
+    priceAmount: number;
+    priceCurrency: string;
+    isRecurring: boolean;
+    recurringInterval: string | null;
+    recurringIntervalCount: number | null;
+    isActive: boolean;
+  }) => {
+    if (!csrfToken || !id) {
+      setErrorMessage(t("noCsrfToken"));
+      return;
+    }
+
+    setErrorMessage(null);
+
+    try {
+      await updateProduct.mutateAsync({
+        id,
+        params: data,
+        csrfToken,
+      });
+      navigate("/products");
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "404") {
+        navigate(-1);
+      } else {
+        setErrorMessage(translateError(error));
+      }
+    }
+  };
+
+  if (isLoading || !isLoggedIn || productLoading) {
+    return null;
   }
 
   return (
-    <VerticallyCenterPage className="flex flex-col gap-4">
-      <h1 className="text-4xl">{t("editProduct")}</h1>
-      {product && (
-        <div className="text-muted-foreground">
-          <p>Editing product: {product.name}</p>
-          <p className="text-sm">Product edit page - Coming soon</p>
-        </div>
-      )}
-    </VerticallyCenterPage>
+    <ProductEditorPage
+      mode="edit"
+      initialData={product}
+      onSave={handleSave}
+      isLoading={updateProduct.isPending}
+      errorMessage={errorMessage}
+    />
   );
 }

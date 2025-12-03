@@ -24,5 +24,14 @@
   "noCsrfToken": "No CSRF token available",
   "yes": "Yes",
   "no": "No",
-  "currencyUSD": "USD"
+  "currencyUSD": "USD",
+  "selectCurrency": "Select currency",
+  "recurringDescription": "Whether this product has recurring billing",
+  "selectInterval": "Select interval",
+  "intervalDay": "Day",
+  "intervalWeek": "Week",
+  "intervalMonth": "Month",
+  "intervalYear": "Year",
+  "recurringIntervalCountDescription": "Number of intervals between billings",
+  "activeDescription": "Whether this product is currently active"
 }

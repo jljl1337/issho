@@ -24,5 +24,14 @@
   "noCsrfToken": "無 CSRF 令牌可用",
   "yes": "是",
   "no": "否",
-  "currencyUSD": "美元"
+  "currencyUSD": "美元",
+  "selectCurrency": "選擇貨幣",
+  "recurringDescription": "此產品是否為定期收費",
+  "selectInterval": "選擇間隔",
+  "intervalDay": "日",
+  "intervalWeek": "週",
+  "intervalMonth": "月",
+  "intervalYear": "年",
+  "recurringIntervalCountDescription": "收費間隔的次數",
+  "activeDescription": "此產品目前是否啟用"
 }

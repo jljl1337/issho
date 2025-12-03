@@ -9,5 +9,8 @@
   "passwordInvalidFormat": "Password can only contain letters, numbers, and one of !@#$%^&*",
   "passwordsDoNotMatch": "Passwords do not match",
   "oldPasswordRequired": "Old password is required",
-  "titleRequired": "Title is required"
+  "titleRequired": "Title is required",
+  "nameRequired": "Name is required",
+  "priceRequired": "Price must be 0 or greater",
+  "currencyRequired": "Currency is required"
 }
