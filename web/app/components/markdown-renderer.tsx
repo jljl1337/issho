@@ -82,7 +82,7 @@ export function MarkdownRenderer({
           td(props) {
             return (
               <td
-                className="border-b border-r last:border-r-0 px-4 py-2"
+                className="border-b [tr:last-child_&]:border-b-0 border-r last:border-r-0 px-4 py-2"
                 {...props}
               />
             );
