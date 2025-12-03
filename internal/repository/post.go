@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/jljl1337/issho/internal/template"
 )
@@ -72,7 +71,6 @@ type GetPostListParams struct {
 }
 
 func (q *Queries) GetPostList(ctx context.Context, arg GetPostListParams) ([]Post, error) {
-	slog.Debug(fmt.Sprintf("GetPostList called with params: %+v", arg))
 	if arg.OrderBy != "updated_at" && arg.OrderBy != "published_at" {
 		return nil, fmt.Errorf("invalid OrderBy value")
 	}
