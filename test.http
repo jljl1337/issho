@@ -2,9 +2,10 @@
 @username = 12341234
 @email = 12341234@example.com
 @password = 12341234
-@sessionToken = im8yW7DxcbAik7QI8UUNildXDNFqwGxc
-@csrfToken = U1Sb0N3vQMhxfuzwsGdZgXpn0Xre8yBv
+@sessionToken = era3yFV3MgZGIkYrjeLjwlf5nzfshRir
+@csrfToken = Z2yCOMWk4xWYXkdrOXyEZI0bK631mz7A
 @postID = 01KBE8AG5K73NMM90GD8DHKRZ7
+@productID = 01KBH9C9TGSR5JT0R8FWXQ2BJC
 
 ############################## Health
 
@@ -89,15 +90,15 @@ X-CSRF-Token: {{csrfToken}}
 Content-Type: application/json
 
 {
-  "title": "New Post",
+  "title": "New Post asdf",
   "description": "This is a new post",
-  "content": "Post content goes here",
-  "publishedAt": "2023-01-07T00:00:00.000Z"
+  "content": "Post content goes here"
 }
 
 ###
 
-GET {{baseUrl}}/api/posts?&pageSize=10
+# GET {{baseUrl}}/api/posts?&pageSize=10
+GET {{baseUrl}}/api/posts?order-by=updated_at&ascending=false&include-drafts=true&page-size=20&cursor=2023-01-07T00%3A00%3A00.000Z&cursor-id=01KBED5YWR4KST1K14YH279AYJ
 Cookie: issho_session_token={{sessionToken}}
 
 ###
@@ -124,3 +125,48 @@ Content-Type: application/json
 DELETE {{baseUrl}}/api/posts/{{postID}}
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
+
+############################ Product
+
+POST {{baseUrl}}/api/products
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "New Product",
+  "description": "This is a new product",
+  "priceAmount": 100,
+  "priceCurrency": "usd",
+  "isRecurring": false
+}
+
+###
+
+GET {{baseUrl}}/api/products
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+GET {{baseUrl}}/api/products/{{productID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+
+###
+
+PUT {{baseUrl}}/api/products/{{productID}}
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Product",
+  "description": "This is an updated product",
+  "priceAmount": 150,
+  "priceCurrency": "usd",
+  "isRecurring": true,
+  "recurringInterval": "month",
+  "recurringIntervalCount": 1,
+  "isActive": true
+}
