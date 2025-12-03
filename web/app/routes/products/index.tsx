@@ -9,23 +9,24 @@ import { Button } from "~/components/ui/button";
 
 import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 import { DataTable } from "~/components/tables/data-table";
+import TableRowDropdown from "~/components/tables/dropdown";
 import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
-import { usePrices } from "~/hooks/use-prices";
-import { type Price } from "~/lib/db/prices";
+import { useProducts } from "~/hooks/use-products";
+import { type Product } from "~/lib/db/products";
 import { formatDateTime } from "~/lib/format/date";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { t } = useTranslation("price");
+  const { t } = useTranslation("product");
   const { t: tNav } = useTranslation("navigation");
   const { language } = useLanguage();
 
   const { user, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
 
-  // Store all loaded prices
-  const [allPrices, setAllPrices] = useState<Price[]>([]);
+  // Store all loaded products
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorId, setCursorId] = useState<string | undefined>(undefined);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -41,85 +42,59 @@ export default function Page() {
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${tNav("prices")} | Issho`;
+    document.title = `${tNav("products")} | Issho`;
   }, [tNav]);
 
-  // Fetch prices
-  const { data: prices = [], isLoading: pricesLoading } = usePrices({
+  // Fetch products
+  const { data: products = [], isLoading: productsLoading } = useProducts({
     pageSize: 20,
     cursor,
     cursorId,
   });
 
-  // Update allPrices when new prices are fetched
+  // Update allProducts when new products are fetched
   useEffect(() => {
-    if (prices.length > 0 && !pricesLoading) {
-      setAllPrices((prev) => {
+    if (products.length > 0 && !productsLoading) {
+      setAllProducts((prev) => {
         // If cursor is undefined, this is the first load
         if (!cursor && !cursorId) {
-          return prices;
+          return products;
         }
-        // Otherwise, append new prices
+        // Otherwise, append new products
         const existingIds = new Set(prev.map((p) => p.id));
-        const newPrices = prices.filter((p) => !existingIds.has(p.id));
-        return [...prev, ...newPrices];
+        const newProducts = products.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newProducts];
       });
       setIsLoadingMore(false);
     }
-  }, [prices, pricesLoading, cursor, cursorId]);
+  }, [products, productsLoading, cursor, cursorId]);
 
-  // Check if we have more prices to load
-  const hasMorePrices = prices.length === 20;
+  // Check if we have more products to load
+  const hasMoreProducts = products.length === 20;
 
   // Handle load more
   const handleLoadMore = () => {
-    if (!hasMorePrices || allPrices.length === 0) return;
+    if (!hasMoreProducts || allProducts.length === 0) return;
     setIsLoadingMore(true);
-    const lastPrice = allPrices[allPrices.length - 1];
-    setCursor(lastPrice.updatedAt || "");
-    setCursorId(lastPrice.id);
+    const lastProduct = allProducts[allProducts.length - 1];
+    setCursor(lastProduct.updatedAt || "");
+    setCursorId(lastProduct.id);
   };
 
   // Define table columns
-  const columns: ColumnDef<Price>[] = [
+  const columns: ColumnDef<Product>[] = [
     {
       accessorKey: "name",
       header: t("name"),
       cell: ({ row }) => {
-        const price = row.original;
+        const product = row.original;
         return (
           <Link
-            to={`/prices/edit/${price.id}`}
+            to={`/products/edit/${product.id}`}
             className="font-medium hover:underline"
           >
-            {price.name}
+            {product.name}
           </Link>
-        );
-      },
-    },
-    {
-      accessorKey: "priceAmount",
-      header: t("price"),
-      cell: ({ row }) => {
-        return <span>{row.original.priceAmount}</span>;
-      },
-    },
-    {
-      accessorKey: "priceCurrency",
-      header: t("currency"),
-      cell: ({ row }) => {
-        const price = row.original;
-        const currencyKey = `currency${price.priceCurrency.toUpperCase()}`;
-        return <span>{t(currencyKey)}</span>;
-      },
-    },
-    {
-      accessorKey: "isRecurring",
-      header: t("recurring"),
-      cell: ({ row }) => {
-        const isRecurring = row.getValue("isRecurring") as boolean;
-        return (
-          <span className="text-sm">{isRecurring ? t("yes") : t("no")}</span>
         );
       },
     },
@@ -157,25 +132,25 @@ export default function Page() {
 
   return (
     <VerticallyCenterPage className="flex flex-col gap-4">
-      <h1 className="text-4xl">{t("prices")}</h1>
+      <h1 className="text-4xl">{t("products")}</h1>
       <div>
         <Button asChild>
-          <Link to="/prices/create">
+          <Link to="/products/create">
             <PlusIcon className="mr-2 h-4 w-4" />
-            {t("createPrice")}
+            {t("createProduct")}
           </Link>
         </Button>
       </div>
 
-      {pricesLoading && allPrices.length === 0 ? (
+      {productsLoading && allProducts.length === 0 ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">{t("loadingPrices")}</p>
+          <p className="text-muted-foreground">{t("loadingProducts")}</p>
         </div>
       ) : (
         <>
-          <DataTable columns={columns} data={allPrices} />
+          <DataTable columns={columns} data={allProducts} />
 
-          {hasMorePrices && (
+          {hasMoreProducts && (
             <div className="flex justify-center mt-4">
               <Button
                 variant="outline"

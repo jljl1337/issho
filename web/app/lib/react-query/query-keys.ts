@@ -18,4 +18,6 @@ export const queryKeys = {
   post: (id: string) => ["posts", id] as const,
   prices: (params?: any) => ["prices", params] as const,
   price: (id: string) => ["prices", id] as const,
+  products: (params?: any) => ["products", params] as const,
+  product: (id: string) => ["products", id] as const,
 } as const;
