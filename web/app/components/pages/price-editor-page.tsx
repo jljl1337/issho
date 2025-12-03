@@ -114,7 +114,7 @@ export function PriceEditorPage({
       productId: initialData?.productId || "",
       name: initialData?.name || "",
       description: initialData?.description || "",
-      priceAmount: initialData?.priceAmount || 0,
+      priceAmount: initialData?.priceAmount ? initialData.priceAmount / 100 : 0,
       priceCurrency: initialData?.priceCurrency || "usd",
       isRecurring: Boolean(initialData?.isRecurring),
       recurringInterval: initialData?.recurringInterval || null,
@@ -132,7 +132,7 @@ export function PriceEditorPage({
         productId: initialData.productId || "",
         name: initialData.name,
         description: initialData.description,
-        priceAmount: initialData.priceAmount,
+        priceAmount: initialData.priceAmount / 100,
         priceCurrency: initialData.priceCurrency,
         isRecurring: Boolean(initialData.isRecurring),
         recurringInterval: initialData.recurringInterval,
@@ -157,6 +157,7 @@ export function PriceEditorPage({
       // Ensure recurring fields are null when not recurring
       const submissionData = {
         ...values,
+        priceAmount: Math.round(values.priceAmount * 100),
         recurringInterval: values.isRecurring ? values.recurringInterval : null,
         recurringIntervalCount: values.isRecurring
           ? values.recurringIntervalCount
@@ -280,9 +281,10 @@ export function PriceEditorPage({
                           <Input
                             type="number"
                             min="0"
+                            step="0.01"
                             {...field}
                             onChange={(e) => {
-                              const value = parseInt(e.target.value);
+                              const value = parseFloat(e.target.value);
                               field.onChange(isNaN(value) ? 0 : value);
                             }}
                             value={field.value}

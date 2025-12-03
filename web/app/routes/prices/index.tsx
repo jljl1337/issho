@@ -101,7 +101,8 @@ export default function Page() {
       accessorKey: "priceAmount",
       header: t("price"),
       cell: ({ row }) => {
-        return <span>{row.original.priceAmount}</span>;
+        const amountInDollars = (row.original.priceAmount / 100).toFixed(2);
+        return <span>${amountInDollars}</span>;
       },
     },
     {
