@@ -1,9 +1,17 @@
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  vs,
+  vscDarkPlus,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+
+import "react-syntax-highlighter/dist/esm/styles/hljs";
+
 import remarkGfm from "remark-gfm";
 
 import { cn } from "~/lib/utils";
+
+import { useTheme } from "~/components/theme-provider";
 
 interface MarkdownRendererProps {
   content: string;
@@ -14,6 +22,10 @@ export function MarkdownRenderer({
   content,
   className = "prose dark:prose-invert max-w-none break-all",
 }: MarkdownRendererProps) {
+  const { resolvedTheme } = useTheme();
+
+  const syntaxStyle = resolvedTheme === "dark" ? vscDarkPlus : vs;
+
   return (
     <div className={className}>
       <ReactMarkdown
@@ -51,19 +63,30 @@ export function MarkdownRenderer({
           },
           table(props) {
             return (
-              <table
-                className="table-auto border-collapse w-full my-4"
+              <div className="overflow-hidden rounded-lg border my-4">
+                <table
+                  className="table-auto w-full border-separate border-spacing-0"
+                  {...props}
+                />
+              </div>
+            );
+          },
+          th(props) {
+            return (
+              <th
+                className="border-b border-r last:border-r-0 px-4 py-2 bg-muted"
                 {...props}
               />
             );
           },
-          th(props) {
-            return <th className="border px-4 py-2 bg-muted" {...props} />;
-          },
           td(props) {
-            return <td className="border px-4 py-2" {...props} />;
+            return (
+              <td
+                className="border-b [tr:last-child_&]:border-b-0 border-r last:border-r-0 px-4 py-2"
+                {...props}
+              />
+            );
           },
-          // TODO: scroll code block
           code(props) {
             const { children, className, node, ...rest } = props;
             const match = /language-(\w+)/.exec(className || "");
@@ -72,13 +95,17 @@ export function MarkdownRenderer({
                 PreTag="div"
                 children={String(children).replace(/\n$/, "")}
                 language={match[1]}
-                style={vscDarkPlus}
+                style={syntaxStyle}
                 wrapLongLines={true}
                 wrapLines={true}
                 breakLines={true}
+                customStyle={{ borderRadius: "0.5rem" }}
               />
             ) : (
-              <code {...rest} className={cn(className, "bg-muted px-1")}>
+              <code
+                {...rest}
+                className={cn(className, "bg-muted px-1 rounded")}
+              >
                 {children}
               </code>
             );
