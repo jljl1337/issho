@@ -29,7 +29,7 @@ import { Textarea } from "~/components/ui/textarea";
 
 import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
 
-interface ProductEditorPageProps {
+interface PriceEditorPageProps {
   initialData?: {
     name: string;
     description: string;
@@ -55,14 +55,14 @@ interface ProductEditorPageProps {
   mode: "create" | "edit";
 }
 
-export function ProductEditorPage({
+export function PriceEditorPage({
   initialData,
   onSave,
   isLoading = false,
   errorMessage = null,
   mode,
-}: ProductEditorPageProps) {
-  const { t } = useTranslation(["product", "validation"]);
+}: PriceEditorPageProps) {
+  const { t } = useTranslation(["price", "validation"]);
 
   const formSchema = z.object({
     name: z.string().min(1, t("nameRequired", { ns: "validation" })),
@@ -137,7 +137,7 @@ export function ProductEditorPage({
     <VerticallyCenterPage className="max-w-2xl">
       <div className="flex flex-col gap-6">
         <h1 className="text-4xl">
-          {mode === "create" ? t("createProduct") : t("editProduct")}
+          {mode === "create" ? t("createPrice") : t("editPrice")}
         </h1>
 
         <Form {...form}>
@@ -357,7 +357,7 @@ export function ProductEditorPage({
               disabled={isLoading}
               className="w-full cursor-pointer"
             >
-              {isLoading ? t("saving") : t("saveProduct")}
+              {isLoading ? t("saving") : t("savePrice")}
             </Button>
           </form>
         </Form>

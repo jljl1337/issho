@@ -1,4 +1,4 @@
-CREATE TABLE product (
+CREATE TABLE price (
     id TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,

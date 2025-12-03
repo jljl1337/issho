@@ -3,23 +3,23 @@ import { useNavigate, useParams } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { ProductEditorPage } from "~/components/pages/product-editor-page";
+import { PriceEditorPage } from "~/components/pages/price-editor-page";
 import { useSession } from "~/contexts/session-context";
-import { useProduct, useUpdateProduct } from "~/hooks/use-products";
+import { usePrice, useUpdatePrice } from "~/hooks/use-prices";
 import { ApiError, translateError } from "~/lib/db/common";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { t } = useTranslation("product");
+  const { t } = useTranslation("price");
   const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
   const { id } = useParams();
   const {
-    data: product,
-    isLoading: productLoading,
-    error: productError,
-  } = useProduct(id || "");
-  const updateProduct = useUpdateProduct();
+    data: price,
+    isLoading: priceLoading,
+    error: priceError,
+  } = usePrice(id || "");
+  const updatePrice = useUpdatePrice();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,19 +33,19 @@ export default function Page() {
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("editProduct")} | Issho`;
+    document.title = `${t("editPrice")} | Issho`;
   }, [t]);
 
-  // Handle 404 errors when fetching the product
+  // Handle 404 errors when fetching the price
   useEffect(() => {
     if (
-      productError &&
-      productError instanceof ApiError &&
-      productError.code === "404"
+      priceError &&
+      priceError instanceof ApiError &&
+      priceError.code === "404"
     ) {
       navigate(-1);
     }
-  }, [productError, navigate]);
+  }, [priceError, navigate]);
 
   const handleSave = async (data: {
     name: string;
@@ -65,12 +65,12 @@ export default function Page() {
     setErrorMessage(null);
 
     try {
-      await updateProduct.mutateAsync({
+      await updatePrice.mutateAsync({
         id,
         params: data,
         csrfToken,
       });
-      navigate("/products");
+      navigate("/prices");
     } catch (error) {
       if (error instanceof ApiError && error.code === "404") {
         navigate(-1);
@@ -80,16 +80,16 @@ export default function Page() {
     }
   };
 
-  if (isLoading || !isLoggedIn || productLoading) {
+  if (isLoading || !isLoggedIn || priceLoading) {
     return null;
   }
 
   return (
-    <ProductEditorPage
+    <PriceEditorPage
       mode="edit"
-      initialData={product}
+      initialData={price}
       onSave={handleSave}
-      isLoading={updateProduct.isPending}
+      isLoading={updatePrice.isPending}
       errorMessage={errorMessage}
     />
   );

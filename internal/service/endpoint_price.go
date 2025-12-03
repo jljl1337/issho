@@ -8,7 +8,7 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-type CreateProductParams struct {
+type CreatePriceParams struct {
 	UserRole               string
 	Name                   string
 	Description            string
@@ -19,9 +19,9 @@ type CreateProductParams struct {
 	RecurringIntervalCount *int
 }
 
-func (s *EndpointService) CreateProduct(ctx context.Context, arg CreateProductParams) error {
+func (s *EndpointService) CreatePrice(ctx context.Context, arg CreatePriceParams) error {
 	if arg.UserRole == env.UserRole {
-		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create product")
+		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create price")
 	}
 
 	err := checkAmountAndCurrency(arg.PriceAmount, arg.PriceCurrency)
@@ -38,7 +38,7 @@ func (s *EndpointService) CreateProduct(ctx context.Context, arg CreateProductPa
 
 	queries := repository.New(s.db)
 
-	product := repository.Product{
+	price := repository.Price{
 		ID:                     generator.NewULID(),
 		Name:                   arg.Name,
 		Description:            arg.Description,
@@ -52,67 +52,67 @@ func (s *EndpointService) CreateProduct(ctx context.Context, arg CreateProductPa
 		UpdatedAt:              now,
 	}
 
-	err = queries.CreateProduct(ctx, product)
+	err = queries.CreatePrice(ctx, price)
 	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to create product: %v", err)
+		return NewServiceErrorf(ErrCodeInternal, "failed to create price: %v", err)
 	}
 
 	return nil
 }
 
-type GetProductListParams struct {
+type GetPriceListParams struct {
 	Cursor   *string
 	CursorID *string
 	PageSize int
 }
 
-func (s *EndpointService) GetProductList(ctx context.Context, arg GetProductListParams) ([]repository.Product, error) {
+func (s *EndpointService) GetPriceList(ctx context.Context, arg GetPriceListParams) ([]repository.Price, error) {
 	if arg.PageSize <= 0 || arg.PageSize > env.PageSizeMax {
 		arg.PageSize = env.PageSizeDefault
 	}
 
 	queries := repository.New(s.db)
 
-	products, err := queries.GetProductList(ctx, repository.GetProductListParams{
+	prices, err := queries.GetPriceList(ctx, repository.GetPriceListParams{
 		Cursor:   arg.Cursor,
 		CursorID: arg.CursorID,
 		PageSize: arg.PageSize,
 	})
 	if err != nil {
-		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get product list: %v", err)
+		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get price list: %v", err)
 	}
 
-	return products, nil
+	return prices, nil
 }
 
-type GetProductByIDParams struct {
-	ProductID string
+type GetPriceByIDParams struct {
+	PriceID string
 }
 
-func (s *EndpointService) GetProductByID(ctx context.Context, arg GetProductByIDParams) (*repository.Product, error) {
+func (s *EndpointService) GetPriceByID(ctx context.Context, arg GetPriceByIDParams) (*repository.Price, error) {
 	queries := repository.New(s.db)
 
-	productList, err := queries.GetProductByID(ctx, arg.ProductID)
+	priceList, err := queries.GetPriceByID(ctx, arg.PriceID)
 	if err != nil {
-		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get product by ID: %v", err)
+		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get price by ID: %v", err)
 	}
 
-	if len(productList) == 0 {
-		return nil, NewServiceError(ErrCodeNotFound, "product not found")
+	if len(priceList) == 0 {
+		return nil, NewServiceError(ErrCodeNotFound, "price not found")
 	}
 
-	if len(productList) > 1 {
-		return nil, NewServiceError(ErrCodeInternal, "multiple products found with the same ID")
+	if len(priceList) > 1 {
+		return nil, NewServiceError(ErrCodeInternal, "multiple prices found with the same ID")
 	}
 
-	product := productList[0]
+	price := priceList[0]
 
-	return &product, nil
+	return &price, nil
 }
 
-type UpdateProductByIDParams struct {
+type UpdatePriceByIDParams struct {
 	UserRole               string
-	ProductID              string
+	PriceID                string
 	Name                   string
 	Description            string
 	PriceAmount            int
@@ -123,9 +123,9 @@ type UpdateProductByIDParams struct {
 	IsActive               bool
 }
 
-func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProductByIDParams) error {
+func (s *EndpointService) UpdatePriceByID(ctx context.Context, arg UpdatePriceByIDParams) error {
 	if arg.UserRole == env.UserRole {
-		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update product")
+		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update price")
 	}
 
 	err := checkAmountAndCurrency(arg.PriceAmount, arg.PriceCurrency)
@@ -140,35 +140,35 @@ func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProdu
 
 	queries := repository.New(s.db)
 
-	productList, err := queries.GetProductByID(ctx, arg.ProductID)
+	priceList, err := queries.GetPriceByID(ctx, arg.PriceID)
 	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get product by ID: %v", err)
+		return NewServiceErrorf(ErrCodeInternal, "failed to get price by ID: %v", err)
 	}
 
-	if len(productList) == 0 {
-		return NewServiceError(ErrCodeNotFound, "product not found")
+	if len(priceList) == 0 {
+		return NewServiceError(ErrCodeNotFound, "price not found")
 	}
 
-	if len(productList) > 1 {
-		return NewServiceError(ErrCodeInternal, "multiple products found with the same ID")
+	if len(priceList) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple prices found with the same ID")
 	}
 
-	product := productList[0]
+	price := priceList[0]
 
-	// Only modify active status if reactivating a product
-	if product.IsActive == 0 && arg.IsActive {
-		arg.Name = product.Name
-		arg.Description = product.Description
-		arg.PriceAmount = product.PriceAmount
-		arg.PriceCurrency = product.PriceCurrency
-		arg.IsRecurring = intToBool(product.IsRecurring)
-		arg.RecurringInterval = product.RecurringInterval
-		arg.RecurringIntervalCount = product.RecurringIntervalCount
+	// Only modify active status if reactivating a price
+	if price.IsActive == 0 && arg.IsActive {
+		arg.Name = price.Name
+		arg.Description = price.Description
+		arg.PriceAmount = price.PriceAmount
+		arg.PriceCurrency = price.PriceCurrency
+		arg.IsRecurring = intToBool(price.IsRecurring)
+		arg.RecurringInterval = price.RecurringInterval
+		arg.RecurringIntervalCount = price.RecurringIntervalCount
 	}
 
 	now := generator.NowISO8601()
 
-	params := repository.UpdateProductParams{
+	params := repository.UpdatePriceParams{
 		Name:                   arg.Name,
 		Description:            arg.Description,
 		PriceAmount:            arg.PriceAmount,
@@ -178,12 +178,12 @@ func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProdu
 		RecurringIntervalCount: arg.RecurringIntervalCount,
 		UpdatedAt:              now,
 		IsActive:               boolToInt(arg.IsActive),
-		ID:                     arg.ProductID,
+		ID:                     arg.PriceID,
 	}
 
-	err = queries.UpdateProduct(ctx, params)
+	err = queries.UpdatePrice(ctx, params)
 	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to update product: %v", err)
+		return NewServiceErrorf(ErrCodeInternal, "failed to update price: %v", err)
 	}
 
 	return nil
@@ -215,10 +215,10 @@ var mapRecurringIntervalsAllowed = map[string]bool{
 func checkRecurringParams(isRecurring bool, interval *string, intervalCount *int) error {
 	if isRecurring {
 		if interval == nil || *interval == "" {
-			return NewServiceError(ErrCodeUnprocessable, "recurring interval is required for recurring products")
+			return NewServiceError(ErrCodeUnprocessable, "recurring interval is required for recurring prices")
 		}
 		if intervalCount == nil || *intervalCount <= 0 {
-			return NewServiceError(ErrCodeUnprocessable, "recurring interval count must be greater than 0 for recurring products")
+			return NewServiceError(ErrCodeUnprocessable, "recurring interval count must be greater than 0 for recurring prices")
 		}
 
 		if _, ok := mapRecurringIntervalsAllowed[*interval]; !ok {
@@ -226,10 +226,10 @@ func checkRecurringParams(isRecurring bool, interval *string, intervalCount *int
 		}
 	} else {
 		if interval != nil {
-			return NewServiceError(ErrCodeUnprocessable, "recurring interval must be nil for non-recurring products")
+			return NewServiceError(ErrCodeUnprocessable, "recurring interval must be nil for non-recurring prices")
 		}
 		if intervalCount != nil {
-			return NewServiceError(ErrCodeUnprocessable, "recurring interval count must be nil for non-recurring products")
+			return NewServiceError(ErrCodeUnprocessable, "recurring interval count must be nil for non-recurring prices")
 		}
 	}
 	return nil

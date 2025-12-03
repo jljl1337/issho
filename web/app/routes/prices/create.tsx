@@ -3,17 +3,17 @@ import { useNavigate } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { ProductEditorPage } from "~/components/pages/product-editor-page";
+import { PriceEditorPage } from "~/components/pages/price-editor-page";
 import { useSession } from "~/contexts/session-context";
-import { useCreateProduct } from "~/hooks/use-products";
-import { translateError } from "~/lib/db/products";
+import { useCreatePrice } from "~/hooks/use-prices";
+import { translateError } from "~/lib/db/prices";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { t } = useTranslation("product");
+  const { t } = useTranslation("price");
   const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
-  const createProduct = useCreateProduct();
+  const createPrice = useCreatePrice();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function Page() {
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("createProduct")} | Issho`;
+    document.title = `${t("createPrice")} | Issho`;
   }, [t]);
 
   const handleSave = async (data: {
@@ -48,11 +48,11 @@ export default function Page() {
     setErrorMessage(null);
 
     try {
-      await createProduct.mutateAsync({
+      await createPrice.mutateAsync({
         params: data,
         csrfToken,
       });
-      navigate("/products");
+      navigate("/prices");
     } catch (error) {
       setErrorMessage(translateError(error));
     }
@@ -63,10 +63,10 @@ export default function Page() {
   }
 
   return (
-    <ProductEditorPage
+    <PriceEditorPage
       mode="create"
       onSave={handleSave}
-      isLoading={createProduct.isPending}
+      isLoading={createPrice.isPending}
       errorMessage={errorMessage}
     />
   );

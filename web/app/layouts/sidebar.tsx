@@ -3,13 +3,13 @@ import { Link, Outlet, useLocation } from "react-router";
 
 import {
   ArrowLeftFromLine,
+  DollarSign,
   Home,
   Info,
   Laptop,
   List,
   Menu,
   Moon,
-  ShoppingCart,
   Sun,
   User,
 } from "lucide-react";
@@ -64,9 +64,9 @@ export default function Layout() {
       label: t("posts", { ns: "navigation" }),
     },
     {
-      to: "/products",
-      icon: ShoppingCart,
-      label: t("products", { ns: "navigation" }),
+      to: "/prices",
+      icon: DollarSign,
+      label: t("prices", { ns: "navigation" }),
     },
   ];
 

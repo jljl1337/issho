@@ -12,21 +12,21 @@ import { DataTable } from "~/components/tables/data-table";
 import TableRowDropdown from "~/components/tables/dropdown";
 import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
-import { useProducts } from "~/hooks/use-products";
-import { type Product } from "~/lib/db/products";
+import { usePrices } from "~/hooks/use-prices";
+import { type Price } from "~/lib/db/prices";
 import { formatDateTime } from "~/lib/format/date";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { t } = useTranslation("product");
+  const { t } = useTranslation("price");
   const { t: tNav } = useTranslation("navigation");
   const { language } = useLanguage();
 
   const { user, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
 
-  // Store all loaded products
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  // Store all loaded prices
+  const [allPrices, setAllPrices] = useState<Price[]>([]);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorId, setCursorId] = useState<string | undefined>(undefined);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -42,60 +42,58 @@ export default function Page() {
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${tNav("products")} | Issho`;
+    document.title = `${tNav("prices")} | Issho`;
   }, [tNav]);
 
-  // Fetch products
-  const { data: products = [], isLoading: productsLoading } = useProducts({
-    orderBy: "updated_at",
-    ascending: false,
+  // Fetch prices
+  const { data: prices = [], isLoading: pricesLoading } = usePrices({
     pageSize: 20,
     cursor,
     cursorId,
   });
 
-  // Update allProducts when new products are fetched
+  // Update allPrices when new prices are fetched
   useEffect(() => {
-    if (products.length > 0 && !productsLoading) {
-      setAllProducts((prev) => {
+    if (prices.length > 0 && !pricesLoading) {
+      setAllPrices((prev) => {
         // If cursor is undefined, this is the first load
         if (!cursor && !cursorId) {
-          return products;
+          return prices;
         }
-        // Otherwise, append new products
+        // Otherwise, append new prices
         const existingIds = new Set(prev.map((p) => p.id));
-        const newProducts = products.filter((p) => !existingIds.has(p.id));
-        return [...prev, ...newProducts];
+        const newPrices = prices.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newPrices];
       });
       setIsLoadingMore(false);
     }
-  }, [products, productsLoading, cursor, cursorId]);
+  }, [prices, pricesLoading, cursor, cursorId]);
 
-  // Check if we have more products to load
-  const hasMoreProducts = products.length === 20;
+  // Check if we have more prices to load
+  const hasMorePrices = prices.length === 20;
 
   // Handle load more
   const handleLoadMore = () => {
-    if (!hasMoreProducts || allProducts.length === 0) return;
+    if (!hasMorePrices || allPrices.length === 0) return;
     setIsLoadingMore(true);
-    const lastProduct = allProducts[allProducts.length - 1];
-    setCursor(lastProduct.updatedAt || "");
-    setCursorId(lastProduct.id);
+    const lastPrice = allPrices[allPrices.length - 1];
+    setCursor(lastPrice.updatedAt || "");
+    setCursorId(lastPrice.id);
   };
 
   // Define table columns
-  const columns: ColumnDef<Product>[] = [
+  const columns: ColumnDef<Price>[] = [
     {
       accessorKey: "name",
       header: t("name"),
       cell: ({ row }) => {
-        const product = row.original;
+        const price = row.original;
         return (
           <Link
-            to={`/products/edit/${product.id}`}
+            to={`/prices/edit/${price.id}`}
             className="font-medium hover:underline"
           >
-            {product.name}
+            {price.name}
           </Link>
         );
       },
@@ -111,8 +109,8 @@ export default function Page() {
       accessorKey: "priceCurrency",
       header: t("currency"),
       cell: ({ row }) => {
-        const product = row.original;
-        const currencyKey = `currency${product.priceCurrency.toUpperCase()}`;
+        const price = row.original;
+        const currencyKey = `currency${price.priceCurrency.toUpperCase()}`;
         return <span>{t(currencyKey)}</span>;
       },
     },
@@ -160,25 +158,25 @@ export default function Page() {
 
   return (
     <VerticallyCenterPage className="flex flex-col gap-4">
-      <h1 className="text-4xl">{t("products")}</h1>
+      <h1 className="text-4xl">{t("prices")}</h1>
       <div>
         <Button asChild>
-          <Link to="/products/create">
+          <Link to="/prices/create">
             <PlusIcon className="mr-2 h-4 w-4" />
-            {t("createProduct")}
+            {t("createPrice")}
           </Link>
         </Button>
       </div>
 
-      {productsLoading && allProducts.length === 0 ? (
+      {pricesLoading && allPrices.length === 0 ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">{t("loadingProducts")}</p>
+          <p className="text-muted-foreground">{t("loadingPrices")}</p>
         </div>
       ) : (
         <>
-          <DataTable columns={columns} data={allProducts} />
+          <DataTable columns={columns} data={allPrices} />
 
-          {hasMoreProducts && (
+          {hasMorePrices && (
             <div className="flex justify-center mt-4">
               <Button
                 variant="outline"

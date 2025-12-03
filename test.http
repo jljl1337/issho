@@ -5,7 +5,7 @@
 @sessionToken = era3yFV3MgZGIkYrjeLjwlf5nzfshRir
 @csrfToken = Z2yCOMWk4xWYXkdrOXyEZI0bK631mz7A
 @postID = 01KBE8AG5K73NMM90GD8DHKRZ7
-@productID = 01KBH9C9TGSR5JT0R8FWXQ2BJC
+@priceID = 01KBH9C9TGSR5JT0R8FWXQ2BJC
 
 ############################## Health
 
@@ -126,16 +126,16 @@ DELETE {{baseUrl}}/api/posts/{{postID}}
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
 
-############################ Product
+############################ Price
 
-POST {{baseUrl}}/api/products
+POST {{baseUrl}}/api/prices
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
 Content-Type: application/json
 
 {
-  "name": "New Product",
-  "description": "This is a new product",
+  "name": "New Price",
+  "description": "This is a new price",
   "priceAmount": 100,
   "priceCurrency": "usd",
   "isRecurring": false
@@ -143,26 +143,26 @@ Content-Type: application/json
 
 ###
 
-GET {{baseUrl}}/api/products
+GET {{baseUrl}}/api/prices
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
 
 ###
 
-GET {{baseUrl}}/api/products/{{productID}}
+GET {{baseUrl}}/api/prices/{{priceID}}
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
 
 ###
 
-PUT {{baseUrl}}/api/products/{{productID}}
+PUT {{baseUrl}}/api/prices/{{priceID}}
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
 Content-Type: application/json
 
 {
-  "name": "Updated Product",
-  "description": "This is an updated product",
+  "name": "Updated Price",
+  "description": "This is an updated price",
   "priceAmount": 150,
   "priceCurrency": "usd",
   "isRecurring": true,

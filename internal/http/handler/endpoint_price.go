@@ -12,14 +12,14 @@ import (
 	"github.com/jljl1337/issho/internal/service"
 )
 
-func (h *EndpointHandler) registerProductRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /products", h.CreateProduct)
-	mux.HandleFunc("GET /products", h.GetProductList)
-	mux.HandleFunc("GET /products/{id}", h.GetProductByID)
-	mux.HandleFunc("PUT /products/{id}", h.UpdateProductByID)
+func (h *EndpointHandler) registerPriceRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("POST /prices", h.CreatePrice)
+	mux.HandleFunc("GET /prices", h.GetPriceList)
+	mux.HandleFunc("GET /prices/{id}", h.GetPriceByID)
+	mux.HandleFunc("PUT /prices/{id}", h.UpdatePriceByID)
 }
 
-type CreateProductParams struct {
+type CreatePriceParams struct {
 	Name                   string  `json:"name"`
 	Description            string  `json:"description"`
 	PriceAmount            int     `json:"priceAmount"`
@@ -29,8 +29,8 @@ type CreateProductParams struct {
 	RecurringIntervalCount *int    `json:"recurringIntervalCount"`
 }
 
-func (h *EndpointHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var req CreateProductParams
+func (h *EndpointHandler) CreatePrice(w http.ResponseWriter, r *http.Request) {
+	var req CreatePriceParams
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		common.WriteMessageResponse(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -43,7 +43,7 @@ func (h *EndpointHandler) CreateProduct(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = h.service.CreateProduct(r.Context(), service.CreateProductParams{
+	err = h.service.CreatePrice(r.Context(), service.CreatePriceParams{
 		UserRole:               userRole,
 		Name:                   req.Name,
 		Description:            req.Description,
@@ -58,12 +58,12 @@ func (h *EndpointHandler) CreateProduct(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	common.WriteMessageResponse(w, "Product created successfully", http.StatusCreated)
+	common.WriteMessageResponse(w, "Price created successfully", http.StatusCreated)
 }
 
-func (h *EndpointHandler) GetProductList(w http.ResponseWriter, r *http.Request) {
+func (h *EndpointHandler) GetPriceList(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
-	arg := service.GetProductListParams{}
+	arg := service.GetPriceListParams{}
 
 	cursor := r.URL.Query().Get("cursor")
 	if cursor != "" {
@@ -92,41 +92,41 @@ func (h *EndpointHandler) GetProductList(w http.ResponseWriter, r *http.Request)
 		arg.PageSize = env.PageSizeDefault
 	}
 
-	// Call service to get product list
-	productList, err := h.service.GetProductList(r.Context(), arg)
+	// Call service to get price list
+	priceList, err := h.service.GetPriceList(r.Context(), arg)
 	if err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
 
-	common.WriteJSONResponse(w, http.StatusOK, productList)
+	common.WriteJSONResponse(w, http.StatusOK, priceList)
 }
 
-func (h *EndpointHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
-	// Parse product ID from URL path
-	productID := r.PathValue("id")
-	if productID == "" {
-		common.WriteMessageResponse(w, "Product ID is required", http.StatusBadRequest)
+func (h *EndpointHandler) GetPriceByID(w http.ResponseWriter, r *http.Request) {
+	// Parse price ID from URL path
+	priceID := r.PathValue("id")
+	if priceID == "" {
+		common.WriteMessageResponse(w, "Price ID is required", http.StatusBadRequest)
 		return
 	}
 
-	// Call service to get product by ID
-	product, err := h.service.GetProductByID(r.Context(), service.GetProductByIDParams{
-		ProductID: productID,
+	// Call service to get price by ID
+	price, err := h.service.GetPriceByID(r.Context(), service.GetPriceByIDParams{
+		PriceID: priceID,
 	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
 
-	common.WriteJSONResponse(w, http.StatusOK, product)
+	common.WriteJSONResponse(w, http.StatusOK, price)
 }
 
-func (h *EndpointHandler) UpdateProductByID(w http.ResponseWriter, r *http.Request) {
+func (h *EndpointHandler) UpdatePriceByID(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters and request body
-	productID := r.PathValue("id")
-	if productID == "" {
-		common.WriteMessageResponse(w, "Product ID is required", http.StatusBadRequest)
+	priceID := r.PathValue("id")
+	if priceID == "" {
+		common.WriteMessageResponse(w, "Price ID is required", http.StatusBadRequest)
 		return
 	}
 
@@ -145,9 +145,9 @@ func (h *EndpointHandler) UpdateProductByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Call service to update product by ID
-	err := h.service.UpdateProductByID(r.Context(), service.UpdateProductByIDParams{
-		ProductID:              productID,
+	// Call service to update price by ID
+	err := h.service.UpdatePriceByID(r.Context(), service.UpdatePriceByIDParams{
+		PriceID:                priceID,
 		Name:                   req.Name,
 		Description:            req.Description,
 		PriceAmount:            req.PriceAmount,
@@ -162,5 +162,5 @@ func (h *EndpointHandler) UpdateProductByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	common.WriteMessageResponse(w, "Product updated successfully", http.StatusOK)
+	common.WriteMessageResponse(w, "Price updated successfully", http.StatusOK)
 }

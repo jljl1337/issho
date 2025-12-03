@@ -43,7 +43,7 @@ type Post struct {
 	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
 }
 
-type Product struct {
+type Price struct {
 	ID                     string  `json:"id" db:"id"`
 	Name                   string  `json:"name" db:"name"`
 	Description            string  `json:"description" db:"description"`

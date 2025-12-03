@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-const createProduct = `
-	INSERT INTO product (
+const createPrice = `
+	INSERT INTO price (
 		id,
 		name,
 		description,
@@ -32,15 +32,15 @@ const createProduct = `
 	)
 `
 
-func (q *Queries) CreateProduct(ctx context.Context, arg Product) error {
-	return NamedExecOneRowContext(ctx, q.db, createProduct, arg)
+func (q *Queries) CreatePrice(ctx context.Context, arg Price) error {
+	return NamedExecOneRowContext(ctx, q.db, createPrice, arg)
 }
 
-const getProductList = `
+const getPriceList = `
 	SELECT
 		*
 	FROM
-		product
+		price
 	WHERE
 		:cursor IS NULL OR :cursor_id IS NULL OR 
 		updated_at < :cursor OR (
@@ -53,40 +53,40 @@ const getProductList = `
 		:page_size
 `
 
-type GetProductListParams struct {
+type GetPriceListParams struct {
 	Cursor   *string `db:"cursor"`
 	CursorID *string `db:"cursor_id"`
 	PageSize int     `db:"page_size"`
 }
 
-func (q *Queries) GetProductList(ctx context.Context, arg GetProductListParams) ([]Product, error) {
-	items := []Product{}
-	err := NamedSelectContext(ctx, q.db, &items, getProductList, arg)
+func (q *Queries) GetPriceList(ctx context.Context, arg GetPriceListParams) ([]Price, error) {
+	items := []Price{}
+	err := NamedSelectContext(ctx, q.db, &items, getPriceList, arg)
 	return items, err
 }
 
-const getProductByID = `
+const getPriceByID = `
 	SELECT
 		*
 	FROM
-		product
+		price
 	WHERE
 		id = :id
 `
 
-type GetProductByIDParams struct {
+type GetPriceByIDParams struct {
 	ID string `db:"id"`
 }
 
-func (q *Queries) GetProductByID(ctx context.Context, id string) ([]Product, error) {
-	items := []Product{}
-	err := NamedSelectContext(ctx, q.db, &items, getProductByID, GetProductByIDParams{ID: id})
+func (q *Queries) GetPriceByID(ctx context.Context, id string) ([]Price, error) {
+	items := []Price{}
+	err := NamedSelectContext(ctx, q.db, &items, getPriceByID, GetPriceByIDParams{ID: id})
 	return items, err
 }
 
-const updateProduct = `
+const updatePrice = `
 	UPDATE
-		product
+		price
 	SET
 		name = :name,
 		description = :description,
@@ -101,7 +101,7 @@ const updateProduct = `
 		id = :id
 `
 
-type UpdateProductParams struct {
+type UpdatePriceParams struct {
 	Name                   string  `db:"name"`
 	Description            string  `db:"description"`
 	PriceAmount            int     `db:"price_amount"`
@@ -114,6 +114,6 @@ type UpdateProductParams struct {
 	ID                     string  `db:"id"`
 }
 
-func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
-	return NamedExecOneRowContext(ctx, q.db, updateProduct, arg)
+func (q *Queries) UpdatePrice(ctx context.Context, arg UpdatePriceParams) error {
+	return NamedExecOneRowContext(ctx, q.db, updatePrice, arg)
 }
