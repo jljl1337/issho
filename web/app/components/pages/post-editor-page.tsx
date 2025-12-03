@@ -20,6 +20,7 @@ import { Separator } from "~/components/ui/separator";
 
 import { DateTimePicker } from "~/components/datetime-picker";
 import { MarkdownRenderer } from "~/components/markdown-renderer";
+import { useTheme } from "~/components/theme-provider";
 
 interface PostEditorPageProps {
   initialData?: {
@@ -45,6 +46,7 @@ export function PostEditorPage({
   errorMessage = null,
 }: PostEditorPageProps) {
   const { t } = useTranslation(["post", "validation"]);
+  const { resolvedTheme } = useTheme();
 
   const formSchema = z.object({
     title: z.string().min(1, t("titleRequired", { ns: "validation" })),
@@ -116,7 +118,7 @@ export function PostEditorPage({
                     defaultLanguage="markdown"
                     value={field.value}
                     onChange={(value) => field.onChange(value || "")}
-                    theme="vs-dark"
+                    theme={resolvedTheme === "dark" ? "vs-dark" : "light"}
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
