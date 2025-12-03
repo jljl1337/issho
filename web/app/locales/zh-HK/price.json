@@ -1,7 +1,9 @@
 {
   "prices": "價格",
   "createPrice": "建立價格",
+  "createPriceDescription": "為您的產品建立新價格",
   "editPrice": "編輯價格",
+  "editPriceDescription": "更新價格詳情和設定",
   "deletePrice": "刪除價格",
   "deletePriceConfirm": "您確定要刪除此價格嗎？此操作無法復原。",
   "name": "名稱",
