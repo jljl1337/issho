@@ -7,6 +7,8 @@ import (
 const createPrice = `
 	INSERT INTO price (
 		id,
+		external_id,
+		product_id,
 		name,
 		description,
 		price_amount,
@@ -19,6 +21,8 @@ const createPrice = `
 		updated_at
 	) VALUES (
 		:id,
+		:external_id,
+		:product_id,
 		:name,
 		:description,
 		:price_amount,

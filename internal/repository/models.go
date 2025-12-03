@@ -55,6 +55,8 @@ type Product struct {
 
 type Price struct {
 	ID                     string  `json:"id" db:"id"`
+	ExternalID             string  `json:"externalId" db:"external_id"`
+	ProductID              string  `json:"productId" db:"product_id"`
 	Name                   string  `json:"name" db:"name"`
 	Description            string  `json:"description" db:"description"`
 	PriceAmount            int     `json:"priceAmount" db:"price_amount"`

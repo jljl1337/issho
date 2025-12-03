@@ -20,6 +20,7 @@ func (h *EndpointHandler) registerPriceRoutes(mux *http.ServeMux) {
 }
 
 type CreatePriceParams struct {
+	ProductID              string  `json:"productId"`
 	Name                   string  `json:"name"`
 	Description            string  `json:"description"`
 	PriceAmount            int     `json:"priceAmount"`
@@ -45,6 +46,7 @@ func (h *EndpointHandler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 
 	err = h.service.CreatePrice(r.Context(), service.CreatePriceParams{
 		UserRole:               userRole,
+		ProductID:              req.ProductID,
 		Name:                   req.Name,
 		Description:            req.Description,
 		PriceAmount:            req.PriceAmount,

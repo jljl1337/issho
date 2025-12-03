@@ -10,6 +10,7 @@ import (
 
 type CreatePriceParams struct {
 	UserRole               string
+	ProductID              string
 	Name                   string
 	Description            string
 	PriceAmount            int
@@ -40,6 +41,8 @@ func (s *EndpointService) CreatePrice(ctx context.Context, arg CreatePriceParams
 
 	price := repository.Price{
 		ID:                     generator.NewULID(),
+		ExternalID:             generator.NewULID(), // TODO: change to external ID generation method
+		ProductID:              arg.ProductID,
 		Name:                   arg.Name,
 		Description:            arg.Description,
 		PriceAmount:            arg.PriceAmount,
