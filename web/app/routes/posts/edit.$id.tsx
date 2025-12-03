@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { useTranslation } from "react-i18next";
+
 import { PostEditorPage } from "~/components/pages/post-editor-page";
 import { useSession } from "~/contexts/session-context";
 import { usePost, useUpdatePost } from "~/hooks/use-posts";
@@ -8,6 +10,7 @@ import { ApiError, translateError } from "~/lib/db/common";
 import { isUser as isUserRole } from "~/lib/validation/role";
 
 export default function Page() {
+  const { t } = useTranslation("post");
   const {
     user,
     isLoggedIn,
@@ -35,7 +38,7 @@ export default function Page() {
   }, [user, isLoggedIn, sessionLoading, navigate]);
 
   useEffect(() => {
-    document.title = `Edit Post | Issho`;
+    document.title = `${t("editPost")} | Issho`;
   }, []);
 
   // Handle 404 errors when fetching the post
