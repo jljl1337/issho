@@ -95,7 +95,7 @@ type UpdateProductByIDParams struct {
 	ID          string `db:"id"`
 	Name        string `db:"name"`
 	Description string `db:"description"`
-	IsActive    int    `db:"is_active"`
+	IsActive    bool   `db:"is_active"`
 	UpdatedAt   string `db:"updated_at"`
 }
 

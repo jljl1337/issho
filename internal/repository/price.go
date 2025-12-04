@@ -110,10 +110,10 @@ type UpdatePriceParams struct {
 	Description            string  `db:"description"`
 	PriceAmount            int     `db:"price_amount"`
 	PriceCurrency          string  `db:"price_currency"`
-	IsRecurring            int     `db:"is_recurring"`
+	IsRecurring            bool    `db:"is_recurring"`
 	RecurringInterval      *string `db:"recurring_interval"`
 	RecurringIntervalCount *int    `db:"recurring_interval_count"`
-	IsActive               int     `db:"is_active"`
+	IsActive               bool    `db:"is_active"`
 	UpdatedAt              string  `db:"updated_at"`
 	ID                     string  `db:"id"`
 }

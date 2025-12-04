@@ -90,11 +90,9 @@ func (p *PolarProvider) UpdatePrice(ctx context.Context, params UpdatePriceParam
 }
 
 func toPrice(p *components.Product) *repository.Price {
-	isRecurring := 0
 	var RecurringInterval *string = nil
 	var RecurringIntervalCount *int = nil
 	if p.IsRecurring {
-		isRecurring = 1
 		if p.RecurringInterval != nil {
 			s := string(*p.RecurringInterval)
 			RecurringInterval = &s
@@ -106,10 +104,7 @@ func toPrice(p *components.Product) *repository.Price {
 		Description = *p.Description
 	}
 
-	isActive := 1
-	if p.IsArchived {
-		isActive = 0
-	}
+	isActive := !p.IsArchived
 
 	price := &repository.Price{
 		ExternalID:             p.ID,
@@ -117,7 +112,7 @@ func toPrice(p *components.Product) *repository.Price {
 		Description:            Description,
 		PriceAmount:            int(p.Prices[0].ProductPrice.ProductPriceFixed.PriceAmount),
 		PriceCurrency:          p.Prices[0].ProductPrice.ProductPriceFixed.PriceCurrency,
-		IsRecurring:            isRecurring,
+		IsRecurring:            p.IsRecurring,
 		RecurringInterval:      RecurringInterval,
 		RecurringIntervalCount: RecurringIntervalCount,
 		IsActive:               isActive,

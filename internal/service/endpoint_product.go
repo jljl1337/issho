@@ -125,7 +125,7 @@ func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProdu
 	product := productList[0]
 
 	// Only modify active status if reactivating a product
-	if product.IsActive == 0 && boolToInt(arg.IsActive) == 1 {
+	if !product.IsActive && arg.IsActive {
 		arg.Name = product.Name
 		arg.Description = product.Description
 	}

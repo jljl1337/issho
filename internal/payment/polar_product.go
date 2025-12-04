@@ -11,7 +11,7 @@ func (p *PolarProvider) CreateProduct(ctx context.Context, params CreateProductP
 		ExternalID:  nil,
 		Name:        params.Name,
 		Description: params.Description,
-		IsActive:    1,
+		IsActive:    true,
 	}, nil
 }
 
@@ -20,6 +20,6 @@ func (p *PolarProvider) UpdateProduct(ctx context.Context, params UpdateProductP
 		ExternalID:  nil,
 		Name:        params.Name,
 		Description: params.Description,
-		IsActive:    1,
+		IsActive:    true,
 	}, nil
 }

@@ -178,12 +178,12 @@ func (s *EndpointService) UpdatePriceByID(ctx context.Context, arg UpdatePriceBy
 	price := priceList[0]
 
 	// Only modify active status if reactivating a price
-	if price.IsActive == 0 && arg.IsActive {
+	if !price.IsActive && arg.IsActive {
 		arg.Name = price.Name
 		arg.Description = price.Description
 		arg.PriceAmount = price.PriceAmount
 		arg.PriceCurrency = price.PriceCurrency
-		arg.IsRecurring = intToBool(price.IsRecurring)
+		arg.IsRecurring = price.IsRecurring
 		arg.RecurringInterval = price.RecurringInterval
 		arg.RecurringIntervalCount = price.RecurringIntervalCount
 	}

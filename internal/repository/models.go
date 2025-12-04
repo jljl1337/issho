@@ -48,7 +48,7 @@ type Product struct {
 	ExternalID  *string `json:"externalId" db:"external_id"`
 	Name        string  `json:"name" db:"name"`
 	Description string  `json:"description" db:"description"`
-	IsActive    int     `json:"isActive" db:"is_active"`
+	IsActive    bool    `json:"isActive" db:"is_active"`
 	CreatedAt   string  `json:"createdAt" db:"created_at"`
 	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
 }
@@ -61,10 +61,10 @@ type Price struct {
 	Description            string  `json:"description" db:"description"`
 	PriceAmount            int     `json:"priceAmount" db:"price_amount"`
 	PriceCurrency          string  `json:"priceCurrency" db:"price_currency"`
-	IsRecurring            int     `json:"isRecurring" db:"is_recurring"`
+	IsRecurring            bool    `json:"isRecurring" db:"is_recurring"`
 	RecurringInterval      *string `json:"recurringInterval" db:"recurring_interval"`
 	RecurringIntervalCount *int    `json:"recurringIntervalCount" db:"recurring_interval_count"`
-	IsActive               int     `json:"isActive" db:"is_active"`
+	IsActive               bool    `json:"isActive" db:"is_active"`
 	CreatedAt              string  `json:"createdAt" db:"created_at"`
 	UpdatedAt              string  `json:"updatedAt" db:"updated_at"`
 }

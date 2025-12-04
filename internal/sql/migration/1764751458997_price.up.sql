@@ -6,10 +6,10 @@ CREATE TABLE price (
     description TEXT NOT NULL,
     price_amount INTEGER NOT NULL,
     price_currency TEXT NOT NULL,
-    is_recurring INTEGER NOT NULL,
+    is_recurring BOOLEAN NOT NULL,
     recurring_interval TEXT,
     recurring_interval_count INTEGER,
-    is_active INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
 
