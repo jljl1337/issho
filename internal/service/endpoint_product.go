@@ -5,6 +5,7 @@ import (
 
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/generator"
+	"github.com/jljl1337/issho/internal/payment"
 	"github.com/jljl1337/issho/internal/repository"
 )
 
@@ -23,17 +24,19 @@ func (s *EndpointService) CreateProduct(ctx context.Context, arg CreateProductPa
 
 	queries := repository.New(s.db)
 
-	product := repository.Product{
-		ID:          generator.NewULID(),
-		ExternalID:  nil, // TODO: integrate with external systems if needed
+	product, err := s.paymentProvider.CreateProduct(ctx, payment.CreateProductParams{
 		Name:        arg.Name,
 		Description: arg.Description,
-		IsActive:    1,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create product in payment provider: %v", err)
 	}
 
-	err := queries.CreateProduct(ctx, product)
+	product.ID = generator.NewULID()
+	product.CreatedAt = now
+	product.UpdatedAt = now
+
+	err = queries.CreateProduct(ctx, *product)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to create product: %v", err)
 	}
@@ -127,13 +130,22 @@ func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProdu
 		arg.Description = product.Description
 	}
 
+	newProduct, err := s.paymentProvider.UpdateProduct(ctx, payment.UpdateProductParams{
+		Name:        arg.Name,
+		Description: arg.Description,
+		IsActive:    arg.IsActive,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update product in payment provider: %v", err)
+	}
+
 	now := generator.NowISO8601()
 
 	params := repository.UpdateProductByIDParams{
 		ID:          arg.ProductID,
-		Name:        arg.Name,
-		Description: arg.Description,
-		IsActive:    boolToInt(arg.IsActive),
+		Name:        newProduct.Name,
+		Description: newProduct.Description,
+		IsActive:    newProduct.IsActive,
 		UpdatedAt:   now,
 	}
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/generator"
+	"github.com/jljl1337/issho/internal/payment"
 	"github.com/jljl1337/issho/internal/repository"
 )
 
@@ -35,27 +36,45 @@ func (s *EndpointService) CreatePrice(ctx context.Context, arg CreatePriceParams
 		return err
 	}
 
-	now := generator.NowISO8601()
-
 	queries := repository.New(s.db)
 
-	price := repository.Price{
-		ID:                     generator.NewULID(),
-		ExternalID:             generator.NewULID(), // TODO: change to external ID generation method
-		ProductID:              arg.ProductID,
+	productList, err := queries.GetProductByID(ctx, arg.ProductID)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get product by ID: %v", err)
+	}
+
+	if len(productList) == 0 {
+		return NewServiceError(ErrCodeNotFound, "product not found")
+	}
+
+	if len(productList) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple products found with the same ID")
+	}
+
+	product := productList[0]
+
+	price, err := s.paymentProvider.CreatePrice(ctx, payment.CreatePriceParams{
+		ProductExternalID:      product.ExternalID,
 		Name:                   arg.Name,
 		Description:            arg.Description,
 		PriceAmount:            arg.PriceAmount,
 		PriceCurrency:          arg.PriceCurrency,
-		IsRecurring:            boolToInt(arg.IsRecurring),
+		IsRecurring:            arg.IsRecurring,
 		RecurringInterval:      arg.RecurringInterval,
 		RecurringIntervalCount: arg.RecurringIntervalCount,
-		IsActive:               1,
-		CreatedAt:              now,
-		UpdatedAt:              now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create price in payment provider: %v", err)
 	}
 
-	err = queries.CreatePrice(ctx, price)
+	now := generator.NowISO8601()
+
+	price.ID = generator.NewULID()
+	price.ProductID = arg.ProductID
+	price.CreatedAt = now
+	price.UpdatedAt = now
+
+	err = queries.CreatePrice(ctx, *price)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to create price: %v", err)
 	}
@@ -169,18 +188,33 @@ func (s *EndpointService) UpdatePriceByID(ctx context.Context, arg UpdatePriceBy
 		arg.RecurringIntervalCount = price.RecurringIntervalCount
 	}
 
-	now := generator.NowISO8601()
-
-	params := repository.UpdatePriceParams{
+	newPrice, err := s.paymentProvider.UpdatePrice(ctx, payment.UpdatePriceParams{
+		ExternalID:             price.ExternalID,
 		Name:                   arg.Name,
 		Description:            arg.Description,
 		PriceAmount:            arg.PriceAmount,
 		PriceCurrency:          arg.PriceCurrency,
-		IsRecurring:            boolToInt(arg.IsRecurring),
+		IsRecurring:            arg.IsRecurring,
 		RecurringInterval:      arg.RecurringInterval,
 		RecurringIntervalCount: arg.RecurringIntervalCount,
+		IsActive:               arg.IsActive,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update price in payment provider: %v", err)
+	}
+
+	now := generator.NowISO8601()
+
+	params := repository.UpdatePriceParams{
+		Name:                   newPrice.Name,
+		Description:            newPrice.Description,
+		PriceAmount:            newPrice.PriceAmount,
+		PriceCurrency:          newPrice.PriceCurrency,
+		IsRecurring:            newPrice.IsRecurring,
+		RecurringInterval:      newPrice.RecurringInterval,
+		RecurringIntervalCount: newPrice.RecurringIntervalCount,
+		IsActive:               newPrice.IsActive,
 		UpdatedAt:              now,
-		IsActive:               boolToInt(arg.IsActive),
 		ID:                     arg.PriceID,
 	}
 
