@@ -22,4 +22,6 @@ func (h *EndpointHandler) RegisterRoutes(mux *http.ServeMux) {
 	h.registerAuthRoutes(mux)
 	h.registerUserRoutes(mux)
 	h.registerPostRoutes(mux)
+	h.registerProductRoutes(mux)
+	h.registerPriceRoutes(mux)
 }

@@ -14,6 +14,9 @@ var (
 	SQLiteBackupDbPath         string
 	SQLiteBackupCronSchedule   string
 	SessionCleanupCronSchedule string
+	PaymentProvider            string
+	PolarAccessToken           string
+	PolarIsSandbox             bool
 	LogLevel                   int
 	LogHealthCheck             bool
 	Port                       string
@@ -45,6 +48,9 @@ func MustSetConstants() {
 	SQLiteBackupDbPath = MustGetString("SQLITE_BACKUP_DB_PATH", "data/backup/db/backup.db")
 	SQLiteBackupCronSchedule = MustGetString("SQLITE_BACKUP_CRON_SCHEDULE", "0 0 * * *")
 	SessionCleanupCronSchedule = MustGetString("SESSION_CLEANUP_CRON_SCHEDULE", "0 0 * * 0")
+	paymentProvider := MustGetString("PAYMENT_PROVIDER", "polar")
+	PolarAccessToken = MustGetString("POLAR_ACCESS_TOKEN", "")
+	PolarIsSandbox = MustGetBool("POLAR_IS_SANDBOX", false)
 	LogLevel = MustGetInt("LOG_LEVEL", 0)
 	LogHealthCheck = MustGetBool("LOG_HEALTH_CHECK", false)
 	Port = MustGetString("PORT", "3000")
@@ -71,6 +77,13 @@ func MustSetConstants() {
 		DBType = "sqlite"
 	default:
 		DBType = "sqlite"
+	}
+
+	switch paymentProvider {
+	case "polar":
+		PaymentProvider = "polar"
+	default:
+		PaymentProvider = "polar"
 	}
 
 	switch sessionCookieSameSite {

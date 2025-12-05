@@ -12,5 +12,6 @@
   "success": "Success",
   "confirm": "Confirm",
   "openMenu": "Open menu",
-  "reset": "Reset"
+  "reset": "Reset",
+  "noResults": "No results"
 }

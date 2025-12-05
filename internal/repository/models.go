@@ -42,3 +42,40 @@ type Post struct {
 	CreatedAt   string  `json:"createdAt" db:"created_at"`
 	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
 }
+
+type Product struct {
+	ID          string  `json:"id" db:"id"`
+	ExternalID  *string `json:"externalId" db:"external_id"`
+	Name        string  `json:"name" db:"name"`
+	Description string  `json:"description" db:"description"`
+	IsActive    bool    `json:"isActive" db:"is_active"`
+	CreatedAt   string  `json:"createdAt" db:"created_at"`
+	UpdatedAt   string  `json:"updatedAt" db:"updated_at"`
+}
+
+type Price struct {
+	ID                     string  `json:"id" db:"id"`
+	ExternalID             string  `json:"externalId" db:"external_id"`
+	ProductID              string  `json:"productId" db:"product_id"`
+	Name                   string  `json:"name" db:"name"`
+	Description            string  `json:"description" db:"description"`
+	PriceAmount            int     `json:"priceAmount" db:"price_amount"`
+	PriceCurrency          string  `json:"priceCurrency" db:"price_currency"`
+	IsRecurring            bool    `json:"isRecurring" db:"is_recurring"`
+	RecurringInterval      *string `json:"recurringInterval" db:"recurring_interval"`
+	RecurringIntervalCount *int    `json:"recurringIntervalCount" db:"recurring_interval_count"`
+	IsActive               bool    `json:"isActive" db:"is_active"`
+	CreatedAt              string  `json:"createdAt" db:"created_at"`
+	UpdatedAt              string  `json:"updatedAt" db:"updated_at"`
+}
+
+type Queue struct {
+	ID        string `json:"id" db:"id"`
+	Lane      string `json:"lane" db:"lane"`
+	Type      string `json:"type" db:"type"`
+	Payload   string `json:"payload" db:"payload"`
+	Result    string `json:"result" db:"result"`
+	Status    string `json:"status" db:"status"`
+	CreatedAt string `json:"createdAt" db:"created_at"`
+	UpdatedAt string `json:"updatedAt" db:"updated_at"`
+}

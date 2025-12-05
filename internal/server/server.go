@@ -14,6 +14,7 @@ import (
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/http/handler"
 	"github.com/jljl1337/issho/internal/http/middleware"
+	"github.com/jljl1337/issho/internal/payment"
 	"github.com/jljl1337/issho/internal/service"
 )
 
@@ -36,12 +37,14 @@ func NewServer() (*Server, error) {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
+	paymentProvider := payment.NewPaymentProvider(env.PaymentProvider)
+
 	// Serve the API
 	mux := http.NewServeMux()
 
 	apiMux := http.NewServeMux()
 
-	endpointService := service.NewEndpointService(dbInstance)
+	endpointService := service.NewEndpointService(dbInstance, paymentProvider)
 	endpointHandler := handler.NewEndpointHandler(endpointService)
 	endpointHandler.RegisterRoutes(apiMux)
 

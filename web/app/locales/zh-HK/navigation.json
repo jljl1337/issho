@@ -1,6 +1,8 @@
 {
   "home": "主頁",
   "posts": "帖文",
+  "prices": "價格",
+  "products": "產品",
   "about": "關於",
   "notFound": "找不到頁面",
   "notFoundCode": "404",

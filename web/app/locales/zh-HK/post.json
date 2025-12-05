@@ -7,7 +7,7 @@
   "title": "標題",
   "description": "描述",
   "status": "狀態",
-  "createdAt": "建立時間",
+  "createdAt": "時間建立",
   "updatedAt": "更新時間",
   "draft": "草稿",
   "published": "已發布",
