@@ -9,6 +9,7 @@ export type User = {
   email: string;
   role: string;
   languageCode: string;
+  isVerified: boolean;
   createdAt: string;
 };
 
