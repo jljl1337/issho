@@ -15,6 +15,7 @@ type getCurrentUserResponse struct {
 	Email        string `json:"email"`
 	Role         string `json:"role"`
 	LanguageCode string `json:"languageCode"`
+	IsVerified   bool   `json:"isVerified"`
 	CreatedAt    string `json:"createdAt"`
 }
 
@@ -49,6 +50,7 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 		Email:        user.Email,
 		Role:         user.Role,
 		LanguageCode: user.LanguageCode,
+		IsVerified:   user.IsVerified,
 		CreatedAt:    user.CreatedAt,
 	}
 	common.WriteJSONResponse(w, http.StatusOK, response)

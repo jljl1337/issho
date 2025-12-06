@@ -84,8 +84,10 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 	}
 
 	role := env.UserRole
+	isVerified := false
 	if ownerCount == 0 {
 		role = env.OwnerRole
+		isVerified = true
 	}
 
 	if err = queries.CreateUser(ctx, repository.User{
@@ -95,6 +97,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		PasswordHash: passwordHash,
 		Role:         role,
 		LanguageCode: languageCode,
+		IsVerified:   isVerified,
 		CreatedAt:    currentTime,
 		UpdatedAt:    currentTime,
 	}); err != nil {

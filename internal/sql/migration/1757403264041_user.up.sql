@@ -5,6 +5,7 @@ CREATE TABLE "user" (
     password_hash TEXT NOT NULL,
     language_code TEXT NOT NULL,
     role TEXT NOT NULL,
+    is_verified BOOLEAN NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
 
