@@ -7,6 +7,9 @@ services:
       SMTP_HOST: smtp
       SMTP_PORT: "2500"
       EMAIL_FROM_ADDRESS: no-reply@yourdomain.com
+    depends_on:
+      smtp:
+        condition: service_healthy
 
   smtp:
     image: inbucket/inbucket:latest
