@@ -88,3 +88,30 @@ export async function deleteMe(csrfToken: string): Promise<void> {
 
   await throwIfError(response);
 }
+
+export async function requestEmailVerification(
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/request-email-verification",
+    "POST",
+    null,
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function confirmEmailVerification(
+  code: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/confirm-email-verification",
+    "POST",
+    { code },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}

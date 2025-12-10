@@ -78,7 +78,9 @@ export default function Page() {
                   </p>
                 </div>
                 <Button asChild>
-                  <Link to="/account/verify-email">{t("verifyEmail")}</Link>
+                  <Link to="/account/request-email-verification">
+                    {t("verifyEmail")}
+                  </Link>
                 </Button>
               </div>
               <Separator />

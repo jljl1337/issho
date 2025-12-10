@@ -19,6 +19,14 @@ export default [
 
     ...prefix("account", [
       index("routes/account/index.tsx"),
+      route(
+        "request-email-verification",
+        "routes/account/request-email-verification.tsx",
+      ),
+      route(
+        "confirm-email-verification",
+        "routes/account/confirm-email-verification.tsx",
+      ),
       route("change-username", "routes/account/change-username.tsx"),
       route("change-email", "routes/account/change-email.tsx"),
       route("change-password", "routes/account/change-password.tsx"),

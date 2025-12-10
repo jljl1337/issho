@@ -2,8 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, isUnauthorizedError } from "~/lib/db/common";
 import {
+  confirmEmailVerification as confirmEmailVerificationApi,
   deleteMe as deleteMeApi,
   getMe,
+  requestEmailVerification as requestEmailVerificationApi,
   updateEmail as updateEmailApi,
   updateLanguage as updateLanguageApi,
   updatePassword as updatePasswordApi,
@@ -132,6 +134,38 @@ export function useDeleteMe() {
     onSuccess: () => {
       // Clear all cached data
       queryClient.clear();
+    },
+  });
+}
+
+/**
+ * Mutation hook to request email verification
+ */
+export function useRequestEmailVerification() {
+  return useMutation({
+    mutationFn: (csrfToken: string) => requestEmailVerificationApi(csrfToken),
+  });
+}
+
+/**
+ * Mutation hook to confirm email verification with code
+ */
+export function useConfirmEmailVerification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      code,
+      csrfToken,
+    }: {
+      code: string;
+      csrfToken: string;
+    }) => {
+      await confirmEmailVerificationApi(code, csrfToken);
+    },
+    onSuccess: () => {
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
     },
   });
 }

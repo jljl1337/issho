@@ -18,6 +18,8 @@ export {
   useUpdateUsername,
   useUpdatePassword,
   useDeleteMe,
+  useRequestEmailVerification,
+  useConfirmEmailVerification,
 } from "./use-user";
 
 // Version hooks
