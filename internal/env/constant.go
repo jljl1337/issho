@@ -3,37 +3,66 @@ package env
 import "net/http"
 
 var (
-	Version   = "dev"
+	Version = "dev"
+
 	OwnerRole = "owner"
 	UserRole  = "user"
 
-	DBType                     string
-	PostgresURL                string
-	SQLiteDbPath               string
-	SQLiteDbBusyTimeout        string
-	SQLiteBackupDbPath         string
-	SQLiteBackupCronSchedule   string
-	SessionCleanupCronSchedule string
-	PaymentProvider            string
-	PolarAccessToken           string
-	PolarIsSandbox             bool
-	LogLevel                   int
-	LogHealthCheck             bool
-	Port                       string
-	CORSOrigins                string
-	PasswordBcryptCost         int
-	SessionCookieName          string
-	SessionCookieHttpOnly      bool
-	SessionCookieSecure        bool
-	SessionTokenLength         int
-	SessionTokenCharset        string
-	SessionLifetimeMin         int
-	SessionRefreshThresholdMin int
-	PreSessionLifetimeMin      int
-	CSRFTokenLength            int
-	CSRFTokenCharset           string
-	PageSizeMax                int
-	PageSizeDefault            int
+	QueueTaskLaneEmail = "email"
+
+	QueueTaskStatusPending   = "pending"
+	QueueTaskStatusRunning   = "running"
+	QueueTaskStatusSucceeded = "succeeded"
+	QueueTaskStatusFailed    = "failed"
+
+	EmailTypeVerifyEmail = "verify_email"
+	EmailTypeNewEmail    = "new_email"
+
+	EmailStatusPending = "pending"
+	EmailStatusSent    = "sent"
+	EmailStatusFailed  = "failed"
+
+	EmailVerificationTypeVerifyEmail = "verify_email"
+	EmailVerificationTypeNewEmail    = "new_email"
+
+	EmailVerificationStatusPending  = "pending"
+	EmailVerificationStatusVerified = "verified"
+
+	DBType                           string
+	PostgresURL                      string
+	SQLiteDbPath                     string
+	SQLiteDbBusyTimeout              string
+	SQLiteBackupDbPath               string
+	SQLiteBackupCronSchedule         string
+	SessionCleanupCronSchedule       string
+	SMTPHost                         string
+	SMTPPort                         int
+	SMTPUsername                     string
+	SMTPPassword                     string
+	EmailFromAddress                 string
+	PaymentProvider                  string
+	PolarAccessToken                 string
+	PolarIsSandbox                   bool
+	LogLevel                         int
+	LogHealthCheck                   bool
+	Port                             string
+	CORSOrigins                      string
+	PasswordBcryptCost               int
+	EmailVerificationCodeLength      int
+	EmailVerificationCodeCharset     string
+	EmailVerificationCodeLifetimeMin int
+	SessionCookieName                string
+	SessionCookieHttpOnly            bool
+	SessionCookieSecure              bool
+	SessionTokenLength               int
+	SessionTokenCharset              string
+	SessionLifetimeMin               int
+	SessionRefreshThresholdMin       int
+	PreSessionLifetimeMin            int
+	CSRFTokenLength                  int
+	CSRFTokenCharset                 string
+	PageSizeMax                      int
+	PageSizeDefault                  int
 
 	SessionCookieSameSiteMode http.SameSite
 )
@@ -48,6 +77,11 @@ func MustSetConstants() {
 	SQLiteBackupDbPath = MustGetString("SQLITE_BACKUP_DB_PATH", "data/backup/db/backup.db")
 	SQLiteBackupCronSchedule = MustGetString("SQLITE_BACKUP_CRON_SCHEDULE", "0 0 * * *")
 	SessionCleanupCronSchedule = MustGetString("SESSION_CLEANUP_CRON_SCHEDULE", "0 0 * * 0")
+	SMTPHost = MustGetString("SMTP_HOST", "")
+	SMTPPort = MustGetInt("SMTP_PORT", 587)
+	SMTPUsername = MustGetString("SMTP_USERNAME", "")
+	SMTPPassword = MustGetString("SMTP_PASSWORD", "")
+	EmailFromAddress = MustGetString("EMAIL_FROM_ADDRESS", "")
 	paymentProvider := MustGetString("PAYMENT_PROVIDER", "polar")
 	PolarAccessToken = MustGetString("POLAR_ACCESS_TOKEN", "")
 	PolarIsSandbox = MustGetBool("POLAR_IS_SANDBOX", false)
@@ -56,6 +90,9 @@ func MustSetConstants() {
 	Port = MustGetString("PORT", "3000")
 	CORSOrigins = MustGetString("CORS_ORIGINS", "*")
 	PasswordBcryptCost = MustGetInt("PASSWORD_BCRYPT_COST", 12)
+	EmailVerificationCodeLength = MustGetInt("EMAIL_VERIFICATION_CODE_LENGTH", 5)
+	EmailVerificationCodeCharset = MustGetString("EMAIL_VERIFICATION_CODE_CHARSET", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	EmailVerificationCodeLifetimeMin = MustGetInt("EMAIL_VERIFICATION_CODE_LIFETIME_MIN", 10)
 	SessionCookieName = MustGetString("SESSION_COOKIE_NAME", "issho_session_token")
 	SessionCookieHttpOnly = MustGetBool("SESSION_COOKIE_HTTP_ONLY", true)
 	SessionCookieSecure = MustGetBool("SESSION_COOKIE_SECURE", false)

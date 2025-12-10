@@ -70,13 +70,37 @@ type Price struct {
 	UpdatedAt              string  `json:"updatedAt" db:"updated_at"`
 }
 
-type Queue struct {
+type QueueTask struct {
 	ID        string `json:"id" db:"id"`
 	Lane      string `json:"lane" db:"lane"`
-	Type      string `json:"type" db:"type"`
 	Payload   string `json:"payload" db:"payload"`
-	Result    string `json:"result" db:"result"`
 	Status    string `json:"status" db:"status"`
+	CreatedAt string `json:"createdAt" db:"created_at"`
+	UpdatedAt string `json:"updatedAt" db:"updated_at"`
+}
+
+type Email struct {
+	ID          string `json:"id" db:"id"`
+	Type        string `json:"type" db:"type"`
+	ToAddress   string `json:"toAddress" db:"to_address"`
+	CcAddress   string `json:"ccAddress" db:"cc_address"`
+	BccAddress  string `json:"bccAddress" db:"bcc_address"`
+	FromAddress string `json:"fromAddress" db:"from_address"`
+	Subject     string `json:"subject" db:"subject"`
+	Body        string `json:"body" db:"body"`
+	Status      string `json:"status" db:"status"`
+	CreatedAt   string `json:"createdAt" db:"created_at"`
+	UpdatedAt   string `json:"updatedAt" db:"updated_at"`
+}
+
+type EmailVerification struct {
+	ID        string `json:"id" db:"id"`
+	UserID    string `json:"userID" db:"user_id"`
+	Type      string `json:"type" db:"type"`
+	Email     string `json:"email" db:"email"`
+	Code      string `json:"code" db:"code"`
+	Status    string `json:"status" db:"status"`
+	ExpiresAt string `json:"expiresAt" db:"expires_at"`
 	CreatedAt string `json:"createdAt" db:"created_at"`
 	UpdatedAt string `json:"updatedAt" db:"updated_at"`
 }

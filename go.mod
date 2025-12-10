@@ -10,6 +10,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/polarsource/polar-go v0.12.0
+	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.42.0
 	golang.org/x/sync v0.17.0
 )
