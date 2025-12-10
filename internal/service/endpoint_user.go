@@ -156,13 +156,13 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	}
 
 	if len(existingVerifications) < 1 {
-		return NewServiceError(ErrCodeUnprocessable, "code is invalid or expired")
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
 	}
 
 	verification := existingVerifications[0]
 
 	if verification.Code != arg.Code {
-		return NewServiceError(ErrCodeUnprocessable, "code is invalid or expired")
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
 	}
 
 	err = queries.UpdateEmailVerificationStatusByID(ctx, repository.UpdateEmailVerificationStatusByIDParams{

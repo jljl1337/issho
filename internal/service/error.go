@@ -13,6 +13,7 @@ const (
 	ErrCodeUnprocessable
 	ErrCodeInternal
 
+	ErrCodeVerificationFailed
 	ErrCodeUsernameTaken
 	ErrCodeEmailTaken
 	ErrCodeInvalidCredentials
