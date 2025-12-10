@@ -17,7 +17,7 @@ func NewEmailClient() (*EmailClient, error) {
 	client, err := mail.NewClient(
 		env.SMTPHost,
 		mail.WithPort(env.SMTPPort),
-		mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover),
+		mail.WithSMTPAuth(mail.SMTPAuthLogin),
 		mail.WithTLSPortPolicy(mail.TLSOpportunistic),
 		mail.WithUsername(env.SMTPUsername),
 		mail.WithPassword(env.SMTPPassword),
@@ -40,8 +40,10 @@ func (ec *EmailClient) SendEmail(ctx context.Context, toList, ccList, bccList []
 	if err := message.From(env.EmailFromAddress); err != nil {
 		return fmt.Errorf("failed to set from address: %v", err)
 	}
-	if err := message.To(toList...); err != nil {
-		return fmt.Errorf("failed to set to addresses: %v", err)
+	if len(toList) > 0 {
+		if err := message.To(toList...); err != nil {
+			return fmt.Errorf("failed to set to addresses: %v", err)
+		}
 	}
 	if len(ccList) > 0 {
 		if err := message.Cc(ccList...); err != nil {

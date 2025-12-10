@@ -51,9 +51,9 @@ type GetEmailByIDParams struct {
 	ID string `db:"id"`
 }
 
-func (q *Queries) GetEmailByID(ctx context.Context, arg GetEmailByIDParams) (Email, error) {
+func (q *Queries) GetEmailByID(ctx context.Context, id string) (Email, error) {
 	var item Email
-	err := NamedGetContext(ctx, q.db, &item, getEmailByID, arg)
+	err := NamedGetContext(ctx, q.db, &item, getEmailByID, GetEmailByIDParams{ID: id})
 	return item, err
 }
 

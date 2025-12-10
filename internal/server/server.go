@@ -11,6 +11,7 @@ import (
 
 	"github.com/jljl1337/issho/internal/cron"
 	"github.com/jljl1337/issho/internal/db"
+	"github.com/jljl1337/issho/internal/email"
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/http/handler"
 	"github.com/jljl1337/issho/internal/http/middleware"
@@ -29,6 +30,12 @@ func NewServer() (*Server, error) {
 	dbInstance, err := db.NewDB(env.DBType, env.SQLiteDbPath, env.SQLiteDbBusyTimeout, env.PostgresURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	emailClient, err := email.NewEmailClient()
+	if err != nil {
+		dbInstance.Close()
+		return nil, fmt.Errorf("failed to create email client: %w", err)
 	}
 
 	// Migrate the database
@@ -64,8 +71,9 @@ func NewServer() (*Server, error) {
 	mux.HandleFunc("/", webHandler.ServeSite)
 
 	// Create the scheduler
-	scheduler, err := cron.NewScheduler(dbInstance)
+	scheduler, err := cron.NewScheduler(dbInstance, emailClient)
 	if err != nil {
+		dbInstance.Close()
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
 	}
 

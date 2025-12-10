@@ -10,12 +10,13 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/jljl1337/issho/internal/db"
+	"github.com/jljl1337/issho/internal/email"
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/generator"
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func NewScheduler(dbInstance *sqlx.DB) (gocron.Scheduler, error) {
+func NewScheduler(dbInstance *sqlx.DB, emailClient *email.EmailClient) (gocron.Scheduler, error) {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
@@ -86,6 +87,22 @@ func NewScheduler(dbInstance *sqlx.DB) (gocron.Scheduler, error) {
 		}
 	} else {
 		slog.Warn("Session cleanup cron job not scheduled")
+	}
+
+	// Email sending job
+	if env.SMTPHost != "" {
+		_, err = scheduler.NewJob(
+			gocron.OneTimeJob(
+				gocron.OneTimeJobStartImmediately(),
+			),
+			gocron.NewTask(NewEmailTask(dbInstance, emailClient)),
+			gocron.WithSingletonMode(gocron.LimitModeReschedule),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create email sending cron job: %w", err)
+		}
+	} else {
+		slog.Warn("Email sending cron job not scheduled")
 	}
 
 	return scheduler, nil
