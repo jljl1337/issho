@@ -35,8 +35,15 @@ func NewEmailTask(dbInstance *sqlx.DB, emailClient *email.EmailClient) func(cont
 				}
 
 				if len(pendingEmailTasks) == 0 {
-					time.Sleep(10 * time.Second)
-					continue
+					timer := time.NewTimer(10 * time.Second)
+					select {
+					case <-ctx.Done():
+						slog.Info("Exiting email task")
+						timer.Stop()
+						return
+					case <-timer.C:
+						continue
+					}
 				}
 
 				if len(pendingEmailTasks) > 1 {
