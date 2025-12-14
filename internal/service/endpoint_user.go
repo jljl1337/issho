@@ -20,6 +20,176 @@ func (s *EndpointService) GetUserByID(ctx context.Context, userID string) (*repo
 	return &user, nil
 }
 
+func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID string) error {
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
+	}
+
+	defer tx.Rollback()
+
+	queries := repository.New(tx)
+
+	user, err := queries.GetUserByID(ctx, userID)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
+	}
+
+	if user.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
+	}
+
+	now := generator.NowISO8601()
+
+	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
+		UserID: user.ID,
+		Type:   env.EmailVerificationTypeVerifyEmail,
+		Status: env.EmailVerificationStatusPending,
+		Now:    now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get existing email verifications: %v", err)
+	}
+
+	if len(existingVerifications) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple valid email verifications found")
+	}
+
+	if len(existingVerifications) == 1 {
+		// Skip creating a new verification if a valid one already exists
+		return nil
+	}
+
+	// Generate verification code
+	code := generator.NewToken(env.EmailVerificationCodeLength, env.EmailVerificationCodeCharset)
+
+	err = queries.CreateEmailVerification(ctx, repository.EmailVerification{
+		ID:        generator.NewULID(),
+		UserID:    user.ID,
+		Type:      env.EmailVerificationTypeVerifyEmail,
+		Email:     user.Email,
+		Code:      code,
+		Status:    env.EmailVerificationStatusPending,
+		ExpiresAt: generator.MinutesFromNowISO8601(env.EmailVerificationCodeLifetimeMin),
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create email verification: %v", err)
+	}
+
+	email, err := queries.CreateEmail(ctx, repository.Email{
+		ID:          generator.NewULID(),
+		Type:        env.EmailTypeVerifyEmail,
+		ToAddress:   user.Email,
+		CcAddress:   "",
+		BccAddress:  "",
+		FromAddress: env.EmailFromAddress,
+		Subject:     "Verify your email address",
+		Body:        "Your verification code is: " + code,
+		Status:      env.EmailStatusPending,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create email: %v", err)
+	}
+
+	err = queries.CreateQueueTask(ctx, repository.QueueTask{
+		ID:        generator.NewULID(),
+		Lane:      env.QueueTaskLaneEmail,
+		Payload:   email.ID,
+		Status:    env.QueueTaskStatusPending,
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create queue task: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
+type ConfirmEmailVerificationParams struct {
+	UserID string
+	Code   string
+}
+
+func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg ConfirmEmailVerificationParams) error {
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
+	}
+
+	defer tx.Rollback()
+
+	queries := repository.New(tx)
+
+	user, err := queries.GetUserByID(ctx, arg.UserID)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
+	}
+
+	if user.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
+	}
+
+	now := generator.NowISO8601()
+
+	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
+		UserID: user.ID,
+		Type:   env.EmailVerificationTypeVerifyEmail,
+		Status: env.EmailVerificationStatusPending,
+		Now:    now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get existing email verifications: %v", err)
+	}
+
+	if len(existingVerifications) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple valid email verifications found")
+	}
+
+	if len(existingVerifications) < 1 {
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
+	}
+
+	verification := existingVerifications[0]
+
+	if verification.Code != arg.Code {
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
+	}
+
+	err = queries.UpdateEmailVerificationStatusByID(ctx, repository.UpdateEmailVerificationStatusByIDParams{
+		ID:        verification.ID,
+		Status:    env.EmailVerificationStatusVerified,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update email verification status: %v", err)
+	}
+
+	err = queries.VerifyUser(ctx, repository.VerifyUserParams{
+		ID:        user.ID,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to verify user: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
 func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUsername string) error {
 	// Validate new username
 	newUsernameValid, err := checkUsername(newUsername)
@@ -107,9 +277,14 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	return nil
 }
 
-func (s *EndpointService) UpdateEmailByID(ctx context.Context, userID, newEmail string) error {
+type RequestEmailChangeParams struct {
+	UserID   string
+	NewEmail string
+}
+
+func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEmailChangeParams) error {
 	// Validate new email
-	newEmailValid, err := checkEmail(newEmail)
+	newEmailValid, err := checkEmail(arg.NewEmail)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new email: %v", err)
 	}
@@ -117,10 +292,17 @@ func (s *EndpointService) UpdateEmailByID(ctx context.Context, userID, newEmail 
 		return NewServiceError(ErrCodeUnprocessable, "invalid new email format")
 	}
 
-	queries := repository.New(s.db)
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
+	}
+
+	defer tx.Rollback()
+
+	queries := repository.New(tx)
 
 	// Check if new email is the same as the old one or already taken
-	users, err := queries.GetUserByEmail(ctx, newEmail)
+	users, err := queries.GetUserByEmail(ctx, arg.NewEmail)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
 	}
@@ -132,20 +314,167 @@ func (s *EndpointService) UpdateEmailByID(ctx context.Context, userID, newEmail 
 	if len(users) == 1 {
 		user := users[0]
 
-		if user.ID == userID {
+		if user.ID == arg.UserID {
 			return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
 		} else {
 			return NewServiceError(ErrCodeEmailTaken, "email already taken")
 		}
 	}
 
-	err = queries.UpdateUserEmail(ctx, repository.UpdateUserEmailParams{
-		ID:        userID,
-		Email:     newEmail,
-		UpdatedAt: generator.NowISO8601(),
+	now := generator.NowISO8601()
+
+	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
+		UserID: arg.UserID,
+		Type:   env.EmailVerificationTypeNewEmail,
+		Status: env.EmailVerificationStatusPending,
+		Now:    now,
 	})
 	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to update email: %v", err)
+		return NewServiceErrorf(ErrCodeInternal, "failed to get existing email verifications: %v", err)
+	}
+
+	if len(existingVerifications) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple valid email verifications found")
+	}
+
+	if len(existingVerifications) == 1 {
+		// Skip creating a new verification if a valid one already exists, even
+		// if it's for a different email
+		return nil
+	}
+
+	// Generate verification code
+	code := generator.NewToken(env.EmailVerificationCodeLength, env.EmailVerificationCodeCharset)
+
+	err = queries.CreateEmailVerification(ctx, repository.EmailVerification{
+		ID:        generator.NewULID(),
+		UserID:    arg.UserID,
+		Type:      env.EmailVerificationTypeNewEmail,
+		Email:     arg.NewEmail,
+		Code:      code,
+		Status:    env.EmailVerificationStatusPending,
+		ExpiresAt: generator.MinutesFromNowISO8601(env.EmailVerificationCodeLifetimeMin),
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create email verification: %v", err)
+	}
+
+	email, err := queries.CreateEmail(ctx, repository.Email{
+		ID:          generator.NewULID(),
+		Type:        env.EmailTypeNewEmail,
+		ToAddress:   arg.NewEmail,
+		CcAddress:   "",
+		BccAddress:  "",
+		FromAddress: env.EmailFromAddress,
+		Subject:     "Verify your email address",
+		Body:        "Your verification code is: " + code,
+		Status:      env.EmailStatusPending,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create email: %v", err)
+	}
+
+	err = queries.CreateQueueTask(ctx, repository.QueueTask{
+		ID:        generator.NewULID(),
+		Lane:      env.QueueTaskLaneEmail,
+		Payload:   email.ID,
+		Status:    env.QueueTaskStatusPending,
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create queue task: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to commit transaction: %v", err)
+	}
+
+	return nil
+}
+
+type ConfirmEmailChangeParams struct {
+	UserID string
+	Code   string
+}
+
+func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEmailChangeParams) error {
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
+	}
+
+	defer tx.Rollback()
+
+	queries := repository.New(tx)
+
+	user, err := queries.GetUserByID(ctx, arg.UserID)
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
+	}
+
+	now := generator.NowISO8601()
+
+	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
+		UserID: user.ID,
+		Type:   env.EmailVerificationTypeNewEmail,
+		Status: env.EmailVerificationStatusPending,
+		Now:    now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to get existing email verifications: %v", err)
+	}
+
+	if len(existingVerifications) > 1 {
+		return NewServiceError(ErrCodeInternal, "multiple valid email verifications found")
+	}
+
+	if len(existingVerifications) < 1 {
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
+	}
+
+	verification := existingVerifications[0]
+
+	if verification.Code != arg.Code {
+		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
+	}
+
+	err = queries.UpdateEmailVerificationStatusByID(ctx, repository.UpdateEmailVerificationStatusByIDParams{
+		ID:        verification.ID,
+		Status:    env.EmailVerificationStatusVerified,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update email verification status: %v", err)
+	}
+
+	err = queries.UpdateUserEmail(ctx, repository.UpdateUserEmailParams{
+		ID:        user.ID,
+		Email:     verification.Email,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to update user email: %v", err)
+	}
+
+	if !user.IsVerified {
+		err = queries.VerifyUser(ctx, repository.VerifyUserParams{
+			ID:        user.ID,
+			UpdatedAt: now,
+		})
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to verify user: %v", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to commit transaction: %v", err)
 	}
 
 	return nil

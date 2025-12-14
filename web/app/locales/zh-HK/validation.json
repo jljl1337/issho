@@ -9,6 +9,7 @@
   "passwordInvalidFormat": "密碼只能包含字母、數字和 !@#$%^&* 其中之一",
   "passwordsDoNotMatch": "密碼不匹配",
   "oldPasswordRequired": "需要舊密碼",
+  "verificationCodeMinLength": "驗證碼至少需要 5 個字元",
   "titleRequired": "標題為必填項",
   "nameRequired": "名稱為必填項",
   "priceRequired": "價格必須為 0 或更大",

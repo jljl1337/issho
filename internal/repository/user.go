@@ -12,6 +12,7 @@ const createUser = `
 		password_hash,
 		role,
 		language_code,
+		is_verified,
 		created_at,
 		updated_at
 	) VALUES (
@@ -21,6 +22,7 @@ const createUser = `
 		:password_hash,
 		:role,
 		:language_code,
+		:is_verified,
 		:created_at,
 		:updated_at
 	)
@@ -184,6 +186,25 @@ type UpdateUserLanguageParams struct {
 
 func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) error {
 	return NamedExecOneRowContext(ctx, q.db, updateUserLanguage, arg)
+}
+
+const verifyUser = `
+	UPDATE
+		"user"
+	SET
+		is_verified = TRUE,
+		updated_at = :updated_at
+	WHERE
+		id = :id
+`
+
+type VerifyUserParams struct {
+	UpdatedAt string `db:"updated_at"`
+	ID        string `db:"id"`
+}
+
+func (q *Queries) VerifyUser(ctx context.Context, arg VerifyUserParams) error {
+	return NamedExecOneRowContext(ctx, q.db, verifyUser, arg)
 }
 
 const deleteUser = `

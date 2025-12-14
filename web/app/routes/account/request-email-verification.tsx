@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import type z from "zod";
+import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -14,26 +14,24 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
+import { Form } from "~/components/ui/form";
 
 import { useSession } from "~/contexts/session-context";
-import { useUpdateEmail } from "~/hooks/use-user";
+import { useRequestEmailVerification } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
-import { emailSchema } from "~/lib/schemas/auth";
+
+const formSchema = z.object({});
 
 export default function Page() {
   const { t } = useTranslation(["user", "auth", "common"]);
-  const { csrfToken, isLoggedIn, isLoading } = useSession();
+  const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
-  const updateEmailMutation = useUpdateEmail();
+  const requestEmailVerification = useRequestEmailVerification();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {},
+  });
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -42,40 +40,25 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("changeEmail")} | Issho`;
+    document.title = `${t("requestEmailVerification")} | Issho`;
   }, [t]);
 
-  const form = useForm<z.infer<typeof emailSchema>>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  const { setError } = form;
-
-  async function onSubmit(values: z.infer<typeof emailSchema>) {
+  async function onSubmit() {
     if (!csrfToken) {
-      setError("root", {
-        message: t("noCsrfToken"),
-      });
+      form.setError("root", { message: "No CSRF token available" });
       return;
     }
 
     try {
-      await updateEmailMutation.mutateAsync({
-        newEmail: values.email,
-        csrfToken,
-      });
-      navigate("/account");
+      await requestEmailVerification.mutateAsync(csrfToken);
+      navigate("/account/confirm-email-verification");
     } catch (error) {
-      setError("root", {
-        message: translateError(error),
-      });
+      const translatedError = translateError(error);
+      form.setError("root", { message: translatedError });
     }
   }
 
-  const isSubmitting = updateEmailMutation.isPending;
+  const isSubmitting = requestEmailVerification.isPending;
   const errors = form.formState.errors;
 
   return (
@@ -85,8 +68,10 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("changeEmail")}</CardTitle>
-                <CardDescription>{t("changeEmailDesc")}</CardDescription>
+                <CardTitle>{t("requestEmailVerification")}</CardTitle>
+                <CardDescription>
+                  {t("requestEmailVerificationDesc")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -94,28 +79,12 @@ export default function Page() {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-4"
                   >
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("email", { ns: "auth" })}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("newEmailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     <Button
                       type="submit"
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      {t("save", { ns: "common" })}
+                      {t("sendVerificationEmail")}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

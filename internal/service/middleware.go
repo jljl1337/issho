@@ -8,6 +8,7 @@ import (
 
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/format"
+	"github.com/jljl1337/issho/internal/generator"
 	"github.com/jljl1337/issho/internal/repository"
 )
 
@@ -67,7 +68,7 @@ func (s *MiddlewareService) GetSessionUserAndRefreshSession(ctx context.Context,
 
 	remainingLifetimeMin := expiresAt.Sub(now).Minutes()
 	if remainingLifetimeMin < float64(env.SessionRefreshThresholdMin) {
-		newExpiresAt := format.TimeToISO8601(now.Add(time.Duration(env.SessionLifetimeMin) * time.Minute))
+		newExpiresAt := generator.MinutesFromNowISO8601(env.SessionLifetimeMin)
 		err := queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
 			Token:     sessionToken,
 			ExpiresAt: newExpiresAt,

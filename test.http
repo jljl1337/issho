@@ -1,9 +1,9 @@
 @baseUrl = http://localhost:3000
-@username = 12341234
-@email = 12341234@example.com
-@password = 12341234
-@sessionToken = era3yFV3MgZGIkYrjeLjwlf5nzfshRir
-@csrfToken = Z2yCOMWk4xWYXkdrOXyEZI0bK631mz7A
+@username = 123412341234
+@email = 123412341234@example.com
+@password = 123412341234
+@sessionToken = XmaAZBBN0XxgCYmTTkrsDLv2du3J6aMG
+@csrfToken = SQ0urQhgSsmfwcvwtYe7jHA3XclfNV1a
 @postID = 01KBE8AG5K73NMM90GD8DHKRZ7
 @priceID = 01KBH9C9TGSR5JT0R8FWXQ2BJC
 
@@ -67,9 +67,20 @@ Cookie: issho_session_token={{sessionToken}}
 
 ###
 
-DELETE {{baseUrl}}/api/users/me
+POST {{baseUrl}}/api/users/me/request-email-verification
 Cookie: issho_session_token={{sessionToken}}
 X-CSRF-Token: {{csrfToken}}
+
+###
+
+POST {{baseUrl}}/api/users/me/confirm-email-verification
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "code": "BX1JM"
+}
 
 ###
 
@@ -81,6 +92,34 @@ Content-Type: application/json
 {
   "newUsername": "12341234"
 }
+
+###
+
+POST {{baseUrl}}/api/users/me/request-email-change
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "newEmail": "123412341234@example.com"
+}
+
+###
+
+POST {{baseUrl}}/api/users/me/confirm-email-change
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "code": "ZHQ8M"
+}
+
+###
+
+DELETE {{baseUrl}}/api/users/me
+Cookie: issho_session_token={{sessionToken}}
+X-CSRF-Token: {{csrfToken}}
 
 ############################ Post
 

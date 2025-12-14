@@ -9,6 +9,7 @@ export type User = {
   email: string;
   role: string;
   languageCode: string;
+  isVerified: boolean;
   createdAt: string;
 };
 
@@ -28,20 +29,6 @@ export async function updateUsername(
     "/api/users/me/username",
     "PATCH",
     { newUsername },
-    csrfToken,
-  );
-
-  await throwIfError(response);
-}
-
-export async function updateEmail(
-  newEmail: string,
-  csrfToken: string,
-): Promise<void> {
-  const response = await customFetch(
-    "/api/users/me/email",
-    "PATCH",
-    { newEmail },
     csrfToken,
   );
 
@@ -82,6 +69,61 @@ export async function deleteMe(csrfToken: string): Promise<void> {
     "/api/users/me",
     "DELETE",
     null,
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function requestEmailVerification(
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/request-email-verification",
+    "POST",
+    null,
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function confirmEmailVerification(
+  code: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/confirm-email-verification",
+    "POST",
+    { code },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function requestEmailChange(
+  newEmail: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/request-email-change",
+    "POST",
+    { newEmail },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function confirmEmailChange(
+  code: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/confirm-email-change",
+    "POST",
+    { code },
     csrfToken,
   );
 

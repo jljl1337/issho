@@ -16,11 +16,14 @@ import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 
 import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
+import { formatDateTime } from "~/lib/format/date";
 
 export default function Page() {
   const { t } = useTranslation("user");
   const { user, isLoggedIn, isLoading: sessionLoading } = useSession();
+  const { language } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,11 +50,13 @@ export default function Page() {
           {t("email")}: {user?.email}
         </p>
         <p className="mb-2">
-          {t("role")}: {user?.role}
+          {t("role")}: {user?.role ? t(`${user.role}Role`) : ""}
         </p>
         <p className="mb-2">
           {t("createdAt")}:{" "}
-          {user?.createdAt ? new Date(user.createdAt).toLocaleString() : "N/A"}
+          {user?.createdAt
+            ? formatDateTime(new Date(user.createdAt), language)
+            : ""}
         </p>
       </div>
 
@@ -62,6 +67,25 @@ export default function Page() {
         </CardHeader>
         <CardContent className="space-y-6">
           <Separator />
+          {/* Verify Email */}
+          {!user?.isVerified && (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base">{t("verifyEmail")}</Label>
+                  <p className="text-muted-foreground text-sm">
+                    {t("verifyEmailDesc")}
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link to="/account/request-email-verification">
+                    {t("verifyEmail")}
+                  </Link>
+                </Button>
+              </div>
+              <Separator />
+            </>
+          )}
           {/* Change Username */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -78,13 +102,15 @@ export default function Page() {
           {/* Change Email */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-base">{t("changeEmail")}</Label>
+              <Label className="text-base">{t("requestEmailChange")}</Label>
               <p className="text-muted-foreground text-sm">
-                {t("changeEmailDesc")}
+                {t("requestEmailChangeDesc")}
               </p>
             </div>
             <Button asChild>
-              <Link to="/account/change-email">{t("changeEmail")}</Link>
+              <Link to="/account/request-email-change">
+                {t("requestEmailChange")}
+              </Link>
             </Button>
           </div>
           <Separator />

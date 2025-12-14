@@ -2,9 +2,10 @@
   "title": "發生錯誤",
   "oops": "哎呀！",
   "message": "發生錯誤，請稍後再試",
+  "verificationFailed": "驗證失敗。代碼無效或已過期",
   "usernameTaken": "用戶名稱已被使用",
   "emailTaken": "電郵地址已被使用",
   "invalidCredentials": "用戶名稱或密碼錯誤",
   "updatePublishedAt": "請將已發佈的帖子轉換為草稿，然後再更新發佈時間",
-  "genericError": "發生錯誤，請重試。"
+  "genericError": "發生錯誤，請重試"
 }

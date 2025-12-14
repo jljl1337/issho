@@ -2,9 +2,10 @@
   "title": "Something Went Wrong",
   "oops": "Oops!",
   "message": "Something went wrong, please try again later",
+  "verificationFailed": "Verification failed. The code is invalid or has expired",
   "usernameTaken": "Username is already taken",
   "emailTaken": "Email address is already taken",
   "invalidCredentials": "Invalid username or password",
   "updatePublishedAt": "Please convert published posts to draft before updating the publish time",
-  "genericError": "An error occurred. Please try again."
+  "genericError": "An error occurred. Please try again"
 }

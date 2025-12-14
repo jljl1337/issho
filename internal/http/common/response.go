@@ -19,6 +19,7 @@ var genericErrorMap = map[service.ErrorCode]service.ErrorCode{
 	service.ErrCodeUnprocessable: service.ErrCodeUnprocessable,
 	service.ErrCodeInternal:      service.ErrCodeInternal,
 
+	service.ErrCodeVerificationFailed: service.ErrCodeUnprocessable,
 	service.ErrCodeUsernameTaken:      service.ErrCodeConflict,
 	service.ErrCodeEmailTaken:         service.ErrCodeConflict,
 	service.ErrCodeInvalidCredentials: service.ErrCodeUnauthorized,
@@ -36,6 +37,7 @@ var HTTPStatusMap = map[service.ErrorCode]int{
 }
 
 var jsonCodeMap = map[service.ErrorCode]string{
+	service.ErrCodeVerificationFailed: "verificationFailed",
 	service.ErrCodeUsernameTaken:      "usernameTaken",
 	service.ErrCodeEmailTaken:         "emailTaken",
 	service.ErrCodeInvalidCredentials: "invalidCredentials",

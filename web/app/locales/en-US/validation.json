@@ -9,6 +9,7 @@
   "passwordInvalidFormat": "Password can only contain letters, numbers, and one of !@#$%^&*",
   "passwordsDoNotMatch": "Passwords do not match",
   "oldPasswordRequired": "Old password is required",
+  "verificationCodeMinLength": "Verification code must be at least 5 characters",
   "titleRequired": "Title is required",
   "nameRequired": "Name is required",
   "priceRequired": "Price must be 0 or greater",
