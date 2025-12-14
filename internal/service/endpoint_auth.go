@@ -116,7 +116,7 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 	sessionToken := generator.NewToken(env.SessionTokenLength, env.SessionTokenCharset)
 	CSRFToken := generator.NewToken(env.CSRFTokenLength, env.CSRFTokenCharset)
 	currentTime := generator.NowISO8601()
-	expiresAt := format.TimeToISO8601(time.Now().Add(time.Duration(env.PreSessionLifetimeMin) * time.Minute))
+	expiresAt := generator.MinutesFromNowISO8601(env.PreSessionLifetimeMin)
 
 	if err := queries.CreateSession(ctx, repository.Session{
 		ID:        sessionID,
@@ -236,7 +236,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	sessionID := generator.NewULID()
 	sessionToken := generator.NewToken(env.SessionTokenLength, env.SessionTokenCharset)
 	CSRFToken := generator.NewToken(env.CSRFTokenLength, env.CSRFTokenCharset)
-	expiresAt := format.TimeToISO8601(time.Now().Add(time.Duration(env.SessionLifetimeMin) * time.Hour))
+	expiresAt := generator.MinutesFromNowISO8601(env.SessionLifetimeMin)
 
 	// Deactivate the pre-session
 	err = queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
