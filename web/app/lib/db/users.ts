@@ -35,20 +35,6 @@ export async function updateUsername(
   await throwIfError(response);
 }
 
-export async function updateEmail(
-  newEmail: string,
-  csrfToken: string,
-): Promise<void> {
-  const response = await customFetch(
-    "/api/users/me/email",
-    "PATCH",
-    { newEmail },
-    csrfToken,
-  );
-
-  await throwIfError(response);
-}
-
 export async function updatePassword(
   oldPassword: string,
   newPassword: string,
@@ -108,6 +94,34 @@ export async function confirmEmailVerification(
 ): Promise<void> {
   const response = await customFetch(
     "/api/users/me/confirm-email-verification",
+    "POST",
+    { code },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function requestEmailChange(
+  newEmail: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/request-email-change",
+    "POST",
+    { newEmail },
+    csrfToken,
+  );
+
+  await throwIfError(response);
+}
+
+export async function confirmEmailChange(
+  code: string,
+  csrfToken: string,
+): Promise<void> {
+  const response = await customFetch(
+    "/api/users/me/confirm-email-change",
     "POST",
     { code },
     csrfToken,

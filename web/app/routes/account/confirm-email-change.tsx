@@ -5,14 +5,14 @@ import { useTranslation } from "react-i18next";
 
 import { ConfirmTokenForm } from "~/components/confirm-token-form";
 import { useSession } from "~/contexts/session-context";
-import { useConfirmEmailVerification } from "~/hooks/use-user";
+import { useConfirmEmailChange } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
 
 export default function Page() {
   const { t } = useTranslation(["user", "auth", "common", "validation"]);
   const { isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
-  const confirmEmailVerification = useConfirmEmailVerification();
+  const confirmEmailChange = useConfirmEmailChange();
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("confirmEmailVerification")} | Issho`;
+    document.title = `${t("confirmEmailChange")} | Issho`;
   }, [t]);
 
   async function handleSubmit(code: string) {
@@ -32,7 +32,7 @@ export default function Page() {
     }
 
     try {
-      await confirmEmailVerification.mutateAsync({
+      await confirmEmailChange.mutateAsync({
         code,
         csrfToken,
       });
@@ -45,10 +45,10 @@ export default function Page() {
 
   return (
     <ConfirmTokenForm
-      title={t("confirmEmailVerification")}
-      description={t("confirmEmailVerificationDesc")}
+      title={t("confirmEmailChange")}
+      description={t("confirmEmailChangeDesc")}
       onSubmit={handleSubmit}
-      isSubmitting={confirmEmailVerification.isPending}
+      isSubmitting={confirmEmailChange.isPending}
       error={error}
     />
   );

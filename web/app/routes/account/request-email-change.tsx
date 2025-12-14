@@ -25,7 +25,7 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { useSession } from "~/contexts/session-context";
-import { useUpdateEmail } from "~/hooks/use-user";
+import { useRequestEmailChange } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
 import { emailSchema } from "~/lib/schemas/auth";
 
@@ -33,7 +33,7 @@ export default function Page() {
   const { t } = useTranslation(["user", "auth", "common"]);
   const { csrfToken, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
-  const updateEmailMutation = useUpdateEmail();
+  const requestEmailChangeMutation = useRequestEmailChange();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -42,7 +42,7 @@ export default function Page() {
   }, [isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("changeEmail")} | Issho`;
+    document.title = `${t("requestEmailChange")} | Issho`;
   }, [t]);
 
   const form = useForm<z.infer<typeof emailSchema>>({
@@ -63,11 +63,11 @@ export default function Page() {
     }
 
     try {
-      await updateEmailMutation.mutateAsync({
+      await requestEmailChangeMutation.mutateAsync({
         newEmail: values.email,
         csrfToken,
       });
-      navigate("/account");
+      navigate("/account/confirm-email-change");
     } catch (error) {
       setError("root", {
         message: translateError(error),
@@ -75,7 +75,7 @@ export default function Page() {
     }
   }
 
-  const isSubmitting = updateEmailMutation.isPending;
+  const isSubmitting = requestEmailChangeMutation.isPending;
   const errors = form.formState.errors;
 
   return (
@@ -85,8 +85,8 @@ export default function Page() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("changeEmail")}</CardTitle>
-                <CardDescription>{t("changeEmailDesc")}</CardDescription>
+                <CardTitle>{t("requestEmailChange")}</CardTitle>
+                <CardDescription>{t("requestEmailChangeDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -99,7 +99,7 @@ export default function Page() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("email", { ns: "auth" })}</FormLabel>
+                          <FormLabel>{t("newEmail")}</FormLabel>
                           <FormControl>
                             <Input
                               placeholder={t("newEmailPlaceholder")}
@@ -115,7 +115,7 @@ export default function Page() {
                       className="w-full cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      {t("save", { ns: "common" })}
+                      {t("requestChange")}
                     </Button>
                     {errors.root?.message && !isSubmitting && (
                       <div className="text-destructive text-sm text-center">

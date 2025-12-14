@@ -102,13 +102,15 @@ export default function Page() {
           {/* Change Email */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-base">{t("changeEmail")}</Label>
+              <Label className="text-base">{t("requestEmailChange")}</Label>
               <p className="text-muted-foreground text-sm">
-                {t("changeEmailDesc")}
+                {t("requestEmailChangeDesc")}
               </p>
             </div>
             <Button asChild>
-              <Link to="/account/change-email">{t("changeEmail")}</Link>
+              <Link to="/account/request-email-change">
+                {t("requestEmailChange")}
+              </Link>
             </Button>
           </div>
           <Separator />

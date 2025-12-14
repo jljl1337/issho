@@ -2,11 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, isUnauthorizedError } from "~/lib/db/common";
 import {
+  confirmEmailChange as confirmEmailChangeApi,
   confirmEmailVerification as confirmEmailVerificationApi,
   deleteMe as deleteMeApi,
   getMe,
+  requestEmailChange as requestEmailChangeApi,
   requestEmailVerification as requestEmailVerificationApi,
-  updateEmail as updateEmailApi,
   updateLanguage as updateLanguageApi,
   updatePassword as updatePasswordApi,
   updateUsername as updateUsernameApi,
@@ -59,11 +60,9 @@ export function useUpdateUsername() {
 }
 
 /**
- * Mutation hook to update email
+ * Mutation hook to request email change
  */
-export function useUpdateEmail() {
-  const queryClient = useQueryClient();
-
+export function useRequestEmailChange() {
   return useMutation({
     mutationFn: async ({
       newEmail,
@@ -72,7 +71,26 @@ export function useUpdateEmail() {
       newEmail: string;
       csrfToken: string;
     }) => {
-      await updateEmailApi(newEmail, csrfToken);
+      await requestEmailChangeApi(newEmail, csrfToken);
+    },
+  });
+}
+
+/**
+ * Mutation hook to confirm email change with code
+ */
+export function useConfirmEmailChange() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      code,
+      csrfToken,
+    }: {
+      code: string;
+      csrfToken: string;
+    }) => {
+      await confirmEmailChangeApi(code, csrfToken);
     },
     onSuccess: () => {
       // Invalidate user query to refetch updated data
