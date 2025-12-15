@@ -26,8 +26,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
-
 interface ProductEditorPageProps {
   initialData?: {
     name: string;

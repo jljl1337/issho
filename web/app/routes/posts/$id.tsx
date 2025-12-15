@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { MarkdownRenderer } from "~/components/markdown-renderer";
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { HorizontallyCenterPage } from "~/components/pages/horizontally-center-page";
 import { useSession } from "~/contexts/session-context";
 import { usePost } from "~/hooks/use-posts";
 import { ApiError } from "~/lib/db/common";
@@ -38,25 +38,25 @@ export default function Page() {
 
   if (sessionLoading || postLoading) {
     return (
-      <VerticallyCenterPage className="flex flex-col gap-4">
+      <HorizontallyCenterPage className="flex flex-col gap-4">
         <p className="text-muted-foreground">{t("loading")}</p>
-      </VerticallyCenterPage>
+      </HorizontallyCenterPage>
     );
   }
 
   if (!post) {
     return (
-      <VerticallyCenterPage className="flex flex-col gap-4">
+      <HorizontallyCenterPage className="flex flex-col gap-4">
         <p className="text-muted-foreground">{t("postNotFound")}</p>
-      </VerticallyCenterPage>
+      </HorizontallyCenterPage>
     );
   }
 
   return (
-    <VerticallyCenterPage className="flex flex-col gap-4">
+    <HorizontallyCenterPage className="flex flex-col gap-4">
       <article className="prose prose-lg dark:prose-invert max-w-none">
         <MarkdownRenderer content={post.content || ""} />
       </article>
-    </VerticallyCenterPage>
+    </HorizontallyCenterPage>
   );
 }

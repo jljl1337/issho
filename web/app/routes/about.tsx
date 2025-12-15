@@ -4,7 +4,7 @@ import type { Route } from "./+types/about";
 
 import { useTranslation } from "react-i18next";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { HorizontallyCenterPage } from "~/components/pages/horizontally-center-page";
 import { useVersion } from "~/hooks/use-version";
 
 export default function Page() {
@@ -23,11 +23,11 @@ export default function Page() {
   }, [t]);
 
   return (
-    <VerticallyCenterPage className="flex flex-col gap-4">
+    <HorizontallyCenterPage className="flex flex-col gap-4">
       <h1 className="text-4xl">{t("about")}</h1>
       <p className="mb-2">
         {t("version")}: {isLoading ? t("loading") : version}
       </p>
-    </VerticallyCenterPage>
+    </HorizontallyCenterPage>
   );
 }

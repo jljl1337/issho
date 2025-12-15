@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { HorizontallyCenterPage } from "~/components/pages/horizontally-center-page";
 import { DataTable } from "~/components/tables/data-table";
 import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
@@ -157,7 +157,7 @@ export default function Page() {
   ];
 
   return (
-    <VerticallyCenterPage className="flex flex-col gap-4">
+    <HorizontallyCenterPage className="flex flex-col gap-4">
       <h1 className="text-4xl">{t("prices")}</h1>
       <div>
         <Button asChild>
@@ -190,6 +190,6 @@ export default function Page() {
           )}
         </>
       )}
-    </VerticallyCenterPage>
+    </HorizontallyCenterPage>
   );
 }

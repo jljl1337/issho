@@ -1,6 +1,6 @@
 import { cn } from "~/lib/utils";
 
-export function VerticallyCenterPage({
+export function HorizontallyCenterPage({
   children,
   className,
 }: {
