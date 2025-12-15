@@ -44,7 +44,7 @@ func (s *MiddlewareService) GetSessionUserAndRefreshSession(ctx context.Context,
 	session := sessions[0]
 
 	// Return unauthorized if the session is a pre session
-	if !session.UserID.Valid {
+	if session.UserID == nil {
 		return nil, NewServiceError(ErrCodeUnauthorized, "unauthorized")
 	}
 
@@ -80,7 +80,7 @@ func (s *MiddlewareService) GetSessionUserAndRefreshSession(ctx context.Context,
 	}
 
 	// Get user associated with the session
-	user, err := queries.GetUserByID(ctx, session.UserID.String)
+	user, err := queries.GetUserByID(ctx, *session.UserID)
 	if err != nil {
 		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get user by ID: %v", err)
 	}

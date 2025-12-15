@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"log/slog"
 	"time"
 
@@ -120,7 +119,7 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 
 	if err := queries.CreateSession(ctx, repository.Session{
 		ID:        sessionID,
-		UserID:    sql.NullString{Valid: false},
+		UserID:    nil,
 		Token:     sessionToken,
 		CsrfToken: CSRFToken,
 		ExpiresAt: expiresAt,
@@ -161,7 +160,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	session := sessions[0]
 
 	// Check if the session is already associated with a user
-	if session.UserID.Valid {
+	if session.UserID != nil {
 		slog.Debug("Session is is not a pre-session")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "invalid pre-session")
 	}
@@ -251,7 +250,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	// Create a new session associated with the user
 	err = queries.CreateSession(ctx, repository.Session{
 		ID:        sessionID,
-		UserID:    sql.NullString{String: user.ID, Valid: true},
+		UserID:    &user.ID,
 		Token:     sessionToken,
 		CsrfToken: CSRFToken,
 		ExpiresAt: expiresAt,
@@ -286,7 +285,7 @@ func (s *EndpointService) SignOutAllSession(ctx context.Context, userID string) 
 
 	now := generator.NowISO8601()
 	rows, err := queries.UpdateSessionByUserID(ctx, repository.UpdateSessionByUserIDParams{
-		UserID:    sql.NullString{String: userID, Valid: true},
+		UserID:    &userID,
 		ExpiresAt: now,
 		UpdatedAt: now,
 	})
