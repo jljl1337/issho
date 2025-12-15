@@ -24,6 +24,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
+import { CenteredPage } from "~/components/layouts/centered-page";
 import { useSession } from "~/contexts/session-context";
 import { useRequestEmailChange } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
@@ -80,55 +81,51 @@ export default function Page() {
 
   return (
     <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("requestEmailChange")}</CardTitle>
-                <CardDescription>{t("requestEmailChangeDesc")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("newEmail")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("newEmailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full cursor-pointer"
-                      disabled={isSubmitting}
-                    >
-                      {t("requestChange")}
-                    </Button>
-                    {errors.root?.message && !isSubmitting && (
-                      <div className="text-destructive text-sm text-center">
-                        {errors.root?.message}
-                      </div>
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <CenteredPage>
+        <Card className="w-sm">
+          <CardHeader>
+            <CardTitle>{t("requestEmailChange")}</CardTitle>
+            <CardDescription>{t("requestEmailChangeDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("newEmail")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("newEmailPlaceholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full cursor-pointer"
+                  disabled={isSubmitting}
+                >
+                  {t("requestChange")}
+                </Button>
+                {errors.root?.message && !isSubmitting && (
+                  <div className="text-destructive text-sm text-center">
+                    {errors.root?.message}
+                  </div>
+                )}
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </CenteredPage>
     </>
   );
 }
