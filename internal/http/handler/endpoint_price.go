@@ -37,15 +37,15 @@ func (h *EndpointHandler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	err = h.service.CreatePrice(r.Context(), service.CreatePriceParams{
-		UserRole:               userRole,
+	err := h.service.CreatePrice(r.Context(), service.CreatePriceParams{
+		UserRole:               user.Role,
 		ProductID:              req.ProductID,
 		Name:                   req.Name,
 		Description:            req.Description,
