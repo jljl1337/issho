@@ -148,14 +148,14 @@ func (h *EndpointHandler) signOut(w http.ResponseWriter, r *http.Request) {
 func (h *EndpointHandler) signOutAll(w http.ResponseWriter, r *http.Request) {
 	// Process the request
 	ctx := r.Context()
-	userID, err := middleware.GetUserIDFromContext(ctx)
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(ctx)
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.SignOutAllSession(r.Context(), userID); err != nil {
+	if err := h.service.SignOutAllSession(r.Context(), user.ID); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}

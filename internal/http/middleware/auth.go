@@ -2,17 +2,16 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/http/common"
+	"github.com/jljl1337/issho/internal/repository"
 )
 
 type contextKey string
 
-const UserIDKey contextKey = "user_id"
-const UserRoleKey contextKey = "user_role"
+const UserKey contextKey = "user"
 
 func (m *MiddlewareProvider) Auth() Middleware {
 	return func(next http.Handler) http.Handler {
@@ -55,31 +54,19 @@ func (m *MiddlewareProvider) Auth() Middleware {
 			}
 
 			// Add user to context
-			ctx := context.WithValue(r.Context(), UserIDKey, user.ID)
-			ctx = context.WithValue(ctx, UserRoleKey, user.Role)
+			ctx := context.WithValue(r.Context(), UserKey, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-// GetUserIDFromContext retrieves the user ID from the context.
+// GetUserFromContext retrieves the authenticated user from the context.
 //
-// It returns an error if the user ID is not found or is of an unexpected type.
-func GetUserIDFromContext(ctx context.Context) (string, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+// It returns nil if the user is not found or is of an unexpected type.
+func GetUserFromContext(ctx context.Context) *repository.User {
+	user, ok := ctx.Value(UserKey).(*repository.User)
 	if !ok {
-		return "", errors.New("failed to get user ID from context")
+		return nil
 	}
-	return userID, nil
-}
-
-// GetUserRoleFromContext retrieves the user role from the context.
-//
-// It returns an error if the user role is not found or is of an unexpected type.
-func GetUserRoleFromContext(ctx context.Context) (string, error) {
-	userRole, ok := ctx.Value(UserRoleKey).(string)
-	if !ok {
-		return "", errors.New("failed to get user role from context")
-	}
-	return userRole, nil
+	return user
 }

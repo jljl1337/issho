@@ -34,14 +34,14 @@ func (h *EndpointHandler) registerUserRoutes(mux *http.ServeMux) {
 
 func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request) {
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	user, err := h.service.GetUserByID(r.Context(), userID)
+	responseUser, err := h.service.GetUserByID(r.Context(), user.ID)
 	if err != nil {
 		common.WriteErrorResponse(w, err)
 		return
@@ -49,27 +49,27 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 
 	// Respond to the client
 	response := getCurrentUserResponse{
-		ID:           user.ID,
-		Username:     user.Username,
-		Email:        user.Email,
-		Role:         user.Role,
-		LanguageCode: user.LanguageCode,
-		IsVerified:   user.IsVerified,
-		CreatedAt:    user.CreatedAt,
+		ID:           responseUser.ID,
+		Username:     responseUser.Username,
+		Email:        responseUser.Email,
+		Role:         responseUser.Role,
+		LanguageCode: responseUser.LanguageCode,
+		IsVerified:   responseUser.IsVerified,
+		CreatedAt:    responseUser.CreatedAt,
 	}
 	common.WriteJSONResponse(w, http.StatusOK, response)
 }
 
 func (h *EndpointHandler) requestEmailVerification(w http.ResponseWriter, r *http.Request) {
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.RequestEmailVerification(r.Context(), userID); err != nil {
+	if err := h.service.RequestEmailVerification(r.Context(), user.ID); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -92,9 +92,9 @@ func (h *EndpointHandler) confirmEmailVerification(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -102,7 +102,7 @@ func (h *EndpointHandler) confirmEmailVerification(w http.ResponseWriter, r *htt
 	// Process the request
 	if err := h.service.ConfirmEmailVerification(r.Context(), service.ConfirmEmailVerificationParams{
 		Code:   req.Code,
-		UserID: userID,
+		UserID: user.ID,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
@@ -127,14 +127,14 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.UpdateUsernameByID(r.Context(), userID, req.NewUsername); err != nil {
+	if err := h.service.UpdateUsernameByID(r.Context(), user.ID, req.NewUsername); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -158,15 +158,15 @@ func (h *EndpointHandler) requestEmailChange(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	if err := h.service.RequestEmailChange(r.Context(), service.RequestEmailChangeParams{
-		UserID:   userID,
+		UserID:   user.ID,
 		NewEmail: req.NewEmail,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
@@ -191,9 +191,9 @@ func (h *EndpointHandler) confirmEmailChange(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -201,7 +201,7 @@ func (h *EndpointHandler) confirmEmailChange(w http.ResponseWriter, r *http.Requ
 	// Process the request
 	if err := h.service.ConfirmEmailChange(r.Context(), service.ConfirmEmailChangeParams{
 		Code:   req.Code,
-		UserID: userID,
+		UserID: user.ID,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
@@ -227,14 +227,14 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.UpdatePasswordByID(r.Context(), userID, req.OldPassword, req.NewPassword); err != nil {
+	if err := h.service.UpdatePasswordByID(r.Context(), user.ID, req.OldPassword, req.NewPassword); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -258,14 +258,14 @@ func (h *EndpointHandler) updateLanguage(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.UpdateLanguageByID(r.Context(), userID, req.LanguageCode); err != nil {
+	if err := h.service.UpdateLanguageByID(r.Context(), user.ID, req.LanguageCode); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -276,14 +276,14 @@ func (h *EndpointHandler) updateLanguage(w http.ResponseWriter, r *http.Request)
 
 func (h *EndpointHandler) deleteCurrentUser(w http.ResponseWriter, r *http.Request) {
 	// Process the request
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := h.service.DeleteUserByID(r.Context(), userID); err != nil {
+	if err := h.service.DeleteUserByID(r.Context(), user.ID); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
