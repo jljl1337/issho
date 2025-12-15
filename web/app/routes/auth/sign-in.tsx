@@ -26,6 +26,7 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { LanguageSwitcher } from "~/components/language-switcher";
+import { CenteredPage } from "~/components/layouts/centered-page";
 import { useSession } from "~/contexts/session-context";
 import { usePreSession, useSignIn } from "~/hooks/use-auth";
 import { translateError } from "~/lib/db/common";
@@ -107,85 +108,83 @@ export default function Page() {
   const errors = form.formState.errors;
 
   return (
-    <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("signInTitle")}</CardTitle>
-                <CardDescription>{t("signInDescription")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("usernameOrEmail")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("usernameOrEmailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("password")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("passwordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isSubmitting}
-                    >
-                      {t("submit", { ns: "common" })}
-                    </Button>
-                    {errors.root?.message && !isSubmitting && (
-                      <div className="text-destructive text-sm text-center">
-                        {errors.root?.message}
-                      </div>
+    <div className="h-svh">
+      <CenteredPage>
+        <div className="w-sm flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("signInTitle")}</CardTitle>
+              <CardDescription>{t("signInDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("usernameOrEmail")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("usernameOrEmailPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <div className="mt-4 text-center text-sm">
-                      {t("dontHaveAccount")}{" "}
-                      <Link
-                        to="/auth/sign-up"
-                        className="underline underline-offset-4"
-                      >
-                        {t("signUp")}
-                      </Link>
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("password")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("passwordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {t("submit", { ns: "common" })}
+                  </Button>
+                  {errors.root?.message && !isSubmitting && (
+                    <div className="text-destructive text-sm text-center">
+                      {errors.root?.message}
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-            <div className="flex justify-center">
-              <LanguageSwitcher />
-            </div>
+                  )}
+                  <div className="mt-4 text-center text-sm">
+                    {t("dontHaveAccount")}{" "}
+                    <Link
+                      to="/auth/sign-up"
+                      className="underline underline-offset-4"
+                    >
+                      {t("signUp")}
+                    </Link>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+          <div className="flex justify-center">
+            <LanguageSwitcher />
           </div>
         </div>
-      </div>
-    </>
+      </CenteredPage>
+    </div>
   );
 }

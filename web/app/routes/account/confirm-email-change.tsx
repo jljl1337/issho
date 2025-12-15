@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { ConfirmTokenForm } from "~/components/confirm-token-form";
+import { ConfirmTokenPage } from "~/components/pages/confirm-token-page";
 import { useSession } from "~/contexts/session-context";
 import { useConfirmEmailChange } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
@@ -44,7 +44,7 @@ export default function Page() {
   }
 
   return (
-    <ConfirmTokenForm
+    <ConfirmTokenPage
       title={t("confirmEmailChange")}
       description={t("confirmEmailChangeDesc")}
       onSubmit={handleSubmit}

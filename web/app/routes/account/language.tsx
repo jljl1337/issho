@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
+import { CenteredPage } from "~/components/layouts/centered-page";
 import { languages, useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 
@@ -96,66 +97,62 @@ export default function Page() {
 
   return (
     <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("languageSettings")}</CardTitle>
-                <CardDescription>{t("chooseLanguage")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="language"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("language")}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select a language" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {languages.map((lang) => (
-                                <SelectItem key={lang.code} value={lang.code}>
-                                  {lang.nativeName}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full cursor-pointer"
-                      disabled={isUpdating}
-                    >
-                      {t("save", { ns: "common" })}
-                    </Button>
-                    {errors.root && (
-                      <div className="text-sm text-destructive text-center">
-                        {errors.root.message}
-                      </div>
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <CenteredPage>
+        <Card className="w-sm">
+          <CardHeader>
+            <CardTitle>{t("languageSettings")}</CardTitle>
+            <CardDescription>{t("chooseLanguage")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("language")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a language" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem key={lang.code} value={lang.code}>
+                              {lang.nativeName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full cursor-pointer"
+                  disabled={isUpdating}
+                >
+                  {t("save", { ns: "common" })}
+                </Button>
+                {errors.root && (
+                  <div className="text-sm text-destructive text-center">
+                    {errors.root.message}
+                  </div>
+                )}
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </CenteredPage>
     </>
   );
 }

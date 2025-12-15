@@ -34,23 +34,16 @@ func (h *EndpointHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
-		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	err = h.service.CreatePost(r.Context(), service.CreatePostParams{
-		UserID:      userID,
-		UserRole:    userRole,
+	err := h.service.CreatePost(r.Context(), service.CreatePostParams{
+		UserID:      user.ID,
+		UserRole:    user.Role,
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
@@ -68,14 +61,14 @@ func (h *EndpointHandler) GetPostList(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	arg := service.GetPostListParams{}
 
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	arg.UserRole = userRole
+	arg.UserRole = user.Role
 
 	userID := r.URL.Query().Get("user-id")
 	if userID != "" {
@@ -125,6 +118,7 @@ func (h *EndpointHandler) GetPostList(w http.ResponseWriter, r *http.Request) {
 
 	pageSize := r.URL.Query().Get("page-size")
 	if pageSize != "" {
+		var err error
 		arg.PageSize, err = strconv.Atoi(pageSize)
 		if err != nil {
 			common.WriteMessageResponse(w, "Invalid page-size parameter", http.StatusBadRequest)
@@ -152,9 +146,9 @@ func (h *EndpointHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -162,7 +156,7 @@ func (h *EndpointHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	// Call service to get post by ID
 	post, err := h.service.GetPostByID(r.Context(), service.GetPostByIDParams{
 		PostID:   postID,
-		UserRole: userRole,
+		UserRole: user.Role,
 	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)
@@ -191,25 +185,18 @@ func (h *EndpointHandler) UpdatePostByID(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
-		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	// Call service to update post by ID
-	err = h.service.UpdatePostByID(r.Context(), service.UpdatePostByIDParams{
+	err := h.service.UpdatePostByID(r.Context(), service.UpdatePostByIDParams{
 		PostID:      postID,
-		UserID:      userID,
-		UserRole:    userRole,
+		UserID:      user.ID,
+		UserRole:    user.Role,
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
@@ -231,25 +218,18 @@ func (h *EndpointHandler) DeletePostByID(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user ID from context")
-		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	// Call service to delete post by ID
-	err = h.service.DeletePostByID(r.Context(), service.DeletePostByIDParams{
+	err := h.service.DeletePostByID(r.Context(), service.DeletePostByIDParams{
 		PostID:   postID,
-		UserID:   userID,
-		UserRole: userRole,
+		UserID:   user.ID,
+		UserRole: user.Role,
 	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)

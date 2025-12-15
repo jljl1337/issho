@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { CenteredPage } from "../layouts/centered-page";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
@@ -46,8 +47,8 @@ export default function DestructivePage({
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <Card className="m-4 w-full max-w-sm">
+    <CenteredPage>
+      <Card className="w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -79,6 +80,6 @@ export default function DestructivePage({
           </div>
         </CardContent>
       </Card>
-    </div>
+    </CenteredPage>
   );
 }

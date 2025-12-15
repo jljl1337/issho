@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { VerticallyCenterPage } from "~/components/pages/vertically-center-page";
+import { HorizontallyCenteredPage } from "~/components/layouts/horizontally-centered-page";
 import { useSession } from "~/contexts/session-context";
 
 export default function Page() {
@@ -23,8 +23,8 @@ export default function Page() {
   }, [t]);
 
   return (
-    <VerticallyCenterPage className="flex flex-col gap-4">
+    <HorizontallyCenteredPage className="flex flex-col gap-4">
       <h1 className="text-4xl">{t("home")}</h1>
-    </VerticallyCenterPage>
+    </HorizontallyCenteredPage>
   );
 }

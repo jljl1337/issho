@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createSession = `
@@ -80,9 +79,9 @@ const updateSessionByUserID = `
 `
 
 type UpdateSessionByUserIDParams struct {
-	ExpiresAt string         `db:"expires_at"`
-	UpdatedAt string         `db:"updated_at"`
-	UserID    sql.NullString `db:"user_id"`
+	ExpiresAt string  `db:"expires_at"`
+	UpdatedAt string  `db:"updated_at"`
+	UserID    *string `db:"user_id"`
 }
 
 func (q *Queries) UpdateSessionByUserID(ctx context.Context, arg UpdateSessionByUserIDParams) (int64, error) {

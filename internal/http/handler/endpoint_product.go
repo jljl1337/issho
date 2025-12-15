@@ -31,15 +31,15 @@ func (h *EndpointHandler) CreateProduct(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userRole, err := middleware.GetUserRoleFromContext(r.Context())
-	if err != nil {
-		slog.Error("Error getting user role from context")
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
 		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	err = h.service.CreateProduct(r.Context(), service.CreateProductParams{
-		UserRole:    userRole,
+	err := h.service.CreateProduct(r.Context(), service.CreateProductParams{
+		UserRole:    user.Role,
 		Name:        req.Name,
 		Description: req.Description,
 	})
