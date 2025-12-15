@@ -25,6 +25,7 @@ import {
 import { Input } from "~/components/ui/input";
 
 import { LanguageSwitcher } from "~/components/language-switcher";
+import { CenteredPage } from "~/components/layouts/centered-page";
 import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 import { useSignUp } from "~/hooks/use-auth";
@@ -90,119 +91,117 @@ export default function Page() {
   const errors = form.formState.errors;
 
   return (
-    <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("signUpTitle")}</CardTitle>
-                <CardDescription>{t("signUpDescription")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("username")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t("usernamePlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("email")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder={t("emailPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("password")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("passwordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("confirmPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("passwordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isSubmitting}
-                    >
-                      {t("submit", { ns: "common" })}
-                    </Button>
-                    {errors.root?.message && !isSubmitting && (
-                      <div className="text-destructive text-sm text-center">
-                        {errors.root?.message}
-                      </div>
+    <div className="h-svh">
+      <CenteredPage>
+        <div className="w-sm flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("signUpTitle")}</CardTitle>
+              <CardDescription>{t("signUpDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("username")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("usernamePlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <div className="mt-4 text-center text-sm">
-                      {t("alreadyHaveAccount")}{" "}
-                      <Link
-                        to="/auth/sign-in"
-                        className="underline underline-offset-4"
-                      >
-                        {t("signIn")}
-                      </Link>
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("email")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder={t("emailPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("password")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("passwordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("confirmPassword")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t("passwordPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {t("submit", { ns: "common" })}
+                  </Button>
+                  {errors.root?.message && !isSubmitting && (
+                    <div className="text-destructive text-sm text-center">
+                      {errors.root?.message}
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-            <div className="flex justify-center">
-              <LanguageSwitcher />
-            </div>
+                  )}
+                  <div className="mt-4 text-center text-sm">
+                    {t("alreadyHaveAccount")}{" "}
+                    <Link
+                      to="/auth/sign-in"
+                      className="underline underline-offset-4"
+                    >
+                      {t("signIn")}
+                    </Link>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+          <div className="flex justify-center">
+            <LanguageSwitcher />
           </div>
         </div>
-      </div>
-    </>
+      </CenteredPage>
+    </div>
   );
 }

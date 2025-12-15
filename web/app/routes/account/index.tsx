@@ -15,7 +15,7 @@ import {
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 
-import { HorizontallyCenterPage } from "~/components/pages/horizontally-center-page";
+import { HorizontallyCenteredPage } from "~/components/layouts/horizontally-centered-page";
 import { useLanguage } from "~/contexts/language-context";
 import { useSession } from "~/contexts/session-context";
 import { formatDateTime } from "~/lib/format/date";
@@ -37,7 +37,7 @@ export default function Page() {
   }, [t]);
 
   return (
-    <HorizontallyCenterPage className="flex flex-col gap-4">
+    <HorizontallyCenteredPage className="flex flex-col gap-4">
       <h1 className="text-4xl">{t("account")}</h1>
       <div>
         <p className="mb-2">
@@ -200,6 +200,6 @@ export default function Page() {
           </div>
         </CardContent>
       </Card>
-    </HorizontallyCenterPage>
+    </HorizontallyCenteredPage>
   );
 }

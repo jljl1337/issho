@@ -25,6 +25,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
+import { CenteredPage } from "~/components/layouts/centered-page";
 import { useSession } from "~/contexts/session-context";
 import { useUpdatePassword } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
@@ -83,93 +84,84 @@ export default function Page() {
   const errors = form.formState.errors;
 
   return (
-    <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("changePassword")}</CardTitle>
-                <CardDescription>{t("changePasswordDesc")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="oldPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("oldPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("oldPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("newPassword")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("newPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("confirmPassword", { ns: "auth" })}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t("newPasswordPlaceholder")}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full cursor-pointer"
-                      disabled={isSubmitting}
-                    >
-                      {t("save", { ns: "common" })}
-                    </Button>
-                    {errors.root?.message && !isSubmitting && (
-                      <div className="text-destructive text-sm text-center">
-                        {errors.root?.message}
-                      </div>
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </>
+    <CenteredPage>
+      <Card className="w-sm">
+        <CardHeader>
+          <CardTitle>{t("changePassword")}</CardTitle>
+          <CardDescription>{t("changePasswordDesc")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="oldPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("oldPassword")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t("oldPasswordPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("newPassword")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t("newPasswordPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t("confirmPassword", { ns: "auth" })}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t("newPasswordPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full cursor-pointer"
+                disabled={isSubmitting}
+              >
+                {t("save", { ns: "common" })}
+              </Button>
+              {errors.root?.message && !isSubmitting && (
+                <div className="text-destructive text-sm text-center">
+                  {errors.root?.message}
+                </div>
+              )}
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </CenteredPage>
   );
 }
