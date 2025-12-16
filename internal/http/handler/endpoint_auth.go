@@ -8,6 +8,7 @@ import (
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/http/common"
 	"github.com/jljl1337/issho/internal/http/middleware"
+	"github.com/jljl1337/issho/internal/service"
 )
 
 type signUpRequest struct {
@@ -54,7 +55,12 @@ func (h *EndpointHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.SignUp(r.Context(), req.Username, req.Email, req.Password, req.LanguageCode); err != nil {
+	if err := h.service.SignUp(r.Context(), service.SignUpParams{
+		Username:     req.Username,
+		Email:        req.Email,
+		Password:     req.Password,
+		LanguageCode: req.LanguageCode,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -111,7 +117,13 @@ func (h *EndpointHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Process the request
-	sessionToken, CSRFToken, err := h.service.SignIn(r.Context(), preSessionToken.Value, preSessionCSRFToken, req.Username, req.Email, req.Password)
+	sessionToken, CSRFToken, err := h.service.SignIn(r.Context(), service.SignInParams{
+		PreSessionToken:     preSessionToken.Value,
+		PreSessionCSRFToken: preSessionCSRFToken,
+		Username:            req.Username,
+		Email:               req.Email,
+		Password:            req.Password,
+	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)
 		return

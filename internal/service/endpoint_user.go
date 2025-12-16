@@ -177,9 +177,14 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	return nil
 }
 
-func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repository.User, newUsername string) error {
+type UpdateUsernameByIDParams struct {
+	User        repository.User
+	NewUsername string
+}
+
+func (s *EndpointService) UpdateUsernameByID(ctx context.Context, arg UpdateUsernameByIDParams) error {
 	// Validate new username
-	newUsernameValid, err := checkUsername(newUsername)
+	newUsernameValid, err := checkUsername(arg.NewUsername)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new username: %v", err)
 	}
@@ -187,14 +192,14 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repositor
 		return NewServiceError(ErrCodeUnprocessable, "invalid new username format")
 	}
 
-	if user.Username == newUsername {
+	if arg.User.Username == arg.NewUsername {
 		return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
 	}
 
 	queries := repository.New(s.db)
 
 	// Check if new username is the same as the old one or already taken
-	users, err := queries.GetUserByUsername(ctx, newUsername)
+	users, err := queries.GetUserByUsername(ctx, arg.NewUsername)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
 	}
@@ -208,8 +213,8 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repositor
 	}
 
 	err = queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
-		ID:        user.ID,
-		Username:  newUsername,
+		ID:        arg.User.ID,
+		Username:  arg.NewUsername,
 		UpdatedAt: generator.NowISO8601(),
 	})
 	if err != nil {
@@ -219,8 +224,14 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repositor
 	return nil
 }
 
-func (s *EndpointService) UpdatePasswordByID(ctx context.Context, user repository.User, oldPassword, newPassword string) error {
-	newPasswordValid, err := checkPassword(newPassword)
+type UpdatePasswordByIDParams struct {
+	User        repository.User
+	OldPassword string
+	NewPassword string
+}
+
+func (s *EndpointService) UpdatePasswordByID(ctx context.Context, arg UpdatePasswordByIDParams) error {
+	newPasswordValid, err := checkPassword(arg.NewPassword)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new password: %v", err)
 	}
@@ -228,18 +239,18 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, user repositor
 		return NewServiceError(ErrCodeUnprocessable, "invalid new password format")
 	}
 
-	if oldPassword == newPassword {
+	if arg.OldPassword == arg.NewPassword {
 		return NewServiceError(ErrCodeUnprocessable, "new password must be different from the old password")
 	}
 
 	queries := repository.New(s.db)
 
-	if !crypto.CheckPasswordHash(oldPassword, user.PasswordHash) {
+	if !crypto.CheckPasswordHash(arg.OldPassword, arg.User.PasswordHash) {
 		return NewServiceError(ErrCodeUnprocessable, "old password is incorrect")
 	}
 
 	// Update password hash
-	passwordHash, err := crypto.HashPassword(newPassword, env.PasswordBcryptCost)
+	passwordHash, err := crypto.HashPassword(arg.NewPassword, env.PasswordBcryptCost)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 	}
@@ -247,7 +258,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, user repositor
 	err = queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
 		PasswordHash: passwordHash,
 		UpdatedAt:    generator.NowISO8601(),
-		ID:           user.ID,
+		ID:           arg.User.ID,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update password: %v", err)
@@ -452,21 +463,26 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 	return nil
 }
 
-func (s *EndpointService) UpdateLanguageByID(ctx context.Context, user repository.User, languageCode string) error {
-	languageCodeValid := checkLanguageCode(languageCode)
+type UpdateLanguageByIDParams struct {
+	User         repository.User
+	LanguageCode string
+}
+
+func (s *EndpointService) UpdateLanguageByID(ctx context.Context, arg UpdateLanguageByIDParams) error {
+	languageCodeValid := checkLanguageCode(arg.LanguageCode)
 	if !languageCodeValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
 	}
 
-	if user.LanguageCode == languageCode {
+	if arg.User.LanguageCode == arg.LanguageCode {
 		return NewServiceError(ErrCodeUnprocessable, "new language code must be different from the old language code")
 	}
 
 	queries := repository.New(s.db)
 
 	err := queries.UpdateUserLanguage(ctx, repository.UpdateUserLanguageParams{
-		ID:           user.ID,
-		LanguageCode: languageCode,
+		ID:           arg.User.ID,
+		LanguageCode: arg.LanguageCode,
 		UpdatedAt:    generator.NowISO8601(),
 	})
 	if err != nil {

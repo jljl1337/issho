@@ -12,8 +12,15 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) SignUp(ctx context.Context, username, email, password, languageCode string) error {
-	usernameValid, err := checkUsername(username)
+type SignUpParams struct {
+	Username     string
+	Email        string
+	Password     string
+	LanguageCode string
+}
+
+func (s *EndpointService) SignUp(ctx context.Context, arg SignUpParams) error {
+	usernameValid, err := checkUsername(arg.Username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate username: %v", err)
 	}
@@ -21,7 +28,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		return NewServiceError(ErrCodeUnprocessable, "invalid username format")
 	}
 
-	emailValid, err := checkEmail(email)
+	emailValid, err := checkEmail(arg.Email)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate email: %v", err)
 	}
@@ -29,7 +36,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		return NewServiceError(ErrCodeUnprocessable, "invalid email format")
 	}
 
-	passwordValid, err := checkPassword(password)
+	passwordValid, err := checkPassword(arg.Password)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate password: %v", err)
 	}
@@ -37,14 +44,14 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		return NewServiceError(ErrCodeUnprocessable, "invalid password format")
 	}
 
-	languageCodeValid := checkLanguageCode(languageCode)
+	languageCodeValid := checkLanguageCode(arg.LanguageCode)
 	if !languageCodeValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
 	}
 
 	queries := repository.New(s.db)
 
-	users, err := queries.GetUserByUsername(ctx, username)
+	users, err := queries.GetUserByUsername(ctx, arg.Username)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to get user by username: %v", err)
 	}
@@ -57,7 +64,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		return NewServiceError(ErrCodeUsernameTaken, "username already exists")
 	}
 
-	usersByEmail, err := queries.GetUserByEmail(ctx, email)
+	usersByEmail, err := queries.GetUserByEmail(ctx, arg.Email)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to get user by email: %v", err)
 	}
@@ -70,7 +77,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 		return NewServiceError(ErrCodeEmailTaken, "email already exists")
 	}
 
-	passwordHash, err := crypto.HashPassword(password, env.PasswordBcryptCost)
+	passwordHash, err := crypto.HashPassword(arg.Password, env.PasswordBcryptCost)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 	}
@@ -92,11 +99,11 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 	if err = queries.CreateUser(ctx, repository.User{
 		ID:           generator.NewULID(),
 		ExternalID:   nil,
-		Username:     username,
-		Email:        email,
+		Username:     arg.Username,
+		Email:        arg.Email,
 		PasswordHash: passwordHash,
 		Role:         role,
-		LanguageCode: languageCode,
+		LanguageCode: arg.LanguageCode,
 		IsVerified:   isVerified,
 		CreatedAt:    currentTime,
 		UpdatedAt:    currentTime,
@@ -133,17 +140,25 @@ func (s *EndpointService) GetPreSession(ctx context.Context) (string, string, er
 	return sessionToken, CSRFToken, nil
 }
 
+type SignInParams struct {
+	PreSessionToken     string
+	PreSessionCSRFToken string
+	Username            string
+	Email               string
+	Password            string
+}
+
 // SignIn authenticates a user and creates a new session.
 // It returns non-empty session token and CSRF token if the credentials are valid.
-func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessionCSRFToken, username, email, password string) (string, string, error) {
-	if username == "" && email == "" {
+func (s *EndpointService) SignIn(ctx context.Context, arg SignInParams) (string, string, error) {
+	if arg.Username == "" && arg.Email == "" {
 		return "", "", NewServiceError(ErrCodeBadRequest, "either username or email must be provided")
 	}
 
 	queries := repository.New(s.db)
 
 	// Validate pre-session
-	sessions, err := queries.GetSessionByToken(ctx, preSessionToken)
+	sessions, err := queries.GetSessionByToken(ctx, arg.PreSessionToken)
 
 	if err != nil {
 		return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get pre-session: %v", err)
@@ -167,7 +182,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	}
 
 	// CSRF token does not match
-	if preSessionCSRFToken != "" && session.CsrfToken != preSessionCSRFToken {
+	if arg.PreSessionCSRFToken != "" && session.CsrfToken != arg.PreSessionCSRFToken {
 		slog.Debug("CSRF token does not match")
 		return "", "", NewServiceError(ErrCodeUnauthorized, "csrf token does not match")
 	}
@@ -181,13 +196,13 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	// Validate credentials
 	var users []repository.User
-	if email != "" {
-		users, err = queries.GetUserByEmail(ctx, email)
+	if arg.Email != "" {
+		users, err = queries.GetUserByEmail(ctx, arg.Email)
 		if err != nil {
 			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get user by email: %v", err)
 		}
 	} else {
-		users, err = queries.GetUserByUsername(ctx, username)
+		users, err = queries.GetUserByUsername(ctx, arg.Username)
 		if err != nil {
 			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to get user by username: %v", err)
 		}
@@ -204,7 +219,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	user := users[0]
 
-	if !crypto.CheckPasswordHash(password, user.PasswordHash) {
+	if !crypto.CheckPasswordHash(arg.Password, user.PasswordHash) {
 		slog.Debug("Invalid password")
 		return "", "", NewServiceError(ErrCodeInvalidCredentials, "invalid credentials")
 	}
@@ -218,7 +233,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 	currentTime := generator.NowISO8601()
 
 	if cost < env.PasswordBcryptCost {
-		newHash, err := crypto.HashPassword(password, env.PasswordBcryptCost)
+		newHash, err := crypto.HashPassword(arg.Password, env.PasswordBcryptCost)
 		if err != nil {
 			return "", "", NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 		}
@@ -240,7 +255,7 @@ func (s *EndpointService) SignIn(ctx context.Context, preSessionToken, preSessio
 
 	// Deactivate the pre-session
 	err = queries.UpdateSessionByToken(ctx, repository.UpdateSessionByTokenParams{
-		Token:     preSessionToken,
+		Token:     arg.PreSessionToken,
 		ExpiresAt: nowISO8601,
 		UpdatedAt: nowISO8601,
 	})

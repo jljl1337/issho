@@ -128,7 +128,10 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdateUsernameByID(r.Context(), *user, req.NewUsername); err != nil {
+	if err := h.service.UpdateUsernameByID(r.Context(), service.UpdateUsernameByIDParams{
+		User:        *user,
+		NewUsername: req.NewUsername,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -228,7 +231,11 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdatePasswordByID(r.Context(), *user, req.OldPassword, req.NewPassword); err != nil {
+	if err := h.service.UpdatePasswordByID(r.Context(), service.UpdatePasswordByIDParams{
+		User:        *user,
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -259,7 +266,10 @@ func (h *EndpointHandler) updateLanguage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdateLanguageByID(r.Context(), *user, req.LanguageCode); err != nil {
+	if err := h.service.UpdateLanguageByID(r.Context(), service.UpdateLanguageByIDParams{
+		User:         *user,
+		LanguageCode: req.LanguageCode,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
