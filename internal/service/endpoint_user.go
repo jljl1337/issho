@@ -187,6 +187,10 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repositor
 		return NewServiceError(ErrCodeUnprocessable, "invalid new username format")
 	}
 
+	if user.Username == newUsername {
+		return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
+	}
+
 	queries := repository.New(s.db)
 
 	// Check if new username is the same as the old one or already taken
@@ -200,13 +204,7 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repositor
 	}
 
 	if len(users) == 1 {
-		existingUser := users[0]
-
-		if existingUser.ID == user.ID {
-			return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
-		} else {
-			return NewServiceError(ErrCodeUsernameTaken, "username already taken")
-		}
+		return NewServiceError(ErrCodeUsernameTaken, "username already taken")
 	}
 
 	err = queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
@@ -273,6 +271,10 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 		return NewServiceError(ErrCodeUnprocessable, "invalid new email format")
 	}
 
+	if arg.User.Email == arg.NewEmail {
+		return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
+	}
+
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -293,13 +295,7 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 	}
 
 	if len(users) == 1 {
-		existingUser := users[0]
-
-		if existingUser.ID == arg.User.ID {
-			return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
-		} else {
-			return NewServiceError(ErrCodeEmailTaken, "email already taken")
-		}
+		return NewServiceError(ErrCodeEmailTaken, "email already taken")
 	}
 
 	now := generator.NowISO8601()
@@ -460,6 +456,10 @@ func (s *EndpointService) UpdateLanguageByID(ctx context.Context, user repositor
 	languageCodeValid := checkLanguageCode(languageCode)
 	if !languageCodeValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
+	}
+
+	if user.LanguageCode == languageCode {
+		return NewServiceError(ErrCodeUnprocessable, "new language code must be different from the old language code")
 	}
 
 	queries := repository.New(s.db)
