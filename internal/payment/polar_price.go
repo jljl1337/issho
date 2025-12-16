@@ -46,7 +46,12 @@ func (p *PolarProvider) CreatePrice(ctx context.Context, params CreatePriceParam
 		return nil, fmt.Errorf("error creating price in Polar: %w", err)
 	}
 
-	return toPrice(*response), nil
+	price, err := toPrice(*response)
+	if err != nil {
+		return nil, fmt.Errorf("error converting Polar price response: %w", err)
+	}
+
+	return price, nil
 }
 
 func (p *PolarProvider) UpdatePrice(ctx context.Context, params UpdatePriceParams) (*repository.Price, error) {
@@ -73,10 +78,19 @@ func (p *PolarProvider) UpdatePrice(ctx context.Context, params UpdatePriceParam
 		return nil, fmt.Errorf("error creating price in Polar: %w", err)
 	}
 
-	return toPrice(*response), nil
+	price, err := toPrice(*response)
+	if err != nil {
+		return nil, fmt.Errorf("error converting Polar price response: %w", err)
+	}
+
+	return price, nil
 }
 
-func toPrice(resp PolarProductResponse) *repository.Price {
+func toPrice(resp PolarProductResponse) (*repository.Price, error) {
+	if len(resp.Price) == 0 {
+		return nil, fmt.Errorf("no price information found in Polar response")
+	}
+
 	price := &repository.Price{
 		ExternalID:    resp.ID,
 		Name:          resp.Name,
@@ -96,5 +110,5 @@ func toPrice(resp PolarProductResponse) *repository.Price {
 		price.RecurringIntervalCount = resp.RecurringIntervalCount
 	}
 
-	return price
+	return price, nil
 }
