@@ -117,7 +117,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             type=raw,value={{sha}},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-            type=raw,value=preview,enable=${{ github.event_name != 'pull_request' }}
+            type=raw,value=preview,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
             type=raw,value=pr-${{ github.event.pull_request.number }},enable=${{ github.event_name == 'pull_request' }}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
