@@ -41,21 +41,15 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	responseUser, err := h.service.GetUserByID(r.Context(), user.ID)
-	if err != nil {
-		common.WriteErrorResponse(w, err)
-		return
-	}
-
 	// Respond to the client
 	response := getCurrentUserResponse{
-		ID:           responseUser.ID,
-		Username:     responseUser.Username,
-		Email:        responseUser.Email,
-		Role:         responseUser.Role,
-		LanguageCode: responseUser.LanguageCode,
-		IsVerified:   responseUser.IsVerified,
-		CreatedAt:    responseUser.CreatedAt,
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		Role:         user.Role,
+		LanguageCode: user.LanguageCode,
+		IsVerified:   user.IsVerified,
+		CreatedAt:    user.CreatedAt,
 	}
 	common.WriteJSONResponse(w, http.StatusOK, response)
 }
@@ -69,7 +63,7 @@ func (h *EndpointHandler) requestEmailVerification(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if err := h.service.RequestEmailVerification(r.Context(), user.ID); err != nil {
+	if err := h.service.RequestEmailVerification(r.Context(), *user); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -101,8 +95,8 @@ func (h *EndpointHandler) confirmEmailVerification(w http.ResponseWriter, r *htt
 
 	// Process the request
 	if err := h.service.ConfirmEmailVerification(r.Context(), service.ConfirmEmailVerificationParams{
-		Code:   req.Code,
-		UserID: user.ID,
+		User: *user,
+		Code: req.Code,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
@@ -134,7 +128,10 @@ func (h *EndpointHandler) updateUsername(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdateUsernameByID(r.Context(), user.ID, req.NewUsername); err != nil {
+	if err := h.service.UpdateUsernameByID(r.Context(), service.UpdateUsernameByIDParams{
+		User:        *user,
+		NewUsername: req.NewUsername,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -166,7 +163,7 @@ func (h *EndpointHandler) requestEmailChange(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err := h.service.RequestEmailChange(r.Context(), service.RequestEmailChangeParams{
-		UserID:   user.ID,
+		User:     *user,
 		NewEmail: req.NewEmail,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
@@ -200,8 +197,8 @@ func (h *EndpointHandler) confirmEmailChange(w http.ResponseWriter, r *http.Requ
 
 	// Process the request
 	if err := h.service.ConfirmEmailChange(r.Context(), service.ConfirmEmailChangeParams{
-		Code:   req.Code,
-		UserID: user.ID,
+		User: *user,
+		Code: req.Code,
 	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
@@ -234,7 +231,11 @@ func (h *EndpointHandler) updatePassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdatePasswordByID(r.Context(), user.ID, req.OldPassword, req.NewPassword); err != nil {
+	if err := h.service.UpdatePasswordByID(r.Context(), service.UpdatePasswordByIDParams{
+		User:        *user,
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -265,7 +266,10 @@ func (h *EndpointHandler) updateLanguage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.service.UpdateLanguageByID(r.Context(), user.ID, req.LanguageCode); err != nil {
+	if err := h.service.UpdateLanguageByID(r.Context(), service.UpdateLanguageByIDParams{
+		User:         *user,
+		LanguageCode: req.LanguageCode,
+	}); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}
@@ -283,7 +287,7 @@ func (h *EndpointHandler) deleteCurrentUser(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := h.service.DeleteUserByID(r.Context(), user.ID); err != nil {
+	if err := h.service.DeleteUserByID(r.Context(), *user); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}

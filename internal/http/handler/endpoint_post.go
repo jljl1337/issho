@@ -42,8 +42,7 @@ func (h *EndpointHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.CreatePost(r.Context(), service.CreatePostParams{
-		UserID:      user.ID,
-		UserRole:    user.Role,
+		User:        *user,
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
@@ -68,7 +67,7 @@ func (h *EndpointHandler) GetPostList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arg.UserRole = user.Role
+	arg.User = *user
 
 	userID := r.URL.Query().Get("user-id")
 	if userID != "" {
@@ -155,8 +154,8 @@ func (h *EndpointHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 
 	// Call service to get post by ID
 	post, err := h.service.GetPostByID(r.Context(), service.GetPostByIDParams{
-		PostID:   postID,
-		UserRole: user.Role,
+		User:   *user,
+		PostID: postID,
 	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)
@@ -194,9 +193,8 @@ func (h *EndpointHandler) UpdatePostByID(w http.ResponseWriter, r *http.Request)
 
 	// Call service to update post by ID
 	err := h.service.UpdatePostByID(r.Context(), service.UpdatePostByIDParams{
+		User:        *user,
 		PostID:      postID,
-		UserID:      user.ID,
-		UserRole:    user.Role,
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
@@ -227,9 +225,8 @@ func (h *EndpointHandler) DeletePostByID(w http.ResponseWriter, r *http.Request)
 
 	// Call service to delete post by ID
 	err := h.service.DeletePostByID(r.Context(), service.DeletePostByIDParams{
-		PostID:   postID,
-		UserID:   user.ID,
-		UserRole: user.Role,
+		User:   *user,
+		PostID: postID,
 	})
 	if err != nil {
 		common.WriteErrorResponse(w, err)

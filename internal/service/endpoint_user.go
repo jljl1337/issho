@@ -6,21 +6,19 @@ import (
 	"github.com/jljl1337/issho/internal/crypto"
 	"github.com/jljl1337/issho/internal/env"
 	"github.com/jljl1337/issho/internal/generator"
+	"github.com/jljl1337/issho/internal/payment"
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) GetUserByID(ctx context.Context, userID string) (*repository.User, error) {
-	queries := repository.New(s.db)
-
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
+func (s *EndpointService) RequestEmailVerification(ctx context.Context, user repository.User) error {
+	if user.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
 	}
 
-	return &user, nil
-}
+	if user.Role != env.UserRole {
+		return NewServiceError(ErrCodeForbidden, "only regular users need to verify email")
+	}
 
-func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID string) error {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -29,15 +27,6 @@ func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID s
 	defer tx.Rollback()
 
 	queries := repository.New(tx)
-
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
-	if user.IsVerified {
-		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
-	}
 
 	now := generator.NowISO8601()
 
@@ -116,11 +105,21 @@ func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID s
 }
 
 type ConfirmEmailVerificationParams struct {
-	UserID string
-	Code   string
+	User repository.User
+	Code string
 }
 
 func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg ConfirmEmailVerificationParams) error {
+	// Verify preconditions
+	if arg.User.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
+	}
+
+	if arg.User.Role != env.UserRole {
+		return NewServiceError(ErrCodeForbidden, "only regular users need to verify email")
+	}
+
+	// Validate verification code
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -130,19 +129,10 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 
 	queries := repository.New(tx)
 
-	user, err := queries.GetUserByID(ctx, arg.UserID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
-	if user.IsVerified {
-		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
-	}
-
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: user.ID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeVerifyEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -165,6 +155,17 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
 	}
 
+	// Create customer in payment provider
+	customerExternalID, err := s.paymentProvider.CreateCustomer(ctx, payment.CreateCustomerParams{
+		Name:         arg.User.Username,
+		Email:        arg.User.Email,
+		LanguageCode: arg.User.LanguageCode,
+	})
+	if err != nil {
+		return NewServiceErrorf(ErrCodeInternal, "failed to create customer in payment provider: %v", err)
+	}
+
+	// Update verification status and user record
 	err = queries.UpdateEmailVerificationStatusByID(ctx, repository.UpdateEmailVerificationStatusByIDParams{
 		ID:        verification.ID,
 		Status:    env.EmailVerificationStatusVerified,
@@ -175,8 +176,9 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	}
 
 	err = queries.VerifyUser(ctx, repository.VerifyUserParams{
-		ID:        user.ID,
-		UpdatedAt: now,
+		ID:         arg.User.ID,
+		ExternalID: customerExternalID,
+		UpdatedAt:  now,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to verify user: %v", err)
@@ -190,9 +192,14 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	return nil
 }
 
-func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUsername string) error {
+type UpdateUsernameByIDParams struct {
+	User        repository.User
+	NewUsername string
+}
+
+func (s *EndpointService) UpdateUsernameByID(ctx context.Context, arg UpdateUsernameByIDParams) error {
 	// Validate new username
-	newUsernameValid, err := checkUsername(newUsername)
+	newUsernameValid, err := checkUsername(arg.NewUsername)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new username: %v", err)
 	}
@@ -200,10 +207,32 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 		return NewServiceError(ErrCodeUnprocessable, "invalid new username format")
 	}
 
+	if arg.User.Username == arg.NewUsername {
+		return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
+	}
+
+	// Update customer in payment provider if needed
+	if arg.User.Role == env.UserRole && arg.User.IsVerified {
+		if arg.User.ExternalID == nil {
+			return NewServiceError(ErrCodeInternal, "user external ID is nil")
+		}
+
+		externalID := *arg.User.ExternalID
+		err := s.paymentProvider.UpdateCustomer(ctx, payment.UpdateCustomerParams{
+			ExternalID:   externalID,
+			Name:         arg.NewUsername,
+			Email:        arg.User.Email,
+			LanguageCode: arg.User.LanguageCode,
+		})
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to update customer in payment provider: %v", err)
+		}
+	}
+
 	queries := repository.New(s.db)
 
 	// Check if new username is the same as the old one or already taken
-	users, err := queries.GetUserByUsername(ctx, newUsername)
+	users, err := queries.GetUserByUsername(ctx, arg.NewUsername)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
 	}
@@ -213,18 +242,12 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 	}
 
 	if len(users) == 1 {
-		user := users[0]
-
-		if user.ID == userID {
-			return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
-		} else {
-			return NewServiceError(ErrCodeUsernameTaken, "username already taken")
-		}
+		return NewServiceError(ErrCodeUsernameTaken, "username already taken")
 	}
 
 	err = queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
-		ID:        userID,
-		Username:  newUsername,
+		ID:        arg.User.ID,
+		Username:  arg.NewUsername,
 		UpdatedAt: generator.NowISO8601(),
 	})
 	if err != nil {
@@ -234,8 +257,14 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 	return nil
 }
 
-func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPassword, newPassword string) error {
-	newPasswordValid, err := checkPassword(newPassword)
+type UpdatePasswordByIDParams struct {
+	User        repository.User
+	OldPassword string
+	NewPassword string
+}
+
+func (s *EndpointService) UpdatePasswordByID(ctx context.Context, arg UpdatePasswordByIDParams) error {
+	newPasswordValid, err := checkPassword(arg.NewPassword)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new password: %v", err)
 	}
@@ -243,24 +272,18 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 		return NewServiceError(ErrCodeUnprocessable, "invalid new password format")
 	}
 
-	if oldPassword == newPassword {
+	if arg.OldPassword == arg.NewPassword {
 		return NewServiceError(ErrCodeUnprocessable, "new password must be different from the old password")
 	}
 
 	queries := repository.New(s.db)
 
-	// Validate credentials
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
-	if !crypto.CheckPasswordHash(oldPassword, user.PasswordHash) {
+	if !crypto.CheckPasswordHash(arg.OldPassword, arg.User.PasswordHash) {
 		return NewServiceError(ErrCodeUnprocessable, "old password is incorrect")
 	}
 
 	// Update password hash
-	passwordHash, err := crypto.HashPassword(newPassword, env.PasswordBcryptCost)
+	passwordHash, err := crypto.HashPassword(arg.NewPassword, env.PasswordBcryptCost)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to hash password: %v", err)
 	}
@@ -268,7 +291,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	err = queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
 		PasswordHash: passwordHash,
 		UpdatedAt:    generator.NowISO8601(),
-		ID:           userID,
+		ID:           arg.User.ID,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update password: %v", err)
@@ -278,7 +301,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 }
 
 type RequestEmailChangeParams struct {
-	UserID   string
+	User     repository.User
 	NewEmail string
 }
 
@@ -290,6 +313,10 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 	}
 	if !newEmailValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid new email format")
+	}
+
+	if arg.User.Email == arg.NewEmail {
+		return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
 	}
 
 	tx, err := s.db.BeginTxx(ctx, nil)
@@ -312,19 +339,13 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 	}
 
 	if len(users) == 1 {
-		user := users[0]
-
-		if user.ID == arg.UserID {
-			return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
-		} else {
-			return NewServiceError(ErrCodeEmailTaken, "email already taken")
-		}
+		return NewServiceError(ErrCodeEmailTaken, "email already taken")
 	}
 
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: arg.UserID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeNewEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -348,7 +369,7 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 
 	err = queries.CreateEmailVerification(ctx, repository.EmailVerification{
 		ID:        generator.NewULID(),
-		UserID:    arg.UserID,
+		UserID:    arg.User.ID,
 		Type:      env.EmailVerificationTypeNewEmail,
 		Email:     arg.NewEmail,
 		Code:      code,
@@ -399,11 +420,12 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 }
 
 type ConfirmEmailChangeParams struct {
-	UserID string
-	Code   string
+	User repository.User
+	Code string
 }
 
 func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEmailChangeParams) error {
+	// Validate verification code
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -413,15 +435,10 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 
 	queries := repository.New(tx)
 
-	user, err := queries.GetUserByID(ctx, arg.UserID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: user.ID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeNewEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -444,6 +461,46 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 		return NewServiceError(ErrCodeVerificationFailed, "code is invalid or expired")
 	}
 
+	if !arg.User.IsVerified {
+		// Create customer in payment provider
+		customerExternalID, err := s.paymentProvider.CreateCustomer(ctx, payment.CreateCustomerParams{
+			Name:         arg.User.Username,
+			Email:        verification.Email,
+			LanguageCode: arg.User.LanguageCode,
+		})
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to create customer in payment provider: %v", err)
+		}
+
+		// Update verification status and user record
+		err = queries.VerifyUser(ctx, repository.VerifyUserParams{
+			ID:         arg.User.ID,
+			ExternalID: customerExternalID,
+			UpdatedAt:  now,
+		})
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to verify user: %v", err)
+		}
+	} else {
+		// Update email in payment provider for customers that are already verified
+		if arg.User.Role == env.UserRole {
+			if arg.User.ExternalID == nil {
+				return NewServiceError(ErrCodeInternal, "user external ID is nil")
+			}
+
+			externalID := *arg.User.ExternalID
+			err = s.paymentProvider.UpdateCustomer(ctx, payment.UpdateCustomerParams{
+				ExternalID:   externalID,
+				Name:         arg.User.Username,
+				Email:        verification.Email,
+				LanguageCode: arg.User.LanguageCode,
+			})
+			if err != nil {
+				return NewServiceErrorf(ErrCodeInternal, "failed to update customer in payment provider: %v", err)
+			}
+		}
+	}
+
 	err = queries.UpdateEmailVerificationStatusByID(ctx, repository.UpdateEmailVerificationStatusByIDParams{
 		ID:        verification.ID,
 		Status:    env.EmailVerificationStatusVerified,
@@ -454,22 +511,12 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 	}
 
 	err = queries.UpdateUserEmail(ctx, repository.UpdateUserEmailParams{
-		ID:        user.ID,
+		ID:        arg.User.ID,
 		Email:     verification.Email,
 		UpdatedAt: now,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update user email: %v", err)
-	}
-
-	if !user.IsVerified {
-		err = queries.VerifyUser(ctx, repository.VerifyUserParams{
-			ID:        user.ID,
-			UpdatedAt: now,
-		})
-		if err != nil {
-			return NewServiceErrorf(ErrCodeInternal, "failed to verify user: %v", err)
-		}
 	}
 
 	err = tx.Commit()
@@ -480,17 +527,44 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 	return nil
 }
 
-func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
-	languageCodeValid := checkLanguageCode(languageCode)
+type UpdateLanguageByIDParams struct {
+	User         repository.User
+	LanguageCode string
+}
+
+func (s *EndpointService) UpdateLanguageByID(ctx context.Context, arg UpdateLanguageByIDParams) error {
+	languageCodeValid := checkLanguageCode(arg.LanguageCode)
 	if !languageCodeValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
+	}
+
+	if arg.User.LanguageCode == arg.LanguageCode {
+		return NewServiceError(ErrCodeUnprocessable, "new language code must be different from the old language code")
+	}
+
+	// Update customer in payment provider if needed
+	if arg.User.Role == env.UserRole && arg.User.IsVerified {
+		if arg.User.ExternalID == nil {
+			return NewServiceError(ErrCodeInternal, "user external ID is nil")
+		}
+
+		externalID := *arg.User.ExternalID
+		err := s.paymentProvider.UpdateCustomer(ctx, payment.UpdateCustomerParams{
+			ExternalID:   externalID,
+			Name:         arg.User.Username,
+			Email:        arg.User.Email,
+			LanguageCode: arg.LanguageCode,
+		})
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to update customer in payment provider: %v", err)
+		}
 	}
 
 	queries := repository.New(s.db)
 
 	err := queries.UpdateUserLanguage(ctx, repository.UpdateUserLanguageParams{
-		ID:           userID,
-		LanguageCode: languageCode,
+		ID:           arg.User.ID,
+		LanguageCode: arg.LanguageCode,
 		UpdatedAt:    generator.NowISO8601(),
 	})
 	if err != nil {
@@ -500,10 +574,24 @@ func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, langua
 	return nil
 }
 
-func (s *EndpointService) DeleteUserByID(ctx context.Context, userID string) error {
+func (s *EndpointService) DeleteUserByID(ctx context.Context, user repository.User) error {
+	// Delete customer in payment provider if needed
+	if user.Role == env.UserRole && user.IsVerified {
+		if user.ExternalID == nil {
+			return NewServiceError(ErrCodeInternal, "user external ID is nil")
+		}
+
+		externalID := *user.ExternalID
+		err := s.paymentProvider.DeleteCustomer(ctx, externalID)
+		if err != nil {
+			return NewServiceErrorf(ErrCodeInternal, "failed to delete customer in payment provider: %v", err)
+		}
+	}
+
+	// Delete user record
 	queries := repository.New(s.db)
 
-	err := queries.DeleteUser(ctx, userID)
+	err := queries.DeleteUser(ctx, user.ID)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to delete user: %v", err)
 	}

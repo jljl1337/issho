@@ -192,6 +192,7 @@ const verifyUser = `
 	UPDATE
 		"user"
 	SET
+		external_id = :external_id,
 		is_verified = TRUE,
 		updated_at = :updated_at
 	WHERE
@@ -199,8 +200,9 @@ const verifyUser = `
 `
 
 type VerifyUserParams struct {
-	UpdatedAt string `db:"updated_at"`
-	ID        string `db:"id"`
+	ExternalID string `db:"external_id"`
+	UpdatedAt  string `db:"updated_at"`
+	ID         string `db:"id"`
 }
 
 func (q *Queries) VerifyUser(ctx context.Context, arg VerifyUserParams) error {

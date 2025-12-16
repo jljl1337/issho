@@ -8,15 +8,16 @@ type Migration struct {
 }
 
 type User struct {
-	ID           string `json:"id" db:"id"`
-	Username     string `json:"username" db:"username"`
-	Email        string `json:"email" db:"email"`
-	PasswordHash string `json:"passwordHash" db:"password_hash"`
-	Role         string `json:"role" db:"role"`
-	LanguageCode string `json:"languageCode" db:"language_code"`
-	IsVerified   bool   `json:"isVerified" db:"is_verified"`
-	CreatedAt    string `json:"createdAt" db:"created_at"`
-	UpdatedAt    string `json:"updatedAt" db:"updated_at"`
+	ID           string  `json:"id" db:"id"`
+	ExternalID   *string `json:"externalId" db:"external_id"`
+	Username     string  `json:"username" db:"username"`
+	Email        string  `json:"email" db:"email"`
+	PasswordHash string  `json:"passwordHash" db:"password_hash"`
+	Role         string  `json:"role" db:"role"`
+	LanguageCode string  `json:"languageCode" db:"language_code"`
+	IsVerified   bool    `json:"isVerified" db:"is_verified"`
+	CreatedAt    string  `json:"createdAt" db:"created_at"`
+	UpdatedAt    string  `json:"updatedAt" db:"updated_at"`
 }
 
 type Session struct {

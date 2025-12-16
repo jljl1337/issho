@@ -3,120 +3,112 @@ package payment
 import (
 	"context"
 	"fmt"
-
-	"github.com/polarsource/polar-go/models/components"
-	"github.com/polarsource/polar-go/models/operations"
+	"net/http"
 
 	"github.com/jljl1337/issho/internal/repository"
 )
 
+type PolarProductResponse struct {
+	ID                     string               `json:"id"`
+	Name                   string               `json:"name"`
+	Description            *string              `json:"description"`
+	IsRecurring            bool                 `json:"is_recurring"`
+	RecurringInterval      *string              `json:"recurring_interval"`
+	RecurringIntervalCount *int                 `json:"recurring_interval_count"`
+	IsArchived             bool                 `json:"is_archived"`
+	Price                  []PolarPriceResponse `json:"prices"`
+}
+
+type PolarPriceResponse struct {
+	PriceAmount   int    `json:"price_amount"`
+	PriceCurrency string `json:"price_currency"`
+}
+
 func (p *PolarProvider) CreatePrice(ctx context.Context, params CreatePriceParams) (*repository.Price, error) {
-	var res *operations.ProductsCreateResponse
-	var err error
+	body := map[string]any{
+		"name":        params.Name,
+		"description": params.Description,
+		"prices": []map[string]any{{
+			"amount_type":    "fixed",
+			"price_amount":   params.PriceAmount,
+			"price_currency": params.PriceCurrency,
+		}},
+	}
 
 	if params.IsRecurring {
-		res, err = p.client.Products.Create(ctx, components.CreateProductCreateProductCreateRecurring(
-			components.ProductCreateRecurring{
-				Name:                   params.Name,
-				Description:            &params.Description,
-				RecurringInterval:      components.SubscriptionRecurringInterval(*params.RecurringInterval),
-				RecurringIntervalCount: intPtrToInt64Ptr(params.RecurringIntervalCount),
-				Prices: []components.ProductCreateRecurringPrices{
-					components.CreateProductCreateRecurringPricesFixed(
-						components.ProductPriceFixedCreate{
-							PriceAmount:   int64(params.PriceAmount),
-							PriceCurrency: &params.PriceCurrency,
-						},
-					),
-				},
-			},
-		))
-	} else {
-		res, err = p.client.Products.Create(ctx, components.CreateProductCreateProductCreateOneTime(
-			components.ProductCreateOneTime{
-				Name:        params.Name,
-				Description: &params.Description,
-				Prices: []components.ProductCreateOneTimePrices{
-					components.CreateProductCreateOneTimePricesFixed(
-						components.ProductPriceFixedCreate{
-							PriceAmount:   int64(params.PriceAmount),
-							PriceCurrency: &params.PriceCurrency,
-						},
-					),
-				},
-			},
-		))
+		body["recurring_interval"] = params.RecurringInterval
+		body["recurring_interval_count"] = params.RecurringIntervalCount
 	}
 
+	response := &PolarProductResponse{}
+	err := p.sendRequest(http.MethodPost, "/products/", body, response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create product: %v", err)
+		return nil, fmt.Errorf("error creating price in Polar: %w", err)
 	}
 
-	if res.Product == nil {
-		return nil, fmt.Errorf("failed to create product: no product returned")
+	price, err := toPrice(*response)
+	if err != nil {
+		return nil, fmt.Errorf("error converting Polar price response: %w", err)
 	}
 
-	return toPrice(res.Product), nil
+	return price, nil
 }
 
 func (p *PolarProvider) UpdatePrice(ctx context.Context, params UpdatePriceParams) (*repository.Price, error) {
-	isActive := !params.IsActive
+	body := map[string]any{
+		"name":        params.Name,
+		"description": params.Description,
+		"prices": []map[string]any{{
+			"amount_type":    "fixed",
+			"price_amount":   params.PriceAmount,
+			"price_currency": params.PriceCurrency,
+		}},
+		"is_archived": !params.IsActive,
+	}
 
-	res, err := p.client.Products.Update(ctx, params.ExternalID, components.ProductUpdate{
-		Name:        &params.Name,
-		Description: &params.Description,
-		Prices: []components.ProductUpdatePrices{
-			components.CreateProductUpdatePricesTwo(
-				components.CreateTwoFixed(
-					components.ProductPriceFixedCreate{
-						PriceAmount:   int64(params.PriceAmount),
-						PriceCurrency: &params.PriceCurrency,
-					},
-				),
-			),
-		},
-		IsArchived: &isActive,
-	})
+	// TODO: remove?
+	if params.IsRecurring {
+		body["recurring_interval"] = params.RecurringInterval
+		body["recurring_interval_count"] = params.RecurringIntervalCount
+	}
 
+	response := &PolarProductResponse{}
+	err := p.sendRequest(http.MethodPatch, "/products/"+params.ExternalID, body, response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update product: %v", err)
+		return nil, fmt.Errorf("error creating price in Polar: %w", err)
 	}
 
-	if res.Product == nil {
-		return nil, fmt.Errorf("failed to update product: no product returned")
+	price, err := toPrice(*response)
+	if err != nil {
+		return nil, fmt.Errorf("error converting Polar price response: %w", err)
 	}
 
-	return toPrice(res.Product), nil
+	return price, nil
 }
 
-func toPrice(p *components.Product) *repository.Price {
-	var RecurringInterval *string = nil
-	var RecurringIntervalCount *int = nil
-	if p.IsRecurring {
-		if p.RecurringInterval != nil {
-			s := string(*p.RecurringInterval)
-			RecurringInterval = &s
-		}
-		RecurringIntervalCount = int64PtrToIntPtr(p.RecurringIntervalCount)
+func toPrice(resp PolarProductResponse) (*repository.Price, error) {
+	if len(resp.Price) == 0 {
+		return nil, fmt.Errorf("no price information found in Polar response")
 	}
-	Description := ""
-	if p.Description != nil {
-		Description = *p.Description
-	}
-
-	isActive := !p.IsArchived
 
 	price := &repository.Price{
-		ExternalID:             p.ID,
-		Name:                   p.Name,
-		Description:            Description,
-		PriceAmount:            int(p.Prices[0].ProductPrice.ProductPriceFixed.PriceAmount),
-		PriceCurrency:          p.Prices[0].ProductPrice.ProductPriceFixed.PriceCurrency,
-		IsRecurring:            p.IsRecurring,
-		RecurringInterval:      RecurringInterval,
-		RecurringIntervalCount: RecurringIntervalCount,
-		IsActive:               isActive,
+		ExternalID:    resp.ID,
+		Name:          resp.Name,
+		Description:   "",
+		PriceAmount:   resp.Price[0].PriceAmount,
+		PriceCurrency: resp.Price[0].PriceCurrency,
+		IsRecurring:   resp.IsRecurring,
+		IsActive:      !resp.IsArchived,
 	}
 
-	return price
+	if resp.Description != nil {
+		price.Description = *resp.Description
+	}
+
+	if resp.IsRecurring {
+		price.RecurringInterval = resp.RecurringInterval
+		price.RecurringIntervalCount = resp.RecurringIntervalCount
+	}
+
+	return price, nil
 }

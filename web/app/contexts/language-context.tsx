@@ -4,6 +4,7 @@ import { useSession } from "./session-context";
 import { useTranslation } from "react-i18next";
 
 import { useUpdateLanguage } from "~/hooks/use-user";
+import { translateError } from "~/lib/db/common";
 
 const LANGUAGE_STORAGE_KEY = "issho_language";
 
@@ -87,7 +88,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error updating language:", error);
       return {
-        error: error instanceof Error ? error.message : "An error occurred",
+        error: translateError(error),
       };
     }
   };
