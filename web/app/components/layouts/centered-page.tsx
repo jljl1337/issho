@@ -16,7 +16,7 @@ export function CenteredPage({ children, className }: CenteredPageProps) {
   return (
     <div
       className={cn(
-        "flex h-full w-full items-center justify-center p-4",
+        "flex h-full w-full items-center justify-center bg-background p-4",
         className,
       )}
     >
