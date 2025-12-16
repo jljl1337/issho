@@ -56,7 +56,8 @@ type UpdatePriceParams struct {
 }
 
 type PaymentProvider interface {
-	CreateCustomer(ctx context.Context, params CreateCustomerParams) error
+	// Return external customer ID
+	CreateCustomer(ctx context.Context, params CreateCustomerParams) (string, error)
 	UpdateCustomer(ctx context.Context, params UpdateCustomerParams) error
 	DeleteCustomer(ctx context.Context, externalID string) error
 

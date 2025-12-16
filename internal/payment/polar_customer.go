@@ -6,18 +6,22 @@ import (
 	"net/http"
 )
 
-func (p *PolarProvider) CreateCustomer(ctx context.Context, params CreateCustomerParams) error {
+func (p *PolarProvider) CreateCustomer(ctx context.Context, params CreateCustomerParams) (string, error) {
 	body := map[string]any{
 		"name":  params.Name,
 		"email": params.Email,
 	}
 
-	err := p.sendRequest(http.MethodPost, "/customers/", body, nil)
+	resp := &struct {
+		ExternalID string `json:"id"`
+	}{}
+
+	err := p.sendRequest(http.MethodPost, "/customers/", body, resp)
 	if err != nil {
-		return fmt.Errorf("error creating customer in Polar: %w", err)
+		return "", fmt.Errorf("error creating customer in Polar: %w", err)
 	}
 
-	return nil
+	return resp.ExternalID, nil
 }
 
 func (p *PolarProvider) UpdateCustomer(ctx context.Context, params UpdateCustomerParams) error {

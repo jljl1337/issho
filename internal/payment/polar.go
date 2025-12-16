@@ -62,13 +62,17 @@ func (p *PolarProvider) sendRequest(method, endpoint string, body any, response 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("failed to read response body: %w", err)
+			return fmt.Errorf("failed to read error response body: %w", err)
 		}
 
 		// Convert the byte slice to a string
 		bodyString := string(bodyBytes)
 
 		return fmt.Errorf("received non-2xx response: %d, with body: %v", resp.StatusCode, bodyString)
+	}
+
+	if response == nil {
+		return nil
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
