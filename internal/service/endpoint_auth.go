@@ -91,6 +91,7 @@ func (s *EndpointService) SignUp(ctx context.Context, username, email, password,
 
 	if err = queries.CreateUser(ctx, repository.User{
 		ID:           generator.NewULID(),
+		ExternalID:   nil,
 		Username:     username,
 		Email:        email,
 		PasswordHash: passwordHash,

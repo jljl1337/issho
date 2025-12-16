@@ -1,5 +1,6 @@
 CREATE TABLE "user" (
     id TEXT NOT NULL,
+    external_id TEXT,
     username TEXT NOT NULL,
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
