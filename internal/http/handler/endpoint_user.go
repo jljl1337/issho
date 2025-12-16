@@ -43,13 +43,13 @@ func (h *EndpointHandler) getCurrentUser(w http.ResponseWriter, r *http.Request)
 
 	// Respond to the client
 	response := getCurrentUserResponse{
-		ID:           user.ID,
-		Username:     user.Username,
-		Email:        user.Email,
-		Role:         user.Role,
-		LanguageCode: user.LanguageCode,
-		IsVerified:   user.IsVerified,
-		CreatedAt:    user.CreatedAt,
+		ID:           responseUser.ID,
+		Username:     responseUser.Username,
+		Email:        responseUser.Email,
+		Role:         responseUser.Role,
+		LanguageCode: responseUser.LanguageCode,
+		IsVerified:   responseUser.IsVerified,
+		CreatedAt:    responseUser.CreatedAt,
 	}
 	common.WriteJSONResponse(w, http.StatusOK, response)
 }
