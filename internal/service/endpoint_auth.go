@@ -281,12 +281,12 @@ func (s *EndpointService) SignOut(ctx context.Context, sessionToken string) erro
 	return nil
 }
 
-func (s *EndpointService) SignOutAllSession(ctx context.Context, userID string) error {
+func (s *EndpointService) SignOutAllSession(ctx context.Context, user repository.User) error {
 	queries := repository.New(s.db)
 
 	now := generator.NowISO8601()
 	rows, err := queries.UpdateSessionByUserID(ctx, repository.UpdateSessionByUserIDParams{
-		UserID:    &userID,
+		UserID:    &user.ID,
 		ExpiresAt: now,
 		UpdatedAt: now,
 	})

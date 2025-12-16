@@ -155,7 +155,7 @@ func (h *EndpointHandler) signOutAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.SignOutAllSession(r.Context(), user.ID); err != nil {
+	if err := h.service.SignOutAllSession(r.Context(), *user); err != nil {
 		common.WriteErrorResponse(w, err)
 		return
 	}

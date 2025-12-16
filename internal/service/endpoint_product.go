@@ -10,13 +10,13 @@ import (
 )
 
 type CreateProductParams struct {
-	UserRole    string
+	User        repository.User
 	Name        string
 	Description string
 }
 
 func (s *EndpointService) CreateProduct(ctx context.Context, arg CreateProductParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create product")
 	}
 
@@ -95,7 +95,7 @@ func (s *EndpointService) GetProductByID(ctx context.Context, arg GetProductByID
 }
 
 type UpdateProductByIDParams struct {
-	UserRole    string
+	User        repository.User
 	ProductID   string
 	Name        string
 	Description string
@@ -103,7 +103,7 @@ type UpdateProductByIDParams struct {
 }
 
 func (s *EndpointService) UpdateProductByID(ctx context.Context, arg UpdateProductByIDParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update product")
 	}
 

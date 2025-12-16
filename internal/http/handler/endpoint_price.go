@@ -45,7 +45,7 @@ func (h *EndpointHandler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.CreatePrice(r.Context(), service.CreatePriceParams{
-		UserRole:               user.Role,
+		User:                   *user,
 		ProductID:              req.ProductID,
 		Name:                   req.Name,
 		Description:            req.Description,
@@ -147,8 +147,16 @@ func (h *EndpointHandler) UpdatePriceByID(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	// Call service to update price by ID
 	err := h.service.UpdatePriceByID(r.Context(), service.UpdatePriceByIDParams{
+		User:                   *user,
 		PriceID:                priceID,
 		Name:                   req.Name,
 		Description:            req.Description,

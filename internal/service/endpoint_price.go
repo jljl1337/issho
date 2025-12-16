@@ -10,7 +10,7 @@ import (
 )
 
 type CreatePriceParams struct {
-	UserRole               string
+	User                   repository.User
 	ProductID              string
 	Name                   string
 	Description            string
@@ -22,7 +22,7 @@ type CreatePriceParams struct {
 }
 
 func (s *EndpointService) CreatePrice(ctx context.Context, arg CreatePriceParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create price")
 	}
 
@@ -133,7 +133,7 @@ func (s *EndpointService) GetPriceByID(ctx context.Context, arg GetPriceByIDPara
 }
 
 type UpdatePriceByIDParams struct {
-	UserRole               string
+	User                   repository.User
 	PriceID                string
 	Name                   string
 	Description            string
@@ -146,7 +146,7 @@ type UpdatePriceByIDParams struct {
 }
 
 func (s *EndpointService) UpdatePriceByID(ctx context.Context, arg UpdatePriceByIDParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update price")
 	}
 

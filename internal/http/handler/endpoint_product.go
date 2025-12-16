@@ -39,7 +39,7 @@ func (h *EndpointHandler) CreateProduct(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err := h.service.CreateProduct(r.Context(), service.CreateProductParams{
-		UserRole:    user.Role,
+		User:        *user,
 		Name:        req.Name,
 		Description: req.Description,
 	})
@@ -130,8 +130,16 @@ func (h *EndpointHandler) UpdateProductByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	user := middleware.GetUserFromContext(r.Context())
+	if user == nil {
+		slog.Error("Error getting user from context")
+		common.WriteMessageResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	// Call service to update product by ID
 	err := h.service.UpdateProductByID(r.Context(), service.UpdateProductByIDParams{
+		User:        *user,
 		ProductID:   productID,
 		Name:        req.Name,
 		Description: req.Description,

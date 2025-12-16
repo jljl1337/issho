@@ -9,18 +9,7 @@ import (
 	"github.com/jljl1337/issho/internal/repository"
 )
 
-func (s *EndpointService) GetUserByID(ctx context.Context, userID string) (*repository.User, error) {
-	queries := repository.New(s.db)
-
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
-	return &user, nil
-}
-
-func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID string) error {
+func (s *EndpointService) RequestEmailVerification(ctx context.Context, user repository.User) error {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -29,11 +18,6 @@ func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID s
 	defer tx.Rollback()
 
 	queries := repository.New(tx)
-
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
 
 	if user.IsVerified {
 		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
@@ -116,8 +100,8 @@ func (s *EndpointService) RequestEmailVerification(ctx context.Context, userID s
 }
 
 type ConfirmEmailVerificationParams struct {
-	UserID string
-	Code   string
+	User repository.User
+	Code string
 }
 
 func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg ConfirmEmailVerificationParams) error {
@@ -130,19 +114,14 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 
 	queries := repository.New(tx)
 
-	user, err := queries.GetUserByID(ctx, arg.UserID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
-	if user.IsVerified {
+	if arg.User.IsVerified {
 		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
 	}
 
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: user.ID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeVerifyEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -175,7 +154,7 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	}
 
 	err = queries.VerifyUser(ctx, repository.VerifyUserParams{
-		ID:        user.ID,
+		ID:        arg.User.ID,
 		UpdatedAt: now,
 	})
 	if err != nil {
@@ -190,7 +169,7 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	return nil
 }
 
-func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUsername string) error {
+func (s *EndpointService) UpdateUsernameByID(ctx context.Context, user repository.User, newUsername string) error {
 	// Validate new username
 	newUsernameValid, err := checkUsername(newUsername)
 	if err != nil {
@@ -213,9 +192,9 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 	}
 
 	if len(users) == 1 {
-		user := users[0]
+		existingUser := users[0]
 
-		if user.ID == userID {
+		if existingUser.ID == user.ID {
 			return NewServiceError(ErrCodeUnprocessable, "new username must be different from the old username")
 		} else {
 			return NewServiceError(ErrCodeUsernameTaken, "username already taken")
@@ -223,7 +202,7 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 	}
 
 	err = queries.UpdateUserUsername(ctx, repository.UpdateUserUsernameParams{
-		ID:        userID,
+		ID:        user.ID,
 		Username:  newUsername,
 		UpdatedAt: generator.NowISO8601(),
 	})
@@ -234,7 +213,7 @@ func (s *EndpointService) UpdateUsernameByID(ctx context.Context, userID, newUse
 	return nil
 }
 
-func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPassword, newPassword string) error {
+func (s *EndpointService) UpdatePasswordByID(ctx context.Context, user repository.User, oldPassword, newPassword string) error {
 	newPasswordValid, err := checkPassword(newPassword)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to validate new password: %v", err)
@@ -249,12 +228,6 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 
 	queries := repository.New(s.db)
 
-	// Validate credentials
-	user, err := queries.GetUserByID(ctx, userID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
 	if !crypto.CheckPasswordHash(oldPassword, user.PasswordHash) {
 		return NewServiceError(ErrCodeUnprocessable, "old password is incorrect")
 	}
@@ -268,7 +241,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 	err = queries.UpdateUserPassword(ctx, repository.UpdateUserPasswordParams{
 		PasswordHash: passwordHash,
 		UpdatedAt:    generator.NowISO8601(),
-		ID:           userID,
+		ID:           user.ID,
 	})
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to update password: %v", err)
@@ -278,7 +251,7 @@ func (s *EndpointService) UpdatePasswordByID(ctx context.Context, userID, oldPas
 }
 
 type RequestEmailChangeParams struct {
-	UserID   string
+	User     repository.User
 	NewEmail string
 }
 
@@ -312,9 +285,9 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 	}
 
 	if len(users) == 1 {
-		user := users[0]
+		existingUser := users[0]
 
-		if user.ID == arg.UserID {
+		if existingUser.ID == arg.User.ID {
 			return NewServiceError(ErrCodeUnprocessable, "new email must be different from the old email")
 		} else {
 			return NewServiceError(ErrCodeEmailTaken, "email already taken")
@@ -324,7 +297,7 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: arg.UserID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeNewEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -348,7 +321,7 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 
 	err = queries.CreateEmailVerification(ctx, repository.EmailVerification{
 		ID:        generator.NewULID(),
-		UserID:    arg.UserID,
+		UserID:    arg.User.ID,
 		Type:      env.EmailVerificationTypeNewEmail,
 		Email:     arg.NewEmail,
 		Code:      code,
@@ -399,8 +372,8 @@ func (s *EndpointService) RequestEmailChange(ctx context.Context, arg RequestEma
 }
 
 type ConfirmEmailChangeParams struct {
-	UserID string
-	Code   string
+	User repository.User
+	Code string
 }
 
 func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEmailChangeParams) error {
@@ -413,15 +386,10 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 
 	queries := repository.New(tx)
 
-	user, err := queries.GetUserByID(ctx, arg.UserID)
-	if err != nil {
-		return NewServiceErrorf(ErrCodeInternal, "failed to get user: %v", err)
-	}
-
 	now := generator.NowISO8601()
 
 	existingVerifications, err := queries.GetValidEmailVerification(ctx, repository.GetValidEmailVerificationParams{
-		UserID: user.ID,
+		UserID: arg.User.ID,
 		Type:   env.EmailVerificationTypeNewEmail,
 		Status: env.EmailVerificationStatusPending,
 		Now:    now,
@@ -454,7 +422,7 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 	}
 
 	err = queries.UpdateUserEmail(ctx, repository.UpdateUserEmailParams{
-		ID:        user.ID,
+		ID:        arg.User.ID,
 		Email:     verification.Email,
 		UpdatedAt: now,
 	})
@@ -462,9 +430,9 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 		return NewServiceErrorf(ErrCodeInternal, "failed to update user email: %v", err)
 	}
 
-	if !user.IsVerified {
+	if !arg.User.IsVerified {
 		err = queries.VerifyUser(ctx, repository.VerifyUserParams{
-			ID:        user.ID,
+			ID:        arg.User.ID,
 			UpdatedAt: now,
 		})
 		if err != nil {
@@ -480,7 +448,7 @@ func (s *EndpointService) ConfirmEmailChange(ctx context.Context, arg ConfirmEma
 	return nil
 }
 
-func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, languageCode string) error {
+func (s *EndpointService) UpdateLanguageByID(ctx context.Context, user repository.User, languageCode string) error {
 	languageCodeValid := checkLanguageCode(languageCode)
 	if !languageCodeValid {
 		return NewServiceError(ErrCodeUnprocessable, "invalid language code")
@@ -489,7 +457,7 @@ func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, langua
 	queries := repository.New(s.db)
 
 	err := queries.UpdateUserLanguage(ctx, repository.UpdateUserLanguageParams{
-		ID:           userID,
+		ID:           user.ID,
 		LanguageCode: languageCode,
 		UpdatedAt:    generator.NowISO8601(),
 	})
@@ -500,10 +468,10 @@ func (s *EndpointService) UpdateLanguageByID(ctx context.Context, userID, langua
 	return nil
 }
 
-func (s *EndpointService) DeleteUserByID(ctx context.Context, userID string) error {
+func (s *EndpointService) DeleteUserByID(ctx context.Context, user repository.User) error {
 	queries := repository.New(s.db)
 
-	err := queries.DeleteUser(ctx, userID)
+	err := queries.DeleteUser(ctx, user.ID)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to delete user: %v", err)
 	}

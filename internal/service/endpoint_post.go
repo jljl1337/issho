@@ -10,8 +10,7 @@ import (
 )
 
 type CreatePostParams struct {
-	UserID      string
-	UserRole    string
+	User        repository.User
 	Title       string
 	Description string
 	Content     string
@@ -19,7 +18,7 @@ type CreatePostParams struct {
 }
 
 func (s *EndpointService) CreatePost(ctx context.Context, arg CreatePostParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to create post")
 	}
 
@@ -34,7 +33,7 @@ func (s *EndpointService) CreatePost(ctx context.Context, arg CreatePostParams) 
 
 	post := repository.Post{
 		ID:          generator.NewULID(),
-		UserID:      &arg.UserID,
+		UserID:      &arg.User.ID,
 		Title:       arg.Title,
 		Description: arg.Description,
 		Content:     arg.Content,
@@ -52,7 +51,7 @@ func (s *EndpointService) CreatePost(ctx context.Context, arg CreatePostParams) 
 }
 
 type GetPostListParams struct {
-	UserRole    string
+	User        repository.User
 	UserID      *string
 	SearchQuery *string
 	Cursor      *string
@@ -65,7 +64,7 @@ type GetPostListParams struct {
 
 func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams) ([]repository.Post, error) {
 	// Input validation and adjustments
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		arg.IncludeAll = false
 
 		now := generator.NowISO8601()
@@ -103,8 +102,8 @@ func (s *EndpointService) GetPostList(ctx context.Context, arg GetPostListParams
 }
 
 type GetPostByIDParams struct {
-	PostID   string
-	UserRole string
+	User   repository.User
+	PostID string
 }
 
 func (s *EndpointService) GetPostByID(ctx context.Context, arg GetPostByIDParams) (*repository.Post, error) {
@@ -121,7 +120,7 @@ func (s *EndpointService) GetPostByID(ctx context.Context, arg GetPostByIDParams
 
 	post := postList[0]
 
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		if post.PublishedAt == nil {
 			return nil, NewServiceError(ErrCodeNotFound, "post not found")
 		}
@@ -136,8 +135,7 @@ func (s *EndpointService) GetPostByID(ctx context.Context, arg GetPostByIDParams
 }
 
 type UpdatePostByIDParams struct {
-	UserID      string
-	UserRole    string
+	User        repository.User
 	PostID      string
 	Title       string
 	Description string
@@ -146,7 +144,7 @@ type UpdatePostByIDParams struct {
 }
 
 func (s *EndpointService) UpdatePostByID(ctx context.Context, arg UpdatePostByIDParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update post")
 	}
 
@@ -163,7 +161,7 @@ func (s *EndpointService) UpdatePostByID(ctx context.Context, arg UpdatePostByID
 
 	post := postList[0]
 
-	if post.UserID == nil || *post.UserID != arg.UserID {
+	if post.UserID == nil || *post.UserID != arg.User.ID {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update post")
 	}
 
@@ -199,13 +197,12 @@ func (s *EndpointService) UpdatePostByID(ctx context.Context, arg UpdatePostByID
 }
 
 type DeletePostByIDParams struct {
-	UserID   string
-	UserRole string
-	PostID   string
+	User   repository.User
+	PostID string
 }
 
 func (s *EndpointService) DeletePostByID(ctx context.Context, arg DeletePostByIDParams) error {
-	if arg.UserRole == env.UserRole {
+	if arg.User.Role == env.UserRole {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to delete post")
 	}
 
@@ -222,7 +219,7 @@ func (s *EndpointService) DeletePostByID(ctx context.Context, arg DeletePostByID
 
 	post := postList[0]
 
-	if post.UserID == nil || *post.UserID != arg.UserID {
+	if post.UserID == nil || *post.UserID != arg.User.ID {
 		return NewServiceError(ErrCodeForbidden, "insufficient permissions to update post")
 	}
 
