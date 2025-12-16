@@ -10,6 +10,14 @@ import (
 )
 
 func (s *EndpointService) RequestEmailVerification(ctx context.Context, user repository.User) error {
+	if user.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
+	}
+
+	if user.Role != env.UserRole {
+		return NewServiceError(ErrCodeForbidden, "only regular users need to verify email")
+	}
+
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -18,10 +26,6 @@ func (s *EndpointService) RequestEmailVerification(ctx context.Context, user rep
 	defer tx.Rollback()
 
 	queries := repository.New(tx)
-
-	if user.IsVerified {
-		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
-	}
 
 	now := generator.NowISO8601()
 
@@ -105,6 +109,14 @@ type ConfirmEmailVerificationParams struct {
 }
 
 func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg ConfirmEmailVerificationParams) error {
+	if arg.User.IsVerified {
+		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
+	}
+
+	if arg.User.Role != env.UserRole {
+		return NewServiceError(ErrCodeForbidden, "only regular users need to verify email")
+	}
+
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return NewServiceErrorf(ErrCodeInternal, "failed to begin transaction: %v", err)
@@ -113,10 +125,6 @@ func (s *EndpointService) ConfirmEmailVerification(ctx context.Context, arg Conf
 	defer tx.Rollback()
 
 	queries := repository.New(tx)
-
-	if arg.User.IsVerified {
-		return NewServiceError(ErrCodeUnprocessable, "email is already verified")
-	}
 
 	now := generator.NowISO8601()
 
