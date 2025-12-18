@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useTranslation } from "react-i18next";
-
-import { PriceEditorPage } from "~/components/pages/price-editor-page";
+import { PostEditorPage } from "~/components/pages/post-editor-page";
 import { useSession } from "~/contexts/session-context";
-import { useCreatePrice } from "~/hooks/use-prices";
-import { translateError } from "~/lib/db/prices";
+import { useCreatePost } from "~/hooks/use-posts";
+import { translateError } from "~/lib/db/common";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
-  const { t } = useTranslation("price");
   const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
-  const createPrice = useCreatePrice();
+  const createPost = useCreatePost();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,38 +19,33 @@ export default function Page() {
     }
 
     if (!isLoading && user && isUser(user.role)) {
-      navigate("/");
+      navigate(-1);
     }
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `${t("createPrice")} | Issho`;
-  }, [t]);
+    document.title = `Create Post | Issho`;
+  }, []);
 
   const handleSave = async (data: {
-    productId: string;
-    name: string;
+    title: string;
     description: string;
-    priceAmount: number;
-    priceCurrency: string;
-    isRecurring: boolean;
-    recurringInterval: string | null;
-    recurringIntervalCount: number | null;
-    isActive: boolean;
+    content: string;
+    publishedAt: string | null;
   }) => {
     if (!csrfToken) {
-      setErrorMessage(t("noCsrfToken"));
+      setErrorMessage("No CSRF token available");
       return;
     }
 
     setErrorMessage(null);
 
     try {
-      await createPrice.mutateAsync({
+      await createPost.mutateAsync({
         params: data,
         csrfToken,
       });
-      navigate("/prices");
+      navigate("/admin/posts");
     } catch (error) {
       setErrorMessage(translateError(error));
     }
@@ -64,10 +56,9 @@ export default function Page() {
   }
 
   return (
-    <PriceEditorPage
-      mode="create"
+    <PostEditorPage
       onSave={handleSave}
-      isLoading={createPrice.isPending}
+      isLoading={createPost.isPending}
       errorMessage={errorMessage}
     />
   );

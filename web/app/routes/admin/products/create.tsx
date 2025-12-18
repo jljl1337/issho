@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { PostEditorPage } from "~/components/pages/post-editor-page";
+import { useTranslation } from "react-i18next";
+
+import { ProductEditorPage } from "~/components/pages/product-editor-page";
 import { useSession } from "~/contexts/session-context";
-import { useCreatePost } from "~/hooks/use-posts";
-import { translateError } from "~/lib/db/common";
+import { useCreateProduct } from "~/hooks/use-products";
+import { translateError } from "~/lib/db/products";
 import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
+  const { t } = useTranslation("product");
   const { user, isLoggedIn, isLoading, csrfToken } = useSession();
   const navigate = useNavigate();
-  const createPost = useCreatePost();
+  const createProduct = useCreateProduct();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,33 +22,35 @@ export default function Page() {
     }
 
     if (!isLoading && user && isUser(user.role)) {
-      navigate(-1);
+      navigate("/");
     }
   }, [user, isLoggedIn, isLoading, navigate]);
 
   useEffect(() => {
-    document.title = `Create Post | Issho`;
-  }, []);
+    document.title = `${t("createProduct")} | Issho`;
+  }, [t]);
 
   const handleSave = async (data: {
-    title: string;
+    name: string;
     description: string;
-    content: string;
-    publishedAt: string | null;
+    isActive: boolean;
   }) => {
     if (!csrfToken) {
-      setErrorMessage("No CSRF token available");
+      setErrorMessage(t("noCsrfToken"));
       return;
     }
 
     setErrorMessage(null);
 
     try {
-      await createPost.mutateAsync({
-        params: data,
+      await createProduct.mutateAsync({
+        params: {
+          name: data.name,
+          description: data.description,
+        },
         csrfToken,
       });
-      navigate("/posts");
+      navigate("/admin/products");
     } catch (error) {
       setErrorMessage(translateError(error));
     }
@@ -56,9 +61,10 @@ export default function Page() {
   }
 
   return (
-    <PostEditorPage
+    <ProductEditorPage
+      mode="create"
       onSave={handleSave}
-      isLoading={createPost.isPending}
+      isLoading={createProduct.isPending}
       errorMessage={errorMessage}
     />
   );

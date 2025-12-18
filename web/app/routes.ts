@@ -39,24 +39,27 @@ export default [
 
     ...prefix("home", [index("routes/home/index.tsx")]),
 
-    ...prefix("posts", [
-      index("routes/posts/index.tsx"),
-      route("create", "routes/posts/create.tsx"),
-      route(":id", "routes/posts/$id.tsx"),
-      route("edit/:id", "routes/posts/edit.$id.tsx"),
-      route("delete/:id", "routes/posts/delete.$id.tsx"),
-    ]),
+    ...prefix("posts", [route(":id", "routes/posts/$id.tsx")]),
 
-    ...prefix("prices", [
-      index("routes/prices/index.tsx"),
-      route("create", "routes/prices/create.tsx"),
-      route("edit/:id", "routes/prices/edit.$id.tsx"),
-    ]),
+    ...prefix("admin", [
+      ...prefix("posts", [
+        index("routes/admin/posts/index.tsx"),
+        route("create", "routes/admin/posts/create.tsx"),
+        route(":id/edit", "routes/admin/posts/$id.edit.tsx"),
+        route(":id/delete", "routes/admin/posts/$id.delete.tsx"),
+      ]),
 
-    ...prefix("products", [
-      index("routes/products/index.tsx"),
-      route("create", "routes/products/create.tsx"),
-      route("edit/:id", "routes/products/edit.$id.tsx"),
+      ...prefix("prices", [
+        index("routes/admin/prices/index.tsx"),
+        route("create", "routes/admin/prices/create.tsx"),
+        route(":id/edit", "routes/admin/prices/$id.edit.tsx"),
+      ]),
+
+      ...prefix("products", [
+        index("routes/admin/products/index.tsx"),
+        route("create", "routes/admin/products/create.tsx"),
+        route(":id/edit", "routes/admin/products/$id.edit.tsx"),
+      ]),
     ]),
   ]),
 
