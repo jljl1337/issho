@@ -25,6 +25,7 @@ export default function Page() {
 
   return (
     <div className="h-svh">
+      <title>Issho</title>
       <CenteredPage>
         <Spinner className="size-8" />
       </CenteredPage>
