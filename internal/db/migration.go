@@ -114,12 +114,12 @@ func Migrate(db *sqlx.DB) error {
 
 	// Verify overlap migrations
 	for i := range minLen {
+		slog.Debug("Verifying migration: " + appliedMigrations[i].ID)
 		if appliedMigrations[i].ID != embeddedMigrationList[i].ID ||
 			appliedMigrations[i].UpStatement != embeddedMigrationList[i].UpStatement ||
 			appliedMigrations[i].DownStatement != embeddedMigrationList[i].DownStatement {
 			return fmt.Errorf("migration mismatch at index %d: applied migration %v does not match embedded migration %v", i, appliedMigrations[i], embeddedMigrationList[i])
 		}
-		slog.Debug("Verified migration: " + appliedMigrations[i].ID)
 	}
 
 	if len(appliedMigrations) < len(embeddedMigrationList) {
