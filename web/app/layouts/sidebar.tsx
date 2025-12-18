@@ -62,24 +62,28 @@ export default function Layout() {
       icon: Home,
       label: t("home", { ns: "navigation" }),
       isUserPage: true,
+      matchRegex: /^\/home/,
     },
     {
       to: "/admin/posts",
       icon: Newspaper,
       label: t("posts", { ns: "navigation" }),
       isUserPage: false,
+      matchRegex: /\/posts/,
     },
     {
       to: "/admin/products",
       icon: ShoppingBasket,
       label: t("products", { ns: "navigation" }),
       isUserPage: false,
+      matchRegex: /^\/admin\/products/,
     },
     {
       to: "/admin/prices",
       icon: DollarSign,
       label: t("prices", { ns: "navigation" }),
       isUserPage: false,
+      matchRegex: /^\/admin\/prices/,
     },
   ];
 
@@ -88,11 +92,13 @@ export default function Layout() {
       to: "/account",
       icon: User,
       label: t("account", { ns: "user" }),
+      matchRegex: /^\/account/,
     },
     {
       to: "/about",
       icon: Info,
       label: t("about", { ns: "navigation" }),
+      matchRegex: /^\/about/,
     },
   ];
 
@@ -170,7 +176,7 @@ export default function Layout() {
               return isUser(user.role) === item.isUserPage;
             })
             .map((item) => {
-              const isActive = pathname.startsWith(item.to);
+              const isActive = item.matchRegex.test(pathname);
               return (
                 <Link
                   key={item.to}
@@ -198,7 +204,7 @@ export default function Layout() {
             onClick={cycleTheme}
           />
           {footerItems.map((item) => {
-            const isActive = pathname.startsWith(item.to);
+            const isActive = item.matchRegex.test(pathname);
             return (
               <Link
                 key={item.to}
