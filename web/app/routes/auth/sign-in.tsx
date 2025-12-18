@@ -51,8 +51,7 @@ export default function Page() {
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && isLoggedIn && user) {
-      const destination = user.role === "user" ? "/home" : "/admin/posts";
-      navigate(destination);
+      navigate(isUser(user.role) ? "/home" : "/admin/posts");
     }
   }, [isLoggedIn, isLoading, user, navigate]);
 
