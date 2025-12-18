@@ -7,9 +7,9 @@ import {
   Home,
   Info,
   Laptop,
-  List,
   Menu,
   Moon,
+  Newspaper,
   ShoppingBasket,
   Sun,
   User,
@@ -20,6 +20,8 @@ import { cn } from "~/lib/utils";
 
 import { SidebarButton } from "~/components/sidebar-button";
 import { useTheme } from "~/components/theme-provider";
+import { useSession } from "~/contexts/session-context";
+import { isUser } from "~/lib/validation/role";
 
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,27 +54,36 @@ export default function Layout() {
   const { t } = useTranslation(["sidebar", "navigation", "user"]);
   const { setTheme, theme } = useTheme();
   const { pathname } = useLocation();
+  const { user } = useSession();
 
   const navItems = [
     {
       to: "/home",
       icon: Home,
       label: t("home", { ns: "navigation" }),
+      isUserPage: true,
+      matchRegex: /^\/home/,
     },
     {
-      to: "/posts",
-      icon: List,
+      to: "/admin/posts",
+      icon: Newspaper,
       label: t("posts", { ns: "navigation" }),
+      isUserPage: false,
+      matchRegex: /\/posts/,
     },
     {
-      to: "/products",
+      to: "/admin/products",
       icon: ShoppingBasket,
       label: t("products", { ns: "navigation" }),
+      isUserPage: false,
+      matchRegex: /^\/admin\/products/,
     },
     {
-      to: "/prices",
+      to: "/admin/prices",
       icon: DollarSign,
       label: t("prices", { ns: "navigation" }),
+      isUserPage: false,
+      matchRegex: /^\/admin\/prices/,
     },
   ];
 
@@ -81,11 +92,13 @@ export default function Layout() {
       to: "/account",
       icon: User,
       label: t("account", { ns: "user" }),
+      matchRegex: /^\/account/,
     },
     {
       to: "/about",
       icon: Info,
       label: t("about", { ns: "navigation" }),
+      matchRegex: /^\/about/,
     },
   ];
 
@@ -153,24 +166,33 @@ export default function Layout() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.to);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={closeSidebar}
-                className="block"
-              >
-                <SidebarButton
-                  icon={item.icon}
-                  label={item.label}
-                  isOpen={isOpen}
-                  isActive={isActive}
-                />
-              </Link>
-            );
-          })}
+          {navItems
+            .filter((item) => {
+              // Show user nav items only if user object is null
+              if (!user) {
+                return item.isUserPage;
+              }
+              // If user exists, check for role
+              return isUser(user.role) === item.isUserPage;
+            })
+            .map((item) => {
+              const isActive = item.matchRegex.test(pathname);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={closeSidebar}
+                  className="block"
+                >
+                  <SidebarButton
+                    icon={item.icon}
+                    label={item.label}
+                    isOpen={isOpen}
+                    isActive={isActive}
+                  />
+                </Link>
+              );
+            })}
         </nav>
 
         {/* Footer */}
@@ -182,7 +204,7 @@ export default function Layout() {
             onClick={cycleTheme}
           />
           {footerItems.map((item) => {
-            const isActive = pathname.startsWith(item.to);
+            const isActive = item.matchRegex.test(pathname);
             return (
               <Link
                 key={item.to}

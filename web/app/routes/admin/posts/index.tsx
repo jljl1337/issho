@@ -165,8 +165,8 @@ export default function Page() {
         return (
           <div className="text-right">
             <TableRowDropdown
-              editUrl={`/posts/edit/${post.id}`}
-              deleteUrl={`/posts/delete/${post.id}`}
+              editUrl={`/admin/posts/${post.id}/edit`}
+              deleteUrl={`/admin/posts/${post.id}/delete`}
             />
           </div>
         );
@@ -179,7 +179,7 @@ export default function Page() {
       <h1 className="text-4xl">{t("posts")}</h1>
       <div>
         <Button asChild>
-          <Link to="/posts/create">
+          <Link to="/admin/posts/create">
             <PlusIcon className="mr-2 h-4 w-4" />
             {t("createPost")}
           </Link>

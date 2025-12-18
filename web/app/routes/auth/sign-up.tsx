@@ -35,6 +35,7 @@ import {
   passwordWithConfirmSchema,
   usernameSchema,
 } from "~/lib/schemas/auth";
+import { isUser } from "~/lib/validation/role";
 
 const formSchema = z.intersection(
   z.intersection(usernameSchema, emailSchema),
@@ -44,16 +45,16 @@ const formSchema = z.intersection(
 export default function Page() {
   const { t } = useTranslation(["auth", "common"]);
   const navigate = useNavigate();
-  const { isLoggedIn, isLoading } = useSession();
+  const { isLoggedIn, isLoading, user } = useSession();
   const { language } = useLanguage();
   const signUpMutation = useSignUp();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && isLoggedIn) {
-      navigate("/home");
+    if (!isLoading && isLoggedIn && user) {
+      navigate(isUser(user.role) ? "/home" : "/admin/posts");
     }
-  }, [isLoggedIn, isLoading, navigate]);
+  }, [isLoggedIn, isLoading, user, navigate]);
 
   useEffect(() => {
     document.title = `${t("signUp")} | Issho`;

@@ -59,7 +59,7 @@ export default function Page() {
         title={t("deletePost")}
         description={t("deletePostConfirm")}
         action={onDeletePost}
-        redirectTo="/posts"
+        redirectTo="/admin/posts"
       />
     </>
   );

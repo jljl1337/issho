@@ -5,18 +5,23 @@ import { useTranslation } from "react-i18next";
 
 import { HorizontallyCenteredPage } from "~/components/layouts/horizontally-centered-page";
 import { useSession } from "~/contexts/session-context";
+import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
   const { t } = useTranslation("navigation");
 
-  const { isLoggedIn, isLoading } = useSession();
+  const { user, isLoggedIn, isLoading } = useSession();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
       navigate("/auth/sign-in");
     }
-  }, [isLoggedIn, isLoading, navigate]);
+
+    if (!isLoading && user && !isUser(user.role)) {
+      navigate(-1);
+    }
+  }, [isLoggedIn, isLoading, user, navigate]);
 
   useEffect(() => {
     document.title = `${t("home")} | Issho`;

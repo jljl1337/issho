@@ -90,7 +90,7 @@ export default function Page() {
         const product = row.original;
         return (
           <Link
-            to={`/products/edit/${product.id}`}
+            to={`/admin/products/${product.id}/edit`}
             className="font-medium hover:underline"
           >
             {product.name}
@@ -135,7 +135,7 @@ export default function Page() {
       <h1 className="text-4xl">{t("products")}</h1>
       <div>
         <Button asChild>
-          <Link to="/products/create">
+          <Link to="/admin/products/create">
             <PlusIcon className="mr-2 h-4 w-4" />
             {t("createProduct")}
           </Link>

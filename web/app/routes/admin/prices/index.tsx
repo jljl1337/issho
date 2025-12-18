@@ -89,7 +89,7 @@ export default function Page() {
         const price = row.original;
         return (
           <Link
-            to={`/prices/edit/${price.id}`}
+            to={`/admin/prices/${price.id}/edit`}
             className="font-medium hover:underline"
           >
             {price.name}
@@ -161,7 +161,7 @@ export default function Page() {
       <h1 className="text-4xl">{t("prices")}</h1>
       <div>
         <Button asChild>
-          <Link to="/prices/create">
+          <Link to="/admin/prices/create">
             <PlusIcon className="mr-2 h-4 w-4" />
             {t("createPrice")}
           </Link>

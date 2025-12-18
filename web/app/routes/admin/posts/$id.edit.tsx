@@ -71,7 +71,7 @@ export default function Page() {
         params: data,
         csrfToken,
       });
-      navigate("/posts");
+      navigate("/admin/posts");
     } catch (error) {
       if (error instanceof ApiError && error.code === "404") {
         navigate(-1);

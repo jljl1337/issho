@@ -29,11 +29,15 @@ import { LanguageSwitcher } from "~/components/language-switcher";
 import { CenteredPage } from "~/components/layouts/centered-page";
 import { useSession } from "~/contexts/session-context";
 import { usePreSession, useSignIn } from "~/hooks/use-auth";
+import { useMe } from "~/hooks/use-user";
 import { translateError } from "~/lib/db/common";
+import { isUser } from "~/lib/validation/role";
 
 export default function Page() {
   const { t } = useTranslation(["auth", "common"]);
-  const { refreshSession, csrfToken, isLoggedIn, isLoading } = useSession();
+  const { refreshSession, csrfToken, isLoggedIn, isLoading, user } =
+    useSession();
+  const { refetch: refetchUser } = useMe();
   const navigate = useNavigate();
 
   const formSchema = z.object({
@@ -46,10 +50,11 @@ export default function Page() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && isLoggedIn) {
-      navigate("/home");
+    if (!isLoading && isLoggedIn && user) {
+      const destination = user.role === "user" ? "/home" : "/admin/posts";
+      navigate(destination);
     }
-  }, [isLoggedIn, isLoading, navigate]);
+  }, [isLoggedIn, isLoading, user, navigate]);
 
   useEffect(() => {
     document.title = `${t("signIn")} | Issho`;
@@ -96,7 +101,13 @@ export default function Page() {
 
       // Refresh session to load user data and CSRF token
       await refreshSession();
-      navigate("/home");
+
+      // Redirect based on user role
+      const { data: updatedUser } = await refetchUser();
+      const destination = isUser(updatedUser?.role ?? "")
+        ? "/home"
+        : "/admin/posts";
+      navigate(destination);
     } catch (error) {
       setError("root", {
         message: translateError(error),
