@@ -2,9 +2,7 @@ package env
 
 import "net/http"
 
-var (
-	Version = "dev"
-
+const (
 	OwnerRole = "owner"
 	UserRole  = "user"
 
@@ -27,6 +25,10 @@ var (
 
 	EmailVerificationStatusPending  = "pending"
 	EmailVerificationStatusVerified = "verified"
+)
+
+var (
+	Version = "dev"
 
 	DBType                           string
 	PostgresURL                      string

@@ -31,10 +31,6 @@ func NewEmailClient() (*EmailClient, error) {
 	}, nil
 }
 
-func (ec *EmailClient) SendEmailTo(ctx context.Context, toAddress, subject, body string) error {
-	return ec.SendEmail(ctx, []string{toAddress}, nil, nil, subject, body)
-}
-
 func (ec *EmailClient) SendEmail(ctx context.Context, toList, ccList, bccList []string, subject, body string) error {
 	message := mail.NewMsg()
 	if err := message.From(env.EmailFromAddress); err != nil {
