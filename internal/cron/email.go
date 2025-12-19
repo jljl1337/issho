@@ -60,19 +60,9 @@ func NewEmailTask(dbInstance *sqlx.DB, emailClient *email.EmailClient) func(cont
 					continue
 				}
 
-				toList := strings.Split(email.ToAddress, ";")
-				ccList := strings.Split(email.CcAddress, ";")
-				bccList := strings.Split(email.BccAddress, ";")
-
-				if len(toList) == 1 && toList[0] == "" {
-					toList = []string{}
-				}
-				if len(ccList) == 1 && ccList[0] == "" {
-					ccList = []string{}
-				}
-				if len(bccList) == 1 && bccList[0] == "" {
-					bccList = []string{}
-				}
+				toList := splitStringToSlice(email.ToAddress, ";")
+				ccList := splitStringToSlice(email.CcAddress, ";")
+				bccList := splitStringToSlice(email.BccAddress, ";")
 
 				sendEmailSuccess := false
 
@@ -132,4 +122,15 @@ func NewEmailTask(dbInstance *sqlx.DB, emailClient *email.EmailClient) func(cont
 			}
 		}
 	}
+}
+
+// splitStringToSlice splits a string by the given separator and returns a slice.
+//
+// If the input string is empty, it returns an empty slice.
+func splitStringToSlice(s string, sep string) []string {
+	if s == "" {
+		return []string{}
+	}
+
+	return strings.Split(s, sep)
 }
