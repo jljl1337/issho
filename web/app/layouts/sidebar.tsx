@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 import { SidebarButton } from "~/components/sidebar-button";
@@ -150,9 +151,10 @@ export default function Layout() {
             <span className="font-semibold truncate">{t("menu")}</span>
           )}
           {!isMobile && (
-            <button
+            <Button
               onClick={() => setIsOpen(!isOpen)}
-              className="rounded-md p-2 hover:bg-accent transition-colors cursor-pointer"
+              variant={"ghost"}
+              className="rounded-md p-2"
               aria-label={isOpen ? "Minimize menu" : "Expand menu"}
             >
               {isOpen ? (
@@ -160,7 +162,7 @@ export default function Layout() {
               ) : (
                 <Menu className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -230,9 +232,10 @@ export default function Layout() {
 
         {/* Mobile Menu Button - Fixed at bottom right */}
         {isMobile && (
-          <button
+          <Button
             onClick={() => setIsOpen(!isOpen)}
-            className="fixed bottom-6 right-6 z-50 rounded-full bg-primary text-primary-foreground p-4 shadow-lg hover:bg-primary/90 transition-all active:scale-95"
+            variant={"outline"}
+            className="fixed bottom-6 right-6 z-50 rounded-full h-12 w-12 p-0"
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >
             {isOpen ? (
@@ -240,7 +243,7 @@ export default function Layout() {
             ) : (
               <Menu className="h-6 w-6" />
             )}
-          </button>
+          </Button>
         )}
       </main>
     </div>

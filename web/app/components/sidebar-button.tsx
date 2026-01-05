@@ -1,5 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 interface SidebarButtonProps {
@@ -18,17 +19,13 @@ export function SidebarButton({
   onClick,
 }: SidebarButtonProps) {
   return (
-    <button
+    <Button
       onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors cursor-pointer",
-        isActive
-          ? "bg-accent text-accent-foreground"
-          : "hover:bg-accent hover:text-accent-foreground",
-      )}
+      className={cn("w-full", isOpen ? "justify-start" : "justify-center")}
+      variant={isActive ? "secondary" : "ghost"}
     >
       <Icon className="h-5 w-5 shrink-0" />
       {isOpen && <span className="truncate">{label}</span>}
-    </button>
+    </Button>
   );
 }
