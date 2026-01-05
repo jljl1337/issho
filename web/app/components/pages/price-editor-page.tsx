@@ -447,7 +447,7 @@ export function PriceEditorPage({
               <Button
                 type="submit"
                 disabled={isLoading || loadingProducts}
-                className="w-full cursor-pointer"
+                className="w-full"
               >
                 {isLoading ? t("saving") : t("savePrice")}
               </Button>

@@ -99,11 +99,7 @@ export function ConfirmTokenPage({
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="w-full cursor-pointer"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {t("verify")}
               </Button>
               {error && !isSubmitting && (

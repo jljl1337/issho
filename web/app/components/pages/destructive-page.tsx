@@ -56,16 +56,11 @@ export default function DestructivePage({
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="flex justify-end gap-2">
-              <Button
-                variant={"outline"}
-                className="cursor-pointer"
-                onClick={() => navigate(-1)}
-              >
+              <Button variant={"outline"} onClick={() => navigate(-1)}>
                 {t("cancel")}
               </Button>
               <Button
                 variant={"destructive"}
-                className="cursor-pointer"
                 onClick={onDestructive}
                 disabled={isLoading}
               >

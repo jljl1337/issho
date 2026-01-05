@@ -156,7 +156,6 @@ export default function Page() {
                 variant="outline"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="cursor-pointer"
               >
                 {isLoadingMore ? t("loading") : t("loadMore")}
               </Button>

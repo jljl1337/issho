@@ -136,11 +136,7 @@ export default function Page() {
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  className="w-full cursor-pointer"
-                  disabled={isUpdating}
-                >
+                <Button type="submit" className="w-full" disabled={isUpdating}>
                   {t("save", { ns: "common" })}
                 </Button>
                 {errors.root && (
