@@ -111,7 +111,7 @@ export default function Page() {
                 />
                 <Button
                   type="submit"
-                  className="w-full cursor-pointer"
+                  className="w-full"
                   disabled={isSubmitting}
                 >
                   {t("requestChange")}

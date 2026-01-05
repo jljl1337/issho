@@ -146,11 +146,7 @@ export default function Page() {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="w-full cursor-pointer"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {t("save", { ns: "common" })}
               </Button>
               {errors.root?.message && !isSubmitting && (

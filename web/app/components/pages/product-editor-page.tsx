@@ -169,11 +169,7 @@ export function ProductEditorPage({
               )}
 
               {/* Save Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full cursor-pointer"
-              >
+              <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? t("saving") : t("saveProduct")}
               </Button>
             </form>

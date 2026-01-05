@@ -151,7 +151,7 @@ export default function Page() {
                 {t("signOutDesc")}
               </p>
             </div>
-            <Button variant="destructive" className="cursor-pointer" asChild>
+            <Button variant="destructive" asChild>
               <Link to="/account/sign-out">
                 <LogOut className="mr-2 h-4 w-4" />
                 {t("signOut")}
@@ -167,7 +167,7 @@ export default function Page() {
                 {t("signOutAllDesc")}
               </p>
             </div>
-            <Button variant="destructive" className="cursor-pointer" asChild>
+            <Button variant="destructive" asChild>
               <Link to="/account/sign-out-all">
                 <LogOut className="mr-2 h-4 w-4" />
                 {t("signOutAll")}
@@ -191,7 +191,7 @@ export default function Page() {
                 {t("deleteAccountDesc")}
               </p>
             </div>
-            <Button variant="destructive" className="cursor-pointer" asChild>
+            <Button variant="destructive" asChild>
               <Link to="/account/delete">
                 <Trash2 className="mr-2 h-4 w-4" />
                 {t("deleteAccount")}

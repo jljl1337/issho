@@ -26,16 +26,16 @@ export default function TableRowDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+        <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">{t("openMenu")}</span>
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild className="cursor-pointer">
+        <DropdownMenuItem asChild>
           <Link to={editUrl}>{t("edit")}</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="text-destructive cursor-pointer">
+        <DropdownMenuItem asChild className="text-destructive">
           <Link to={deleteUrl}>{t("delete")}</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
